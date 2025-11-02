@@ -1,0 +1,40 @@
+Vagrant.configure("2") do |config|
+
+  config.vm.define "yliS" do |server|
+    server.vm.box = "ubuntu/focal64"
+    server.vm.hostname = "yliS"
+    server.vm.network "private_network", ip: "192.168.56.110"
+
+    server.vm.provider "virtualbox" do |vb|
+      vb.memory = 512
+      vb.cpus = 1
+    end
+
+    server.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+
+    server.vm.provision "shell", inline: <<-SHELL
+      curl -sfL https://get.k3s.io | sh -
+      sudo cat /var/lib/rancher/k3s/server/node-token > /vagrant/node-token
+    SHELL
+  end
+
+  config.vm.define "yliSW" do |worker|
+    worker.vm.box = "ubuntu/focal64"
+    worker.vm.hostname = "yliSW"
+    worker.vm.network "private_network", ip: "192.168.56.111"
+
+    worker.vm.provider "virtualbox" do |vb|
+      vb.memory = 512
+      vb.cpus = 1
+    end
+
+    worker.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+
+    worker.vm.provision "shell", inline: <<-SHELL
+      SERVER_IP=192.168.56.110
+      TOKEN=$(cat /vagrant/node-token)
+      curl -sfL https://get.k3s.io | K3S_URL=https://$SERVER_IP:6443 K3S_TOKEN=$TOKEN sh -
+    SHELL
+  end
+
+end
