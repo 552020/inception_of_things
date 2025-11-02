@@ -20,16 +20,7 @@ Vagrant.configure("2") do |config|
       lv.cpu_mode = "host-passthrough"
     end
 
-  # keep it tiny; rsync will handle /vagrant by default on libvirt
-    server.vm.provision "shell", inline: <<-SHELL
-      set -e
-      apk update
-      apk add --no-cache vim curl qemu-guest-agent
-      rc-update add qemu-guest-agent
-      rc-service qemu-guest-agent start
-      echo "Server ready."
-      SHELL
-    end
+  end
   
   # 1. Worker
   config.vm.define "slombardSW" do |worker| # this is opitional, if you have only 1 VM but oblicatory if you have more than 
@@ -46,16 +37,14 @@ Vagrant.configure("2") do |config|
 
       lv.cpu_mode = "host-passthrough"
     end
+  end
 
-  # keep it tiny; rsync will handle /vagrant by default on libvirt
-    worker.vm.provision "shell", inline: <<-SHELL
-      set -e
-      apk update
-      apk add --no-cache vim curl qemu-guest-agent
-      rc-update add qemu-guest-agent
-      rc-service qemu-guest-agent start
-      echo "Worker ready."
-      SHELL
-    end
+  # Ansible provisioning runs after both VMs are up
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "confs/ansible/playbook.yml"
+    ansible.extra_vars = {
+      ansible_python_interpreter: "/usr/bin/python3"
+    }
+  end
 end
 
