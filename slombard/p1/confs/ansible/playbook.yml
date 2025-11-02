@@ -1,8 +1,6 @@
 ---
-# NOTE: This playbook uses /vagrant shared folder for token sharing.
-# This works in Vagrant because both VMs share the same host filesystem.
-# In production (separate physical servers), you would need network-based
-# solutions (HTTP endpoint, SSH, secrets management, etc.)
+# NOTE: Worker reads token from server via Ansible SSH delegation.
+# This works in Vagrant (via Ansible's SSH) and in production environments.
 
 - name: Install K3s Server
   hosts: slombardS
@@ -27,17 +25,18 @@
         timeout: 300
       become: yes
 
+    - name: Wait for token file to be generated
+      wait_for:
+        path: /var/lib/rancher/k3s/server/node-token
+        timeout: 60
+      become: yes
+
     - name: Read server token
       slurp:
         src: /var/lib/rancher/k3s/server/node-token
       register: k3s_token_content
       become: yes
 
-    - name: Copy server token to shared folder for worker
-      copy:
-        content: "{{ k3s_token_content.content | b64decode | trim }}"
-        dest: /vagrant/k3s_token
-      # Note: Using /vagrant shared folder works in Vagrant but not in production
 
 - name: Install K3s Worker
   hosts: slombardSW
@@ -58,15 +57,21 @@
         port: 6443
         timeout: 300
     
-    - name: Wait for token file in shared folder
+    - name: Wait for server token file to exist
       wait_for:
-        path: /vagrant/k3s_token
-        timeout: 60
-    
-    - name: Read server token from shared folder
+        path: /var/lib/rancher/k3s/server/node-token
+        timeout: 120
+      delegate_to: slombardS
+      become: yes
+
+    - name: Read server token directly from server (using Ansible SSH)
       slurp:
-        src: /vagrant/k3s_token
+        src: /var/lib/rancher/k3s/server/node-token
       register: token_file
+      delegate_to: slombardS
+      become: yes
+      retries: 5
+      delay: 2
     
     - name: Set token
       set_fact:
@@ -75,7 +80,7 @@
     - name: Install K3s agent
       shell: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN={{ k3s_token }} sh -
       become: yes
-      # Note: Token read from /vagrant shared folder (Vagrant-only solution)
+      # Note: Token read via Ansible SSH delegation (works in Vagrant and production)
 
 - name: Verify Cluster
   hosts: slombardS
