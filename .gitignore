@@ -1,0 +1,7 @@
+vagrantfile-p1.doc
+.vagrant
+.DS_Store
+*.log
+*.tmp
+*.swp
+*/node-token
