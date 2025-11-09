@@ -13,6 +13,8 @@ Vagrant.configure("2") do |config|
     server.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
     server.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y net-tools
       curl -sfL https://get.k3s.io | sh -
       sudo cat /var/lib/rancher/k3s/server/node-token > /vagrant/node-token
     SHELL
@@ -31,6 +33,8 @@ Vagrant.configure("2") do |config|
     worker.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
     worker.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y net-tools
       SERVER_IP=192.168.56.110
       TOKEN=$(cat /vagrant/node-token)
       curl -sfL https://get.k3s.io | K3S_URL=https://$SERVER_IP:6443 K3S_TOKEN=$TOKEN sh -

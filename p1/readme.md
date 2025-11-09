@@ -44,7 +44,7 @@ Run inside each VM:
 ```bash
 ifconfig -a
 ```
-![Ifconfig](images/Ifconfig.png)
+![Ifconfig](images/ifconfig.png)
 
 > Note:
 > On Ubuntu 20.04 / 22.04 (focal64) and newer systems,
@@ -56,6 +56,7 @@ ifconfig -a
 > enp0s8
 > ```
 
+![Ifconfig enp0s8](images/ifconfig_enp0s8.png)
 Typical setup looks like this:
 
 ```
