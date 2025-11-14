@@ -1,0 +1,107 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.provider "docker" do |d|
+    d.privileged = true
+    d.remains_running = true
+    d.cmd = ["tail", "-f", "/dev/null"]
+  end
+
+  # --- K3s Server Node ---
+  config.vm.define "rpodackS" do |s|
+    s.vm.provider "docker" do |d|
+      d.image = "ubuntu:22.04"
+      d.name  = "rpodackS"
+      d.privileged = true
+    end
+
+    s.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y curl sudo iptables
+      curl -sfL https://get.k3s.io -o install_k3s.sh
+      chmod +x install_k3s.sh
+      INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_EXEC="server --write-kubeconfig-mode 644 --node-name rpodackS" ./install_k3s.sh
+      nohup /usr/local/bin/k3s server --write-kubeconfig-mode 644 --node-name rpodackS >/k3s-server.log 2>&1 &
+      sleep 10
+      cat /var/lib/rancher/k3s/server/node-token > /node-token
+    SHELL
+  end
+
+  # --- K3s Worker Node ---
+  config.vm.define "rpodackSW" do |w|
+    w.vm.provider "docker" do |d|
+      d.image = "ubuntu:22.04"
+      d.name  = "rpodackSW"
+      d.privileged = true
+    end
+
+    w.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y curl sudo iptables
+      SERVER_IP=$(getent hosts rpodackS | awk '{ print $1 }')
+      TOKEN=$(cat /node-token 2>/dev/null || echo "notoken")
+      if [ "$TOKEN" = "notoken" ]; then
+        echo "⚠️ Server token not yet available; start server first"
+        exit 1
+      fi
+      curl -sfL https://get.k3s.io -o install_k3s.sh
+      chmod +x install_k3s.sh
+      INSTALL_K3S_SKIP_ENABLE=true ./install_k3s.sh
+      nohup /usr/local/bin/k3s agent --server https://$SERVER_IP:6443 --token $TOKEN --node-name rpodackSW >/k3s-agent.log 2>&1 &
+    SHELL
+  end
+end
+
+
+# # -*- mode: ruby -*-
+# # vi: set ft=ruby :
+
+# Vagrant.configure("2") do |config|
+#   BOX_NAME = "generic/ubuntu2204"  # KVM-friendly box
+#   BOX_URL  = "https://app.vagrantup.com/generic/boxes/ubuntu2204"
+
+#   # --- K3s Server Node ---
+#   config.vm.define "userS" do |server|
+#     server.vm.box = BOX_NAME
+#     server.vm.box_url = BOX_URL
+#     server.vm.hostname = "userS"
+#     server.vm.network "private_network", ip: "192.168.56.110"
+
+#     # KVM-specific provider settings
+#     server.vm.provider "libvirt" do |lv|
+#       lv.memory = 512
+#       lv.cpus = 1
+#     end
+
+#     server.vm.provision "shell", inline: <<-SHELL
+#       apt-get update
+#       apt-get install -y curl sudo iptables
+#       curl -sfL https://get.k3s.io | sh -
+#       sleep 10
+#       cp /etc/rancher/k3s/k3s.yaml /home/vagrant/k3s.yaml
+#       chown vagrant:vagrant /home/vagrant/k3s.yaml
+#     SHELL
+#   end
+
+#   # --- K3s Worker Node ---
+#   config.vm.define "userSW" do |worker|
+#     worker.vm.box = BOX_NAME
+#     worker.vm.box_url = BOX_URL
+#     worker.vm.hostname = "userSW"
+#     worker.vm.network "private_network", ip: "192.168.56.111"
+
+#     worker.vm.provider "libvirt" do |lv|
+#       lv.memory = 512
+#       lv.cpus = 1
+#     end
+
+#     worker.vm.provision "shell", inline: <<-SHELL
+#       apt-get update
+#       apt-get install -y curl sudo iptables openssh-client
+#       SERVER_IP="192.168.56.110"
+#       TOKEN=$(ssh -o StrictHostKeyChecking=no vagrant@$SERVER_IP "sudo cat /var/lib/rancher/k3s/server/node-token")
+#       curl -sfL https://get.k3s.io | K3S_URL="https://$SERVER_IP:6443" K3S_TOKEN="$TOKEN" sh -
+#     SHELL
+#   end
+# end
