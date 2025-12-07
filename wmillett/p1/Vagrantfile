@@ -1,0 +1,86 @@
+# Vagrantfile for Part 1: K3s and Vagrant
+# This configuration sets up a K3s cluster with one server and one worker node
+
+# Shared network configuration for private networks
+NET_ADDR = "192.168.56.0/24"
+NET_NAME = "vagrant56"
+
+Vagrant.configure("2") do |config|
+  # Enable synced folder for /vagrant
+  config.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__auto: true
+
+  # Base box configuration - using Alpine Linux (lightweight)
+  config.vm.box = "generic/alpine318"
+  config.vm.box_check_update = true
+
+  # SSH configuration for passwordless access
+  config.ssh.insert_key = false
+  config.ssh.private_key_path = ["~/.ssh/id_rsa", "~/.vagrant.d/insecure_private_key"]
+  config.ssh.keys_only = false
+
+  # Server node (wmillettS)
+  config.vm.define "wmillettS" do |server|
+    server.vm.hostname = "wmillettS"
+    
+    # Network configuration - private network on eth1
+    server.vm.network "private_network",
+      ip: "192.168.56.110",
+      auto_config: true
+
+    # Provider-specific configurations
+    server.vm.provider :virtualbox do |vb|
+      vb.name = "wmillettS"
+      vb.memory = 1024
+      vb.cpus = 1
+      vb.customize ["modifyvm", :id, "--nic2", "intnet"]
+    end
+
+    server.vm.provider :libvirt do |lv|
+      lv.memory = 1024
+      lv.cpus = 1
+      lv.cpu_mode = "host-passthrough"
+      lv.network :network_name => NET_NAME,
+                 :network_address => NET_ADDR,
+                 :dhcp_enabled => false,
+                 :ip => "192.168.56.110"
+    end
+  end
+
+  # Worker node (wmillettSW)
+  config.vm.define "wmillettSW" do |worker|
+    worker.vm.hostname = "wmillettSW"
+    
+    # Network configuration - private network on eth1
+    worker.vm.network "private_network",
+      ip: "192.168.56.111",
+      auto_config: true
+
+    # Provider-specific configurations
+    worker.vm.provider :virtualbox do |vb|
+      vb.name = "wmillettSW"
+      vb.memory = 1024
+      vb.cpus = 1
+      vb.customize ["modifyvm", :id, "--nic2", "intnet"]
+    end
+
+    worker.vm.provider :libvirt do |lv|
+      lv.memory = 1024
+      lv.cpus = 1
+      lv.cpu_mode = "host-passthrough"
+      lv.network :network_name => NET_NAME,
+                 :network_address => NET_ADDR,
+                 :dhcp_enabled => false,
+                 :ip => "192.168.56.111"
+    end
+  end
+
+  # Ansible provisioning runs after both VMs are up
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "confs/ansible/playbook.yml"
+    ansible.extra_vars = {
+      ansible_python_interpreter: "/usr/bin/python3"
+    }
+    ansible.limit = "all"
+    ansible.become = true
+  end
+end
