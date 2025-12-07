@@ -1,0 +1,155 @@
+---
+# Ansible playbook for K3s cluster setup
+# Installs K3s server on wmillettS and K3s agent on wmillettSW
+
+- name: Install K3s Server
+  hosts: wmillettS
+  gather_facts: no
+  tasks:
+    - name: Install Python3 and curl
+      raw: apk add --no-cache python3 curl
+      become: yes
+      register: python_install
+      changed_when: false
+
+    - name: Setup Python for Ansible
+      setup:
+      when: python_install.changed
+
+    - name: Install K3s server
+      shell: curl -sfL https://get.k3s.io | sh -
+      become: yes
+      register: k3s_install
+      changed_when: k3s_install.rc == 0
+
+    - name: Wait for K3s server to be ready
+      wait_for:
+        path: /etc/rancher/k3s/k3s.yaml
+        timeout: 300
+      become: yes
+
+    - name: Wait for token file to be generated
+      wait_for:
+        path: /var/lib/rancher/k3s/server/node-token
+        timeout: 60
+      become: yes
+
+    - name: Read server token
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_token_content
+      become: yes
+      no_log: false
+
+    - name: Install kubectl
+      shell: |
+        if ! command -v kubectl &> /dev/null; then
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/kubectl
+        fi
+      become: yes
+
+    - name: Create kubectl config directory
+      file:
+        path: /home/vagrant/.kube
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: '0755'
+      become: yes
+
+    - name: Copy k3s kubeconfig for vagrant user
+      copy:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: /home/vagrant/.kube/config
+        owner: vagrant
+        group: vagrant
+        mode: '0644'
+        remote_src: yes
+      become: yes
+
+    - name: Update kubeconfig server URL
+      lineinfile:
+        path: /home/vagrant/.kube/config
+        regexp: '^    server:'
+        line: '    server: https://127.0.0.1:6443'
+      become: yes
+
+- name: Install K3s Worker
+  hosts: wmillettSW
+  gather_facts: no
+  tasks:
+    - name: Install Python3 and curl
+      raw: apk add --no-cache python3 curl
+      become: yes
+      register: python_install
+      changed_when: false
+
+    - name: Setup Python for Ansible
+      setup:
+      when: python_install.changed
+
+    - name: Wait for K3s server to be ready
+      wait_for:
+        host: 192.168.56.110
+        port: 6443
+        timeout: 300
+        delay: 10
+
+    - name: Wait for server token file to exist
+      wait_for:
+        path: /var/lib/rancher/k3s/server/node-token
+        timeout: 120
+      delegate_to: wmillettS
+      become: yes
+
+    - name: Read server token directly from server
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: token_file
+      delegate_to: wmillettS
+      become: yes
+      retries: 5
+      delay: 2
+
+    - name: Set token fact
+      set_fact:
+        k3s_token: "{{ token_file.content | b64decode | trim }}"
+
+    - name: Install K3s agent
+      shell: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN={{ k3s_token }} sh -
+      become: yes
+      register: k3s_agent_install
+      changed_when: k3s_agent_install.rc == 0
+
+- name: Verify Cluster
+  hosts: wmillettS
+  tasks:
+    - name: Wait for nodes to be ready
+      wait_for:
+        host: 192.168.56.110
+        port: 6443
+        timeout: 60
+      delegate_to: localhost
+
+    - name: Check cluster nodes
+      command: k3s kubectl get nodes
+      register: nodes_output
+      become: yes
+      retries: 5
+      delay: 10
+
+    - name: Show cluster nodes
+      debug:
+        msg: "{{ nodes_output.stdout_lines }}"
+
+    - name: Verify both nodes are ready
+      command: k3s kubectl get nodes --no-headers
+      register: node_status
+      become: yes
+      changed_when: false
+
+    - name: Display node status
+      debug:
+        var: node_status.stdout_lines
