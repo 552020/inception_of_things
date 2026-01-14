@@ -1,0 +1,163 @@
+---
+# NOTE: Worker reads token from server via Ansible SSH delegation.
+# This works in Vagrant (via Ansible's SSH) and in production environments.
+
+- name: Install K3s Server
+  hosts: rpodackS
+  gather_facts: yes
+  become: yes
+  tasks:
+    #############make sure hostnae is set
+    - name: Set hostname in /etc/hostname
+      copy:
+        content: "rpodackS\n"
+        dest: /etc/hostname
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Set hostname in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.1.1'
+        line: '127.0.1.1 rpodackS'
+
+    - name: Apply hostname immediately
+      command: hostname rpodackS
+
+    - name: Ensure cloud-init doesn't manage hostname (if cloud.cfg exists)
+      stat:
+        path: /etc/cloud/cloud.cfg
+      register: cloud_cfg
+
+    - name: Modify cloud-init config to preserve hostname if file exists
+      lineinfile:
+        path: /etc/cloud/cloud.cfg
+        regexp: '^preserve_hostname:'
+        line: 'preserve_hostname: true'
+      when: cloud_cfg.stat.exists
+#################################
+
+    - name: Ensure Python3 and curl are installed
+      apt:
+        name:
+          - python3
+          - curl
+        state: present
+        update_cache: yes
+      become: yes
+
+    - name: Install K3s server
+      shell: curl -sfL https://get.k3s.io | sh -
+      become: yes
+
+    - name: Wait for K3s server to be ready
+      wait_for:
+        path: /etc/rancher/k3s/k3s.yaml
+        timeout: 300
+      become: yes
+
+    - name: Wait for token file
+      wait_for:
+        path: /var/lib/rancher/k3s/server/node-token
+        timeout: 60
+      become: yes
+
+    - name: Read server token
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_token_content
+      become: yes
+
+
+
+- name: Install K3s Worker
+  hosts: rpodackSW
+  gather_facts: yes   # we need facts for apt module
+  become: yes
+  tasks:
+   #############make sure hostnae is set
+    - name: Set hostname in /etc/hostname
+      copy:
+        content: "rpodackSW\n"
+        dest: /etc/hostname
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Set hostname in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.1.1'
+        line: '127.0.1.1 rpodackSW'
+
+    - name: Apply hostname immediately
+      command: hostname rpodackSW
+
+    - name: Ensure cloud-init doesn't manage hostname (if cloud.cfg exists)
+      stat:
+        path: /etc/cloud/cloud.cfg
+      register: cloud_cfg
+
+    - name: Modify cloud-init config to preserve hostname if file exists
+      lineinfile:
+        path: /etc/cloud/cloud.cfg
+        regexp: '^preserve_hostname:'
+        line: 'preserve_hostname: true'
+      when: cloud_cfg.stat.exists
+###################################
+
+    - name: Ensure Python3 and curl are installed
+      apt:
+        name:
+          - python3
+          - curl
+        state: present
+        update_cache: yes
+      become: yes
+
+    - name: Wait for K3s server to be ready
+      wait_for:
+        host: 192.168.56.110
+        port: 6443
+        timeout: 300
+
+    - name: Wait for server token file to exist
+      wait_for:
+        path: /var/lib/rancher/k3s/server/node-token
+        timeout: 120
+      delegate_to: rpodackS
+      become: yes
+
+    - name: Read server token directly from server (using Ansible SSH)
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: token_file
+      delegate_to: rpodackS
+      become: yes
+      retries: 5
+      delay: 2
+
+    - name: Set token
+      set_fact:
+        k3s_token: "{{ token_file.content | b64decode | trim }}"
+
+    - name: Install K3s agent
+      shell: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN={{ k3s_token }} sh -
+      become: yes
+      async: 300   # run asynchronously, 5 min max
+      poll: 0
+      # Note: Token read via Ansible SSH delegation (works in Vagrant and production)
+
+- name: Verify Cluster
+  hosts: rpodackS
+  tasks:
+    - name: Check cluster nodes
+      command: k3s kubectl get nodes
+      register: nodes_output
+      become: yes
+
+    - name: Show cluster nodes
+      debug:
+        msg: "{{ nodes_output.stdout_lines }}"
+
