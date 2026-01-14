@@ -1,0 +1,81 @@
+# Vagrantfile
+# shared libvirt network options for all private networks
+NET_ADDR = "192.168.56.0/24"
+NET_NAME = "vagrant-net"
+
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "generic/ubuntu2004"
+
+  config.vm.boot_timeout = 600
+  config.ssh.username = "vagrant"
+
+  # First Node Configuration
+  config.vm.define "rpodackS" do |rpodackS|
+    rpodackS.vm.network "private_network",
+          ip: "192.168.56.110",
+          libvirt__dhcp_enabled: false
+    rpodackS.vm.provider "libvirt" do |lv|
+      lv.memory = 512  # Adjust memory as needed
+      lv.cpus = 1       # Adjust CPU count as needed
+      # lv.disk = {
+      #   size: '1024M'      # Adjust disk size if needed
+      # }
+    end
+  end
+#     rpodackS.vm.box = "generic/ubuntu2004"  # Or any Ubuntu box you prefer
+#     rpodackS.vm.network "private_network", ip: "192.168.56.110", bridge: "virbr1" # Example for private networking
+#     rpodackS.vm.provision "shell", inline: <<-SHELL
+#       # Add your shell commands here
+#       echo "Provisioning rpodackS"
+#       sudo apt-get update
+#       apt-get install -y curl sudo iptables
+#       curl -sfL https://get.k3s.io -o install_k3s.sh
+#       chmod +x install_k3s.sh
+#       INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_EXEC="server --write-kubeconfig-mode 644 --node-name rpodackS" ./install_k3s.sh
+#       nohup /usr/local/bin/k3s server --write-kubeconfig-mode 644 --node-name rpodackS >/k3s-server.log 2>&1 &
+#       sleep 10
+#       cat /var/lib/rancher/k3s/server/node-token > /node-token
+#     SHELL
+#   end
+
+
+  # Second Node Configuration
+  config.vm.define "rpodackSW" do |rpodackSW|
+    rpodackSW.vm.network "private_network",
+          ip: "192.168.56.111",
+          libvirt__dhcp_enabled: false
+    rpodackSW.vm.provider "libvirt" do |lv|
+      lv.memory = 512  # Adjust memory as needed
+      lv.cpus = 1       # Adjust CPU count as needed
+      # lv.disk = {
+      #   size: '1024M'      # Adjust disk size if needed
+      # }
+    end
+  end
+
+#     rpodackSW.vm.box = "generic/ubuntu2004"  # Or any Ubuntu box you prefer
+#     rpodackSW.vm.network "private_network", ip: "192.168.56.111", bridge: "virbr1"  # Example for private networking
+#     rpodackSW.vm.provision "shell", inline: <<-SHELL
+#       # Add your shell commands here
+#       echo "Provisioning rpodackSW"
+#       sudo apt-get update
+#       apt-get install -y curl sudo iptables
+#       curl -sfL https://get.k3s.io -o install_k3s.sh
+#       chmod +x install_k3s.sh
+#       INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_EXEC="server --write-kubeconfig-mode 644 --node-name rpodackS" ./install_k3s.sh
+#       nohup /usr/local/bin/k3s server --write-kubeconfig-mode 644 --node-name rpodackS >/k3s-server.log 2>&1 &
+#       sleep 10
+#       cat /var/lib/rancher/k3s/server/node-token > /node-token
+#     SHELL
+#   end
+
+  # Ansible provisioning runs after both VMs are up
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "confs/ansible/playbook.yml"
+    ansible.extra_vars = {
+      ansible_python_interpreter: "/usr/bin/python3"
+    }
+  end
+end
