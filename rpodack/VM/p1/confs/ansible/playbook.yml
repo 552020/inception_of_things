@@ -5,7 +5,39 @@
 - name: Install K3s Server
   hosts: rpodackS
   gather_facts: yes
+  become: yes
   tasks:
+    #############make sure hostnae is set
+    - name: Set hostname in /etc/hostname
+      copy:
+        content: "rpodackS\n"
+        dest: /etc/hostname
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Set hostname in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.1.1'
+        line: '127.0.1.1 rpodackS'
+
+    - name: Apply hostname immediately
+      command: hostname rpodackS
+
+    - name: Ensure cloud-init doesn't manage hostname (if cloud.cfg exists)
+      stat:
+        path: /etc/cloud/cloud.cfg
+      register: cloud_cfg
+
+    - name: Modify cloud-init config to preserve hostname if file exists
+      lineinfile:
+        path: /etc/cloud/cloud.cfg
+        regexp: '^preserve_hostname:'
+        line: 'preserve_hostname: true'
+      when: cloud_cfg.stat.exists
+#################################
+
     - name: Ensure Python3 and curl are installed
       apt:
         name:
@@ -42,7 +74,39 @@
 - name: Install K3s Worker
   hosts: rpodackSW
   gather_facts: yes   # we need facts for apt module
+  become: yes
   tasks:
+   #############make sure hostnae is set
+    - name: Set hostname in /etc/hostname
+      copy:
+        content: "rpodackSW\n"
+        dest: /etc/hostname
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Set hostname in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.1.1'
+        line: '127.0.1.1 rpodackSW'
+
+    - name: Apply hostname immediately
+      command: hostname rpodackSW
+
+    - name: Ensure cloud-init doesn't manage hostname (if cloud.cfg exists)
+      stat:
+        path: /etc/cloud/cloud.cfg
+      register: cloud_cfg
+
+    - name: Modify cloud-init config to preserve hostname if file exists
+      lineinfile:
+        path: /etc/cloud/cloud.cfg
+        regexp: '^preserve_hostname:'
+        line: 'preserve_hostname: true'
+      when: cloud_cfg.stat.exists
+###################################
+
     - name: Ensure Python3 and curl are installed
       apt:
         name:
