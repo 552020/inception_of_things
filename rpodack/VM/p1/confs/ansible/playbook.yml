@@ -21,9 +21,10 @@
         path: /etc/hosts
         regexp: '^127.0.1.1'
         line: '127.0.1.1 rpodackS'
+        state: present
 
     - name: Apply hostname immediately
-      command: hostname rpodackS
+      command: hostnamectl set-hostname rpodackS
 
     - name: Ensure cloud-init doesn't manage hostname (if cloud.cfg exists)
       stat:
@@ -48,7 +49,12 @@
       become: yes
 
     - name: Install K3s server
-      shell: curl -sfL https://get.k3s.io | sh -
+      shell: |
+        curl -sfL https://get.k3s.io | \
+          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644" \
+          sh -
+      args:
+        creates: /usr/local/bin/k3s
       become: yes
 
     - name: Wait for K3s server to be ready
@@ -90,9 +96,10 @@
         path: /etc/hosts
         regexp: '^127.0.1.1'
         line: '127.0.1.1 rpodackSW'
+        state: present
 
     - name: Apply hostname immediately
-      command: hostname rpodackSW
+      command: hostnamectl set-hostname rpodackSW
 
     - name: Ensure cloud-init doesn't manage hostname (if cloud.cfg exists)
       stat:
