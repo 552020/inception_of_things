@@ -172,7 +172,7 @@ fi
 # 13. Test node names match hostnames
 test_info "Testing node names match hostnames..."
 NODE_NAMES=$(vagrant ssh rpodackS -c "kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name --kubeconfig=/etc/rancher/k3s/k3s.yaml 2>/dev/null || k3s kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name 2>/dev/null" 2>/dev/null | tr '\r\n' ' ')
-if echo "$NODE_NAMES" | grep -q "rpodackS" && echo "$NODE_NAMES" | grep -q "rpodackSW"; then
+if echo "$NODE_NAMES" | grep -q "rpodacks" && echo "$NODE_NAMES" | grep -q "rpodacksw"; then
     test_pass "Both nodes (rpodackS and rpodackSW) are in the cluster"
 else
     test_fail "Node names don't match expected hostnames. Found: $NODE_NAMES"

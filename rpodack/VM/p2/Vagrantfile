@@ -1,0 +1,36 @@
+# Vagrantfile
+# shared libvirt network options for all private networks
+NET_ADDR = "192.168.56.0/24"
+NET_NAME = "vagrant-net"
+
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "generic/ubuntu2004"
+
+  config.vm.boot_timeout = 600
+  config.ssh.username = "vagrant"
+  # First Node Configuration
+  config.vm.define "rpodackS" do |rpodackS|
+    rpodackS.vm.hostname = "rpodackS"
+    rpodackS.vm.network "private_network",
+          ip: "192.168.56.110",
+          libvirt__dhcp_enabled: false
+    rpodackS.vm.provider "libvirt" do |lv|
+      lv.memory = 512  # Adjust memory as needed
+      lv.cpus = 1       # Adjust CPU count as needed
+      # lv.disk = {
+      #   size: '1024M'      # Adjust disk size if needed
+      # }
+    end
+  end
+
+
+  # Ansible provisioning runs after both VMs are up
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "confs/ansible/playbook.yml"
+    ansible.extra_vars = {
+      ansible_python_interpreter: "/usr/bin/python3"
+    }
+  end
+end
