@@ -14,13 +14,13 @@
         dest: /etc/hostname
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
 
     - name: Set hostname in /etc/hosts
       lineinfile:
         path: /etc/hosts
-        regexp: '^127.0.1.1'
-        line: '127.0.1.1 rpodackS'
+        regexp: "^127.0.1.1"
+        line: "127.0.1.1 rpodackS"
         state: present
 
     - name: Apply hostname immediately
@@ -34,10 +34,10 @@
     - name: Modify cloud-init config to preserve hostname if file exists
       lineinfile:
         path: /etc/cloud/cloud.cfg
-        regexp: '^preserve_hostname:'
-        line: 'preserve_hostname: true'
+        regexp: "^preserve_hostname:"
+        line: "preserve_hostname: true"
       when: cloud_cfg.stat.exists
-#################################
+    #################################
 
     - name: Ensure Python3 and curl are installed
       apt:
@@ -75,27 +75,25 @@
       register: k3s_token_content
       become: yes
 
-
-
 - name: Install K3s Worker
   hosts: rpodackSW
-  gather_facts: yes   # we need facts for apt module
+  gather_facts: yes # we need facts for apt module
   become: yes
   tasks:
-   #############make sure hostnae is set
+    #############make sure hostnae is set
     - name: Set hostname in /etc/hostname
       copy:
         content: "rpodackSW\n"
         dest: /etc/hostname
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
 
     - name: Set hostname in /etc/hosts
       lineinfile:
         path: /etc/hosts
-        regexp: '^127.0.1.1'
-        line: '127.0.1.1 rpodackSW'
+        regexp: "^127.0.1.1"
+        line: "127.0.1.1 rpodackSW"
         state: present
 
     - name: Apply hostname immediately
@@ -109,10 +107,10 @@
     - name: Modify cloud-init config to preserve hostname if file exists
       lineinfile:
         path: /etc/cloud/cloud.cfg
-        regexp: '^preserve_hostname:'
-        line: 'preserve_hostname: true'
+        regexp: "^preserve_hostname:"
+        line: "preserve_hostname: true"
       when: cloud_cfg.stat.exists
-###################################
+    ###################################
 
     - name: Ensure Python3 and curl are installed
       apt:
@@ -150,15 +148,56 @@
         k3s_token: "{{ token_file.content | b64decode | trim }}"
 
     - name: Install K3s agent
-      shell: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN={{ k3s_token }} sh -
+      shell: |
+        curl -sfL https://get.k3s.io | \
+          K3S_URL=https://192.168.56.110:6443 \
+          K3S_TOKEN={{ k3s_token }} \
+          INSTALL_K3S_EXEC="agent --node-name rpodackSW" \
+          sh -
       become: yes
-      async: 300   # run asynchronously, 5 min max
-      poll: 0
+      register: k3s_agent_install
+      changed_when: k3s_agent_install.rc == 0
+      failed_when: k3s_agent_install.rc != 0
       # Note: Token read via Ansible SSH delegation (works in Vagrant and production)
+
+    - name: Wait for K3s agent process to be running
+      command: pgrep -x k3s-agent || pgrep -f "k3s agent"
+      register: agent_check
+      until: agent_check.rc == 0
+      retries: 15
+      delay: 5
+      failed_when: false
+      changed_when: false
 
 - name: Verify Cluster
   hosts: rpodackS
   tasks:
+    - name: Wait for K3s server to be fully ready
+      wait_for:
+        path: /etc/rancher/k3s/k3s.yaml
+        timeout: 60
+      become: yes
+
+    - name: Wait for at least one node (server) to be available
+      command: k3s kubectl get nodes --no-headers
+      register: nodes_output
+      become: yes
+      retries: 10
+      delay: 5
+      until: nodes_output.rc == 0 and nodes_output.stdout_lines | length >= 1
+      failed_when: false
+      changed_when: false
+
+    - name: Wait for worker node to join cluster
+      command: k3s kubectl get nodes --no-headers
+      register: nodes_output
+      become: yes
+      retries: 20
+      delay: 10
+      until: nodes_output.rc == 0 and nodes_output.stdout_lines | length >= 2
+      failed_when: false
+      changed_when: false
+
     - name: Check cluster nodes
       command: k3s kubectl get nodes
       register: nodes_output
@@ -168,3 +207,12 @@
       debug:
         msg: "{{ nodes_output.stdout_lines }}"
 
+    - name: Verify both nodes are ready
+      command: k3s kubectl get nodes --no-headers
+      register: node_status
+      become: yes
+      changed_when: false
+
+    - name: Display node status
+      debug:
+        var: node_status.stdout_lines

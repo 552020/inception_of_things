@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__auto: true
 
   # 1. Server
-  config.vm.define "slombardS" do |server| # this is opitional, if you have only 1 VM but oblicatory if you have more than 
+  config.vm.define "slombardS" do |server| # this is optional, if you have only 1 VM but obligatory if you have more than 
     server.vm.hostname = "slombardS"
     server.vm.box = "generic/alpine318"   # has libvirt builds available
     server.vm.network "private_network",
@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
   end
   
   # 1. Worker
-  config.vm.define "slombardSW" do |worker| # this is opitional, if you have only 1 VM but oblicatory if you have more than 
+  config.vm.define "slombardSW" do |worker| # this is optional, if you have only 1 VM but obligatory if you have more than 
     worker.vm.hostname = "slombardSW"
     worker.vm.box = "generic/alpine318"   # has libvirt builds available
     worker.vm.network "private_network",
