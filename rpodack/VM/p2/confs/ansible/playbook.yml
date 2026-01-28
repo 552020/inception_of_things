@@ -75,6 +75,8 @@
       register: k3s_token_content
       become: yes
 
+
+
 - name: Verify Cluster
   hosts: rpodackS
   tasks:

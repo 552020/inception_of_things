@@ -19,9 +19,6 @@ Vagrant.configure("2") do |config|
     rpodackS.vm.provider "libvirt" do |lv|
       lv.memory = 512  # Adjust memory as needed
       lv.cpus = 1       # Adjust CPU count as needed
-      # lv.disk = {
-      #   size: '1024M'      # Adjust disk size if needed
-      # }
     end
   end
 
@@ -35,9 +32,6 @@ Vagrant.configure("2") do |config|
     rpodackSW.vm.provider "libvirt" do |lv|
       lv.memory = 512  # Adjust memory as needed
       lv.cpus = 1       # Adjust CPU count as needed
-      # lv.disk = {
-      #   size: '1024M'      # Adjust disk size if needed
-      # }
     end
   end
 

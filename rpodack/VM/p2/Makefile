@@ -23,9 +23,6 @@ status: ## Show VM status
 ssh-server: ## SSH into rpodackS (server)
 	vagrant ssh rpodackS
 
-ssh-worker: ## SSH into rpodackSW (worker)
-	vagrant ssh rpodackSW
-
 test: ## Run all verification tests
 	@echo "Running Part 1 verification tests..."
 	@bash scripts/test_part1.sh

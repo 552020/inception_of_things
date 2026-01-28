@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.boot_timeout = 600
   config.ssh.username = "vagrant"
-  # First Node Configuration
+  # Node Configuration
   config.vm.define "rpodackS" do |rpodackS|
     rpodackS.vm.hostname = "rpodackS"
     rpodackS.vm.network "private_network",
@@ -19,14 +19,11 @@ Vagrant.configure("2") do |config|
     rpodackS.vm.provider "libvirt" do |lv|
       lv.memory = 512  # Adjust memory as needed
       lv.cpus = 1       # Adjust CPU count as needed
-      # lv.disk = {
-      #   size: '1024M'      # Adjust disk size if needed
-      # }
     end
   end
 
 
-  # Ansible provisioning runs after both VMs are up
+  # Ansible provisioning
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "confs/ansible/playbook.yml"
     ansible.extra_vars = {
