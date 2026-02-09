@@ -75,6 +75,52 @@
       register: k3s_token_content
       become: yes
 
+    - name: Copy app1-ingress.yaml to node
+      copy:
+        src: ./../ingress/app1-ingress.yaml       # relative to your Ansible project root
+        dest: /tmp/app1-ingress.yaml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply ingress
+      shell: kubectl apply -f /tmp/app1-ingress.yaml
+
+    - name: Copy app1 Deployment to node
+      copy:
+        src: ./../deployment/app1-deployment.yml
+        dest: /tmp/app1-deployment.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy app1 Service to node
+      copy:
+        src: ./../service/app1-service.yml
+        dest: /tmp/app1-service.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy app1 Ingress to node
+      copy:
+        src: ./../ingress/app1-ingress.yaml
+        dest: /tmp/app1-ingress.yaml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply app1 Deployment
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app1-deployment.yml
+
+    - name: Apply app1 Service
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app1-service.yml
+
+    - name: Apply app1 Ingress
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app1-ingress.yaml
 
 
 - name: Verify Cluster
