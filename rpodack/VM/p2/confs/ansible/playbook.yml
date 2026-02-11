@@ -102,14 +102,6 @@
         group: root
         mode: '0644'
 
-    - name: Copy app1 Ingress to node
-      copy:
-        src: ./../ingress/app1-ingress.yaml
-        dest: /tmp/app1-ingress.yaml
-        owner: root
-        group: root
-        mode: '0644'
-
     - name: Apply app1 Deployment
       ansible.builtin.shell:
         cmd: kubectl apply -f /tmp/app1-deployment.yml
