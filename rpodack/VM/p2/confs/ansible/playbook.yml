@@ -162,6 +162,50 @@
         cmd: kubectl apply -f /tmp/app3-ingress.yml
 
 
+
+    ##########################################
+    # app2
+    ##########################################
+    - name: Copy app2-ingress.yml to node
+      copy:
+        src: ./../ingress/app2-ingress.yml       # relative to your Ansible project root
+        dest: /tmp/app2-ingress.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply ingress
+      shell: kubectl apply -f /tmp/app2-ingress.yml
+
+    - name: Copy app2 Deployment to node
+      copy:
+        src: ./../deployment/app2-deployment.yml
+        dest: /tmp/app2-deployment.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy app2 Service to node
+      copy:
+        src: ./../service/app2-service.yml
+        dest: /tmp/app2-service.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply app2 Deployment
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app2-deployment.yml
+
+    - name: Apply app2 Service
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app2-service.yml
+
+    - name: Apply app2 Ingress
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app2-ingress.yml
+
+
 - name: Verify Cluster
   hosts: rpodackS
   tasks:
