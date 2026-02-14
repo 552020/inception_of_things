@@ -63,18 +63,22 @@
         timeout: 300
       become: yes
 
-    - name: Wait for token file
-      wait_for:
-        path: /var/lib/rancher/k3s/server/node-token
-        timeout: 60
-      become: yes
+#    - name: Wait for token file
+#      wait_for:
+#        path: /var/lib/rancher/k3s/server/node-token
+#        timeout: 60
+#      become: yes
+#
+#    - name: Read server token
+#      slurp:
+#        src: /var/lib/rancher/k3s/server/node-token
+#      register: k3s_token_content
+#      become: yes
 
-    - name: Read server token
-      slurp:
-        src: /var/lib/rancher/k3s/server/node-token
-      register: k3s_token_content
-      become: yes
 
+##########################################
+# APP1
+##########################################
     - name: Copy app1-ingress.yaml to node
       copy:
         src: ./../ingress/app1-ingress.yaml       # relative to your Ansible project root
@@ -113,6 +117,49 @@
     - name: Apply app1 Ingress
       ansible.builtin.shell:
         cmd: kubectl apply -f /tmp/app1-ingress.yaml
+
+
+    ##########################################
+    # APP3
+    ##########################################
+    - name: Copy app3-ingress.yml to node
+      copy:
+        src: ./../ingress/app3-ingress.yml       # relative to your Ansible project root
+        dest: /tmp/app3-ingress.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply ingress
+      shell: kubectl apply -f /tmp/app3-ingress.yml
+
+    - name: Copy app3 Deployment to node
+      copy:
+        src: ./../deployment/app3-deployment.yml
+        dest: /tmp/app3-deployment.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy app3 Service to node
+      copy:
+        src: ./../service/app3-service.yml
+        dest: /tmp/app3-service.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply app3 Deployment
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app3-deployment.yml
+
+    - name: Apply app3 Service
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app3-service.yml
+
+    - name: Apply app3 Ingress
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app3-ingress.yml
 
 
 - name: Verify Cluster

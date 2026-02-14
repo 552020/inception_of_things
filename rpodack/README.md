@@ -31,3 +31,6 @@
 		  ```
 		  vagrant destroy
 		  ```
+
+curl --header "Host: app1.com" 192.168.56.110
+curl --header "Host: app3.com" 192.168.56.110
