@@ -1,7 +1,3 @@
----
-# NOTE: Worker reads token from server via Ansible SSH delegation.
-# This works in Vagrant (via Ansible's SSH) and in production environments.
-
 - name: Install K3s Server
   hosts: rpodackS
   gather_facts: yes
@@ -63,18 +59,9 @@
         timeout: 300
       become: yes
 
-#    - name: Wait for token file
-#      wait_for:
-#        path: /var/lib/rancher/k3s/server/node-token
-#        timeout: 60
-#      become: yes
-#
-#    - name: Read server token
-#      slurp:
-#        src: /var/lib/rancher/k3s/server/node-token
-#      register: k3s_token_content
-#      become: yes
-
+    - name: Install flannel (CNI for creating pod network)
+      shell: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+      become: yes
 
 ##########################################
 # APP1
@@ -130,8 +117,6 @@
         group: root
         mode: '0644'
 
-    - name: Apply ingress
-      shell: kubectl apply -f /tmp/app3-ingress.yml
 
     - name: Copy app3 Deployment to node
       copy:
@@ -148,6 +133,9 @@
         owner: root
         group: root
         mode: '0644'
+
+    - name: Apply ingress
+      shell: kubectl apply -f /tmp/app3-ingress.yml
 
     - name: Apply app3 Deployment
       ansible.builtin.shell:
@@ -217,4 +205,3 @@
     - name: Show cluster nodes
       debug:
         msg: "{{ nodes_output.stdout_lines }}"
-
