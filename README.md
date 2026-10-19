@@ -153,3 +153,16 @@ Adjustments for us: 8GB RAM instead of their 12GB (this host has 15GB), Ubuntu 2
 4. Same day: `make stop`, then Part 3 with k3d and Argo CD, then the bonus the day after. Once the environment was a command, the rest went fast.
 
 The lesson for us: build the environment as code first, even if it costs a day, because every later step then costs minutes and nothing is lost when sgoinfre is purged.
+
+### 2026-10-20: Is the Part 1 token exchange "facilitated" by both VMs living on one laptop?
+
+It was, in the first version. The original playbook dropped the K3s node token into the `/vagrant` shared folder, which both VMs see only because they share a host. Two real servers have no shared folder. Commit `41683e9` replaced that with Ansible SSH delegation, and the current flow is honest:
+
+1. Ansible, running on the host VM, SSHes into the server and waits for `/var/lib/rancher/k3s/server/node-token` to appear.
+2. It reads the file over SSH (`slurp` with `delegate_to: slombardS`).
+3. It SSHes into the worker and runs the K3s agent install with the token and `K3S_URL=https://192.168.56.110:6443`.
+4. From then on the worker talks to the server over `eth1` on its own.
+
+Nothing crosses between the nodes except over the network, which is what would happen between two physical servers. The facilitator is Ansible, and a config management tool with SSH access to every machine is the normal way join secrets move around a fleet. Swap the two IPs for real ones and the playbook is unchanged.
+
+What production usually does differently: generate the token up front, keep it in a secrets store, and pass it to both server and worker as `K3S_TOKEN`. That removes the read-back step and lets you add workers later without touching the server. Possible small improvement to p1, not required by the subject.
