@@ -10,7 +10,7 @@
 
 **VDI files must be stored in sgoinfre** — they are too large for home, and goinfre is lost when another user logs in.
 
-Current VM location: `/sgoinfre/goinfre/Perso/slombard/IoT/IoT/IoT.vdi`
+Current VM location: `/sgoinfre/goinfre/Perso/slombard/IoT/IoT.vdi` (rebuilt 2026-10-19 after sgoinfre was purged)
 Symlink on host: `~/sgoinfre -> /sgoinfre/goinfre/Perso/slombard`
 
 ## VM files explained
@@ -45,7 +45,7 @@ df -h /
 Shut down the VM first, then on the host:
 
 ```bash
-VBoxManage modifyhd "/home/slombard/sgoinfre/IoT/IoT/IoT.vdi" --resize 61440
+VBoxManage modifyhd "/home/slombard/sgoinfre/IoT/IoT.vdi" --resize 61440
 ```
 
 (`61440` = 60GB in MB)
@@ -68,9 +68,8 @@ df -h /
 - Home is only 5GB — too small for VDI files
 
 ### Current actual usage in sgoinfre
-- `IoT.vdi` — grows as VM fills up, currently ~14GB
-- `IoT2_1.vdi` — 7.5GB
-- Total: ~21.5GB — still under 30GB limit but watch it
+- `IoT.vdi` — fresh install on 2026-10-19, grows as the VM fills up
+- `iso/ubuntu-24.04.5.1-desktop-amd64.iso` — 5.9GB, can be deleted after the install is confirmed working
 
 ### Rules to stay safe
 1. **Monitor sgoinfre size regularly:**
@@ -86,13 +85,37 @@ Only the IoT.vdi needs an external backup. Everything else is in git or rebuilda
 
 Export a compressed copy when you have a stable working state:
 ```bash
-VBoxManage clonemedium disk "/home/slombard/sgoinfre/IoT/IoT/IoT.vdi" ~/backup-IoT.vdi --format VDI
+VBoxManage clonemedium disk "/home/slombard/sgoinfre/IoT/IoT.vdi" ~/backup-IoT.vdi --format VDI
 ```
 Then move `backup-IoT.vdi` to a USB drive or personal cloud storage.
 
 ## Current state
 
-- Virtual disk size: 60GB
-- Actual disk usage: ~14GB
-- Free space: ~43GB
-- VM OS: Ubuntu 24.04 LTS
+- Rebuilt on 2026-10-19: the previous VM and everything else in sgoinfre had been purged
+- Virtual disk size: 60GB, dynamically allocated
+- VM OS: Ubuntu 24.04.5 LTS desktop, user `slombard`
+- 6 CPUs, 8GB RAM, nested VT-x enabled, NAT with host port 2222 forwarded to guest 22
+
+## Rebuild from scratch (host side)
+
+```bash
+mkdir -p ~/sgoinfre/iso && cd ~/sgoinfre/iso
+curl -L -O https://releases.ubuntu.com/24.04/ubuntu-24.04.5.1-desktop-amd64.iso
+VBoxManage createvm --name IoT --ostype Ubuntu_64 --basefolder ~/sgoinfre --register
+VBoxManage modifyvm IoT --cpus 6 --memory 8192 --vram 128 --graphicscontroller vmsvga \
+  --nested-hw-virt on --nested-paging on --paravirtprovider kvm --ioapic on \
+  --nic1 nat --audio-enabled off --usb off --clipboard-mode bidirectional \
+  --boot1 dvd --boot2 disk --boot3 none --boot4 none
+VBoxManage createmedium disk --filename ~/sgoinfre/IoT/IoT.vdi --size 61440 --format VDI
+VBoxManage storagectl IoT --name SATA --add sata --controller IntelAhci --portcount 2 --bootable on
+VBoxManage storageattach IoT --storagectl SATA --port 0 --device 0 --type hdd --medium ~/sgoinfre/IoT/IoT.vdi
+VBoxManage storageattach IoT --storagectl SATA --port 1 --device 0 --type dvddrive --medium ~/sgoinfre/iso/ubuntu-24.04.5.1-desktop-amd64.iso
+VBoxManage modifyvm IoT --natpf1 "ssh,tcp,127.0.0.1,2222,,22"
+VBoxManage startvm IoT --type gui
+```
+
+Then run the Ubuntu installer interactively (erase disk, user `slombard`). After the first reboot, detach the ISO:
+
+```bash
+VBoxManage storageattach IoT --storagectl SATA --port 1 --device 0 --type dvddrive --medium emptydrive
+```
