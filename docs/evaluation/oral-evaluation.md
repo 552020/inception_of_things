@@ -621,11 +621,14 @@ The project repository holds everything that builds the setup. `p3/confs/deploym
 
 ### 6.7 The Order of Commands
 
+    ./scripts/installationhost.sh   # Docker, the docker group, kubectl; then log out and in
     make setup              # k3d, the cluster, both namespaces, Argo CD, a first apply of the application
     make port-forward       # Argo CD on https://localhost:8080, leave it running
     make echo-password      # the password of the user admin
     make argocd-setup       # log in, add the repository, create dev-app
     make port-forward-app   # the application on localhost:8888
+
+The script comes first because K3d needs Docker. It also puts the user into the group `docker`: the `docker` command reaches the Docker daemon through a socket that belongs to root and that group. Groups are read at login, so the new group only counts after logging in again.
 
 ### 6.8 From v1 to v2
 
