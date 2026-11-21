@@ -273,6 +273,10 @@ tags: k3s networking part2
 All three hosts resolve to 192.168.56.110, where Traefik listens on port 80. The Ingress has a rule host: app1.com to app1's Service, host: app2.com to app2's Service, and a rule without host (or a defaultBackend) to app3. Traefik reads the HTTP Host header and picks the rule. Test: curl -H "Host: app1.com" http://192.168.56.110.
 tags: kubernetes networking part2
 
+### Why was host: app3.com an error in Part 2?
+The file is p2/confs/ingress/app3-ingress.yml. The subject says: app1.com shows app1, app2.com shows app2, anything else shows app3. With host: app3.com the rule matched only requests naming exactly app3.com. A request to the bare IP (curl http://192.168.56.110) or with any other host name matched no rule at all, and Traefik answered 404 page not found. app3 was a third named site, not the default. The fix is to delete the host line: a rule without host matches every host name. app1 and app2 are not swallowed by it, because Traefik takes the more specific rule first, and a rule with a host is more specific than one without. Test: curl http://192.168.56.110 and curl -H "Host: whatever.com" http://192.168.56.110 must both show app3.
+tags: networking part2
+
 ### What is the Host header?
 The HTTP header carrying the hostname the client typed. Several names can point to one IP; the server tells them apart only by this header. Browsers send it automatically; curl needs -H "Host: app1.com" or an /etc/hosts entry.
 tags: networking vocabulary part2
