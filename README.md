@@ -35,18 +35,17 @@ ssh -p 2222 slombard@localhost
 
 The full rebuild procedure, disk resizing and recovery steps are in [docs/vm-setup.md](docs/vm-setup.md).
 
-## Two repositories
-
-The project lives in two repositories, and both are needed for the evaluation.
+## Three repositories
 
 | Repository | Holds | Read by |
 |------------|-------|---------|
-| [552020/inception_of_things](https://github.com/552020/inception_of_things) | `p1`, `p2`, `p3`: everything that builds the three setups | the evaluator, and us |
+| The project repository on the 42 Git server | `p1`, `p2`, `p3`: what is turned in | the evaluator, who clones it |
+| [552020/inception_of_things](https://github.com/552020/inception_of_things) | the same, plus `docs`, `deck`, `lab`: where we work | us |
 | [Robin-Lenz/rpodackIoT](https://github.com/Robin-Lenz/rpodackIoT) | `deployment.yaml`: the application of Part 3 | Argo CD |
 
-In Part 3 Argo CD does not read this repository. `make argocd-setup` in `p3` registers `rpodackIoT` and creates the application `dev-app` from it, with automatic sync. To show the change from v1 to v2, edit the image tag in `rpodackIoT` and push there.
+Argo CD does not read files on the machine. It fetches a Git repository over the network and keeps the cluster on what that repository says. So the application of Part 3 has to sit in a repository Argo CD can reach, and the subject fixes which kind: a public GitHub repository with the login of a group member in its name. The 42 server is not public, and `inception_of_things` carries no login. That is why `rpodackIoT` exists and must stay public.
 
-`rpodackIoT` must stay public: Argo CD reads it without credentials, and the subject asks for a public GitHub repository with the login of a group member in its name.
+`make argocd-setup` in `p3` registers `rpodackIoT` and creates the application `dev-app` from it, with automatic sync. The change from v1 to v2 is shown by editing the image tag in `rpodackIoT` and pushing there: that push is the thing being demonstrated.
 
 `p3/confs/deployment.yaml` is a copy of the file in `rpodackIoT`. `make deploy-app` applies it once by hand; after that Argo CD keeps the cluster on what `rpodackIoT` says. A change made only in the copy has no lasting effect.
 
