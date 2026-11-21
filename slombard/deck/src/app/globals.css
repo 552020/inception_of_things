@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f6f2;
+  --foreground: #1b1b1b;
+  --muted: #6b6b66;
+  --surface: #ffffff;
+  --line: #dcdad3;
+  --accent: #2b5fbf;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #121212;
+    --foreground: #ededed;
+    --muted: #9a9a94;
+    --surface: #1c1c1c;
+    --line: #333330;
+    --accent: #7ea4ea;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Rendered card backs and glossary definitions */
+.prose p + p,
+.prose p + ol,
+.prose ol + p,
+.prose p + ul,
+.prose ul + p,
+.prose p + pre,
+.prose pre + p {
+  margin-top: 0.75rem;
+}
+.prose ol {
+  list-style: decimal;
+  padding-left: 1.4rem;
+}
+.prose ul {
+  list-style: disc;
+  padding-left: 1.4rem;
+}
+.prose li + li {
+  margin-top: 0.3rem;
+}
+.prose code,
+.term code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.92em;
+  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+  padding: 0.05em 0.3em;
+  border-radius: 0.25rem;
+}
+.prose pre {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.9em;
+  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.4rem;
+  overflow-x: auto;
+}
