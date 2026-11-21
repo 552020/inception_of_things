@@ -100,6 +100,22 @@ kube-proxy normally implements networking rules for Kubernetes Services.
 
 Depending on the networking implementation, alternative mechanisms can be used.
 
+**CNI plugin**
+
+The network plugin gives every Pod its IP address and connects the Pods across Nodes.
+
+K3s uses Flannel by default.
+
+**Pods: what the Node runs**
+
+These components are the machinery of the Node. The Pods are what the machinery executes.
+
+A Node does not know about Deployments or replicas. It only sees Pods assigned to it.
+
+The three replicas of app2 are three Pods, placed on Nodes by the Scheduler. The number three lives in the Deployment, which is stored in the Control Plane.
+
+`kubectl get pods -o wide` shows every Pod with the Node it runs on.
+
 ### 1.3 What Happens When a Deployment Is Created?
 
 Example command:
@@ -153,7 +169,7 @@ Its main differences are simplified packaging, installation, and default compone
 K3s includes or installs components such as:
 
 - containerd as the container runtime
-- Flannel as the default CNI
+- Flannel as the default CNI (gives Pods their IPs and connects them across Nodes)
 - CoreDNS for internal DNS
 - Traefik as the default Ingress Controller
 - ServiceLB for LoadBalancer Services
@@ -341,3 +357,41 @@ Allows applications additional startup time before liveness and readiness checks
 ### Section Summary
 
 Pods execute containers. ReplicaSets maintain the desired number of Pods. Deployments manage ReplicaSets and application updates. Health probes help Kubernetes determine whether containers are functioning and ready.
+
+---
+
+## Glossary
+
+The terms used above, one line each. The full glossary of the project, all three parts and the bonus, is in `glossary.md`.
+
+- **Agent** A K3s node without control plane: kubelet, containerd, kube-proxy, Flannel. Joins a server with K3S_URL and K3S_TOKEN.
+- **API server** The only door into the cluster; validates requests and stores objects in the datastore. kubectl and all components talk to it.
+- **CNI** Container Network Interface, the plugin that gives Pods IPs and connects them across Nodes. K3s uses Flannel.
+- **containerd** The container runtime: pulls images, creates and runs containers. Split out of Docker in 2017.
+- **Control plane** The deciding layer: API server, datastore, scheduler, controller manager. In K3s one process, `k3s server`.
+- **Controller** A loop that watches one kind of object and acts to make actual state match desired state.
+- **Controller manager** The process holding the built-in controllers (Deployment, ReplicaSet, Node, ...).
+- **Datastore** Where all cluster objects live. etcd in standard Kubernetes, SQLite in a single-server K3s.
+- **Declarative** You state what should exist; controllers work out the steps.
+- **Deployment** Describes an application: image, replicas, update strategy. Manages ReplicaSets.
+- **etcd** Distributed key-value store, the standard Kubernetes datastore. Name: /etc + distributed.
+- **Flannel** The default CNI of K3s: an overlay network, each Node gets a /24 of Pod IPs, traffic between Nodes is tunnelled (VXLAN).
+- **kubectl** The command-line client of the API server.
+- **kubelet** The agent on every Node, server included: starts the Pods assigned to its Node through the runtime, runs probes, reports status.
+- **kube-proxy** Writes the forwarding rules on each Node that make Service IPs reach Pods.
+- **Label / selector** Key-value pairs on objects, and the way Deployments and Services find their Pods.
+- **Liveness / readiness / startup probe** Alive? restart if not. Ready for traffic? remove from Service if not. Started? hold the other probes until then.
+- **Manifest** A YAML file describing objects, applied with `kubectl apply -f`.
+- **maxSurge / maxUnavailable** Limits of a rolling update: how many extra Pods, how many missing Pods, at any moment.
+- **Node** A machine running kubelet and a runtime. Server and agent are both Nodes.
+- **Pod** The smallest unit scheduled: one or more containers sharing network and optionally volumes. Ephemeral, made by controllers.
+- **Reconciliation** The loop: compare desired and actual state, act on the difference, repeat.
+- **ReplicaSet** Keeps N identical Pods alive. Created by Deployments, one per Pod template version.
+- **Replicas** The number of Pods a Deployment wants. Replicas are Pods; the number lives in the control plane.
+- **Rolling update** Replace old Pods with new ones step by step, so the application stays reachable.
+- **Scheduler** Chooses a Node for each new Pod and writes it into spec.nodeName. Starts nothing.
+- **Server** A K3s node with the control plane; also runs Pods by default.
+- **Sidecar** A helper container in the same Pod as the application container.
+- **SQLite** File-based database embedded in K3s, its default datastore on a single server.
+- **Taint / toleration** A taint keeps Pods off a Node; a toleration lets a Pod on anyway. K3s servers have no taint.
+- **Token** The secret an agent presents to join; in /var/lib/rancher/k3s/server/node-token on the server. Never committed.

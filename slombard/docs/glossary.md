@@ -112,7 +112,9 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 ## Vagrant and virtual machines
 
-**Box** A packaged base image for Vagrant, such as a Debian or Ubuntu image, named in the Vagrantfile.
+**Ansible** A configuration tool that runs tasks on machines over SSH from a playbook (YAML). Vagrant uses it as the provisioner in Part 1; it works below Kubernetes, installing it.
+
+**Box** A packaged base image for Vagrant, named in the Vagrantfile. Here `generic/alpine318`: Alpine Linux 3.18, package manager apk.
 
 **eth1** The second network interface of each VM, carrying the private IP 192.168.56.110 or .111 required by the subject.
 
@@ -126,7 +128,7 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **Provider** The hypervisor Vagrant drives: VirtualBox, libvirt (KVM) or others. This project uses libvirt.
 
-**Provisioner** A step Vagrant runs after a VM boots, here shell scripts in `scripts/` that install K3s.
+**Provisioner** A step Vagrant runs after a VM boots. Here one Ansible playbook, `confs/ansible/playbook.yml`, run from the host after both VMs are up, that installs K3s on both.
 
 **Vagrant** A tool that creates and configures VMs from a text file. `vagrant up` builds the machines of Part 1 and Part 2.
 
