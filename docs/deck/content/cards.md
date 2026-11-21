@@ -349,6 +349,10 @@ tags: vagrant part1
 On first boot Vagrant replaces the box's insecure public key with a freshly generated key pair, stores the private key under .vagrant/, and vagrant ssh uses it. For SSH from the host between the VMs or by name, the private key path is shown by vagrant ssh-config.
 tags: vagrant part1
 
+### What is libvirt, and how do libvirt, QEMU and KVM relate?
+Three layers under one word in the Vagrantfile. KVM is the hypervisor: a module in the Linux kernel that runs VMs on the real processor. QEMU is the program that builds the machine around it: memory, disks, network cards, one QEMU process per VM; on KVM it hands the processor through instead of emulating it. libvirt is the management layer on top: a daemon (libvirtd) and an API through which programs create, start, stop and connect VMs, whatever runs them underneath. Vagrant's libvirt provider only talks to libvirt; libvirt starts QEMU; QEMU uses KVM. So vagrant up --provider=libvirt ends in a QEMU process on KVM inside the host VM, which is why the host VM needs nested virtualization. See it: virsh list on the host VM shows the two machines; ps aux | grep qemu shows their processes. VirtualBox, the usual Vagrant provider, is all three layers in one product.
+tags: vagrant vocabulary part1
+
 ### Is Vagrant a hypervisor? What is a hypervisor?
 No. A hypervisor is the software that actually runs virtual machines: VirtualBox, KVM (driven through libvirt on Linux), VMware, Hyper-V. Type 1 runs on the hardware (KVM, ESXi, Hyper-V), type 2 as a program inside an operating system (VirtualBox). Vagrant only drives one, called the provider: it reads the Vagrantfile and tells the hypervisor to create the VM from a box, attach the network, then runs the provisioners. This project drives libvirt/KVM inside the host VM, hence nested virtualization.
 tags: vagrant vocabulary part1

@@ -126,13 +126,19 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **Hostname** The name of a VM, set to a team member's login followed by `S` for the server and `SW` for the worker.
 
+**KVM (Kernel-based Virtual Machine)** The hypervisor inside the Linux kernel. It lets the kernel run VMs at the speed of the hardware. It does not create or configure anything by itself; QEMU and libvirt do that.
+
+**libvirt** The management layer for VMs on Linux: one API and one daemon (libvirtd) through which programs create, start, stop and connect VMs on KVM, QEMU and others. Vagrant's libvirt provider talks to it; libvirt then runs the VM with QEMU on KVM. `virsh list` shows the VMs it manages.
+
 **Nested virtualization** Running a VM inside a VM. Needed for Part 1 because Vagrant creates VMs inside the host VM.
 
 **Private network** The Vagrant network type giving a VM an IP reachable from the host but not from outside; it becomes eth1.
 
-**Provider** The hypervisor Vagrant drives: VirtualBox, libvirt (KVM) or others. This project uses libvirt.
+**Provider** The plugin through which Vagrant drives a hypervisor: VirtualBox, libvirt (KVM/QEMU), VMware, Docker. This project uses libvirt; `vagrant up --provider=libvirt`.
 
 **Provisioner** A step Vagrant runs after a VM boots. Here one Ansible playbook, `confs/ansible/playbook.yml`, run from the host after both VMs are up, that installs K3s on both.
+
+**QEMU** The program that emulates a computer: processor, memory, disks, network cards. With KVM it does not emulate the processor but hands the real one through, so the VM runs fast. libvirt starts one QEMU process per VM.
 
 **Vagrant** A tool that creates and configures VMs from a text file. `vagrant up` builds the machines of Part 1 and Part 2.
 

@@ -399,7 +399,7 @@ Both VMs start from the box `cloud-image/debian-13`, which is Debian 13, and run
 Three tools work in a row.
 
 - **Vagrant** reads the `Vagrantfile`. The file declares the two machines: name, hostname, IP, CPU, memory.
-- **libvirt** creates the VMs when Vagrant asks for them. Vagrant itself is not a hypervisor.
+- **libvirt** creates the VMs when Vagrant asks for them. Vagrant itself is not a hypervisor. libvirt is not one either: it is the management layer. It starts one QEMU process per VM, and QEMU runs the VM on KVM, the hypervisor in the Linux kernel. Three layers, one word in the Vagrantfile: `provider "libvirt"`.
 - **Ansible** installs the software. Vagrant starts the playbook `confs/ansible/playbook.yml` once a machine is up, and Ansible connects to it over SSH.
 
 Vagrant makes the machines. Ansible fills them. Neither is part of Kubernetes.
