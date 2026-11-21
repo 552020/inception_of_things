@@ -35,6 +35,21 @@ ssh -p 2222 slombard@localhost
 
 The full rebuild procedure, disk resizing and recovery steps are in [docs/vm-setup.md](docs/vm-setup.md).
 
+## Two repositories
+
+The project lives in two repositories, and both are needed for the evaluation.
+
+| Repository | Holds | Read by |
+|------------|-------|---------|
+| [552020/inception_of_things](https://github.com/552020/inception_of_things) | `p1`, `p2`, `p3`: everything that builds the three setups | the evaluator, and us |
+| [Robin-Lenz/rpodackIoT](https://github.com/Robin-Lenz/rpodackIoT) | `deployment.yaml`: the application of Part 3 | Argo CD |
+
+In Part 3 Argo CD does not read this repository. `make argocd-setup` in `p3` registers `rpodackIoT` and creates the application `dev-app` from it, with automatic sync. To show the change from v1 to v2, edit the image tag in `rpodackIoT` and push there.
+
+`rpodackIoT` must stay public: Argo CD reads it without credentials, and the subject asks for a public GitHub repository with the login of a group member in its name.
+
+`p3/confs/deployment.yaml` is a copy of the file in `rpodackIoT`. `make deploy-app` applies it once by hand; after that Argo CD keeps the cluster on what `rpodackIoT` says. A change made only in the copy has no lasting effect.
+
 ## Technologies
 
 Official documentation for everything the project uses, in the order the parts need them.
