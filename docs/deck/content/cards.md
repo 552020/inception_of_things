@@ -322,7 +322,7 @@ The package manager for Kubernetes. A chart is a set of manifest templates plus 
 tags: helm bonus
 
 ### What is Vagrant, and what is a Vagrantfile?
-Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image, here debian/trixie64), hostname, network, provider settings (libvirt, 512 MB, 1 CPU) and provisioners (here one Ansible playbook run after boot). vagrant up builds everything; vagrant destroy removes it.
+Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image, here cloud-image/debian-13), hostname, network, provider settings (libvirt, 512 MB, 1 CPU) and provisioners (here one Ansible playbook run after boot). vagrant up builds everything; vagrant destroy removes it.
 tags: vagrant part1
 
 ### What is a Vagrant provider, and which one does this project use?
@@ -414,7 +414,7 @@ Siblings on the host, neither contains the other. During vagrant up, Vagrant wri
 tags: ansible vagrant part1
 
 ### Where are the two VMs of Part 1 declared?
-In p1/Vagrantfile. The box is named once at the top for both: debian/trixie64, Debian 13. Then one config.vm.define block each, rpodackS and rpodackSW, setting the hostname, a private_network with the fixed IP (.110 or .111) without DHCP, and the libvirt provider settings: 512 MB, 1 CPU. The Ansible provisioner block at the end applies to both. The box is a ready image: no ISO, no installation, Vagrant downloads it from Vagrant Cloud.
+In p1/Vagrantfile. The box is named once at the top for both: cloud-image/debian-13, Debian 13. Then one config.vm.define block each, rpodackS and rpodackSW, setting the hostname, a private_network with the fixed IP (.110 or .111) without DHCP, and the libvirt provider settings: 512 MB, 1 CPU. The Ansible provisioner block at the end applies to both. The box is a ready image: no ISO, no installation, Vagrant downloads it from Vagrant Cloud.
 tags: vagrant part1
 
 ### Does the Part 1 setup have a real-world equivalent?

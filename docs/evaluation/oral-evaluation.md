@@ -392,7 +392,7 @@ The point is to see what a cluster is made of: two machines, one server, one age
 | K3s mode | server (control plane, and a node) | agent (a node only) |
 | Resources | 1 CPU, 512 MB | 1 CPU, 512 MB |
 
-Both VMs start from the box `debian/trixie64`, which is Debian 13, and run on libvirt.
+Both VMs start from the box `cloud-image/debian-13`, which is Debian 13, and run on libvirt.
 
 ### 4.2 Who Does What
 
