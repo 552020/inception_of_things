@@ -58,7 +58,7 @@
     - name: Install K3s server
       shell: |
         curl -sfL https://get.k3s.io | \
-          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644" \
+          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1" \
           sh -
       args:
         creates: /usr/local/bin/k3s
@@ -164,7 +164,7 @@
         k3s_token: "{{ token_file.content | b64decode | trim }}"
 
     - name: Install K3s agent
-      shell: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN={{ k3s_token }} sh -
+      shell: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN={{ k3s_token }} INSTALL_K3S_EXEC="agent --node-ip 192.168.56.111 --flannel-iface eth1" sh -
       become: yes
       async: 300   # run asynchronously, 5 min max
       poll: 0

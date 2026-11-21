@@ -410,7 +410,7 @@ On the server:
 
 1. It makes sure Python is on the VM. Ansible needs it there before anything else can run.
 2. It sets the hostname and installs curl.
-3. It installs K3s in server mode: `server --node-name rpodackS --write-kubeconfig-mode 644`.
+3. It installs K3s in server mode: `server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1`. The last two flags tie the node and the Pod network to eth1; without them K3s would take the address of eth0.
 4. It waits until the kubeconfig and the token file exist.
 
 On the agent:
@@ -418,7 +418,7 @@ On the agent:
 1. It makes sure Python is there, sets the hostname and installs curl.
 2. It waits until port 6443 answers on 192.168.56.110.
 3. It reads the token from the server. Ansible runs this one task on the server (`delegate_to`), so the token is never written into the repository.
-4. It installs K3s in agent mode with `K3S_URL` and `K3S_TOKEN` (section 2.4).
+4. It installs K3s in agent mode with `K3S_URL` and `K3S_TOKEN` (section 2.4), and the same two flags for .111.
 
 kubectl comes with K3s. Nothing installs it separately.
 

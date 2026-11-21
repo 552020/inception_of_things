@@ -54,7 +54,7 @@
     - name: Install K3s server
       shell: |
         curl -sfL https://get.k3s.io | \
-          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644" \
+          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1" \
           sh -
       args:
         creates: /usr/local/bin/k3s
