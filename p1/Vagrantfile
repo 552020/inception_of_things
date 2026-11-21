@@ -6,7 +6,7 @@ NET_NAME = "vagrant-net"
 
 Vagrant.configure("2") do |config|
 
-  config.vm.box = "generic/ubuntu2004"
+  config.vm.box = "cloud-image/debian-13"
 
   config.vm.boot_timeout = 600
   config.ssh.username = "vagrant"
