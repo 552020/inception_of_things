@@ -127,12 +127,12 @@ The sequence is:
 1. kubectl sends the manifest to the API server.
 2. The API server validates the request.
 3. The desired configuration is stored.
-4. The Deployment Controller detects the Deployment.
-5. A ReplicaSet is created.
-6. The ReplicaSet creates the required Pods.
+4. The Controller Manager detects the new Deployment: its Deployment Controller receives the event from the API server through a watch.
+5. The Deployment Controller creates a ReplicaSet object.
+6. The ReplicaSet Controller sees the new ReplicaSet and creates the required Pod objects from its template.
 7. The Scheduler assigns Pods to suitable Nodes.
-8. The kubelet starts the containers through the container runtime.
-9. Kubernetes continuously monitors the resources.
+8. On each chosen Node, the kubelet starts the containers of its Pods through the container runtime.
+9. The kubelet reports the status of its Pods to the API server, and the controllers keep comparing desired and actual state. If a Pod dies, the ReplicaSet Controller counts two instead of three and creates a new Pod object; steps 7 and 8 repeat.
 
 The important principle is that Kubernetes is declarative.
 
