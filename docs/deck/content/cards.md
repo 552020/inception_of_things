@@ -249,6 +249,10 @@ tags: kubernetes networking part2
 An Ingress is a resource with HTTP routing rules: this host and path go to that Service. It does nothing by itself. The Ingress controller is a reverse proxy (Traefik in K3s, often nginx elsewhere) that reads Ingress resources and routes real requests accordingly.
 tags: kubernetes networking part2
 
+### What is Traefik?
+A reverse proxy, open source, written in Go by Traefik Labs; the name is said like "traffic". A reverse proxy stands in front of web servers, takes every request and passes it to the right one. K3s installs it as its Ingress controller: a Pod in the namespace kube-system, behind a Service of type LoadBalancer that ServiceLB puts on the node's IP, ports 80 and 443. Traefik watches the Ingress objects through the API server and rewrites its own routing table when one changes; nobody edits a Traefik config file. Ingress is the rule, Traefik is the program that obeys it. Show it: kubectl get pods -n kube-system, kubectl get svc -n kube-system traefik.
+tags: k3s networking part2
+
 ### How does Part 2 route app1.com, app2.com and the default?
 All three hosts resolve to 192.168.56.110, where Traefik listens on port 80. The Ingress has a rule host: app1.com to app1's Service, host: app2.com to app2's Service, and a rule without host (or a defaultBackend) to app3. Traefik reads the HTTP Host header and picks the rule. Test: curl -H "Host: app1.com" http://192.168.56.110.
 tags: kubernetes networking part2
