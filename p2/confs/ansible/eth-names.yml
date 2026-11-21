@@ -1,0 +1,32 @@
+---
+# The subject wants the private IP on eth1. Debian's cloud image uses predictable
+# interface names (ens5, ens6), so switch the kernel back to the classic eth0/eth1
+# names and point the two network configs at them. Runs fully only on the first
+# provisioning: the GRUB drop-in already exists afterwards, so no reboot happens.
+
+- name: Boot with classic interface names (net.ifnames=0)
+  copy:
+    dest: /etc/default/grub.d/99-classic-ifnames.cfg
+    content: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX net.ifnames=0 biosdevname=0"'
+    mode: '0644'
+  register: ifnames
+
+- name: Regenerate the GRUB config
+  command: update-grub
+  when: ifnames.changed
+
+- name: Netplan (cloud-init, DHCP on the first interface) follows the new name eth0
+  replace:
+    path: /etc/netplan/50-cloud-init.yaml
+    regexp: 'ens5'
+    replace: 'eth0'
+  when: ifnames.changed
+
+- name: systemd-networkd (Vagrant, the private IP on the second interface) follows the new name eth1
+  shell: sed -i 's/ens6/eth1/g' /etc/systemd/network/*.network
+  when: ifnames.changed
+
+- name: Reboot into the new interface names
+  reboot:
+    reboot_timeout: 300
+  when: ifnames.changed
