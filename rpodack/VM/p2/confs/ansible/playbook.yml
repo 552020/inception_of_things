@@ -1,0 +1,207 @@
+- name: Install K3s Server
+  hosts: rpodackS
+  gather_facts: yes
+  become: yes
+  tasks:
+    #############make sure hostnae is set
+    - name: Set hostname in /etc/hostname
+      copy:
+        content: "rpodackS\n"
+        dest: /etc/hostname
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Set hostname in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.1.1'
+        line: '127.0.1.1 rpodackS'
+        state: present
+
+    - name: Apply hostname immediately
+      command: hostnamectl set-hostname rpodackS
+
+    - name: Ensure cloud-init doesn't manage hostname (if cloud.cfg exists)
+      stat:
+        path: /etc/cloud/cloud.cfg
+      register: cloud_cfg
+
+    - name: Modify cloud-init config to preserve hostname if file exists
+      lineinfile:
+        path: /etc/cloud/cloud.cfg
+        regexp: '^preserve_hostname:'
+        line: 'preserve_hostname: true'
+      when: cloud_cfg.stat.exists
+    #################################
+
+    - name: Ensure Python3 and curl are installed
+      apt:
+        name:
+          - python3
+          - curl
+        state: present
+        update_cache: yes
+      become: yes
+
+    - name: Install K3s server
+      shell: |
+        curl -sfL https://get.k3s.io | \
+          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644" \
+          sh -
+      args:
+        creates: /usr/local/bin/k3s
+      become: yes
+
+    - name: Wait for K3s server to be ready
+      wait_for:
+        path: /etc/rancher/k3s/k3s.yaml
+        timeout: 300
+      become: yes
+
+    - name: Install flannel (CNI for creating pod network)
+      shell: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+      become: yes
+
+##########################################
+# APP1
+##########################################
+    - name: Copy app1-ingress.yaml to node
+      copy:
+        src: ./../ingress/app1-ingress.yaml       # relative to your Ansible project root
+        dest: /tmp/app1-ingress.yaml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply ingress
+      shell: kubectl apply -f /tmp/app1-ingress.yaml
+
+    - name: Copy app1 Deployment to node
+      copy:
+        src: ./../deployment/app1-deployment.yml
+        dest: /tmp/app1-deployment.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy app1 Service to node
+      copy:
+        src: ./../service/app1-service.yml
+        dest: /tmp/app1-service.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply app1 Deployment
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app1-deployment.yml
+
+    - name: Apply app1 Service
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app1-service.yml
+
+    - name: Apply app1 Ingress
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app1-ingress.yaml
+
+
+    ##########################################
+    # APP3
+    ##########################################
+    - name: Copy app3-ingress.yml to node
+      copy:
+        src: ./../ingress/app3-ingress.yml       # relative to your Ansible project root
+        dest: /tmp/app3-ingress.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+
+    - name: Copy app3 Deployment to node
+      copy:
+        src: ./../deployment/app3-deployment.yml
+        dest: /tmp/app3-deployment.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy app3 Service to node
+      copy:
+        src: ./../service/app3-service.yml
+        dest: /tmp/app3-service.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply ingress
+      shell: kubectl apply -f /tmp/app3-ingress.yml
+
+    - name: Apply app3 Deployment
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app3-deployment.yml
+
+    - name: Apply app3 Service
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app3-service.yml
+
+    - name: Apply app3 Ingress
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app3-ingress.yml
+
+
+
+    ##########################################
+    # app2
+    ##########################################
+    - name: Copy app2-ingress.yml to node
+      copy:
+        src: ./../ingress/app2-ingress.yml       # relative to your Ansible project root
+        dest: /tmp/app2-ingress.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply ingress
+      shell: kubectl apply -f /tmp/app2-ingress.yml
+
+    - name: Copy app2 Deployment to node
+      copy:
+        src: ./../deployment/app2-deployment.yml
+        dest: /tmp/app2-deployment.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy app2 Service to node
+      copy:
+        src: ./../service/app2-service.yml
+        dest: /tmp/app2-service.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply app2 Deployment
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app2-deployment.yml
+
+    - name: Apply app2 Service
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app2-service.yml
+
+    - name: Apply app2 Ingress
+      ansible.builtin.shell:
+        cmd: kubectl apply -f /tmp/app2-ingress.yml
+
+
+- name: Verify Cluster
+  hosts: rpodackS
+  tasks:
+    - name: Check cluster nodes
+      command: k3s kubectl get nodes
+      register: nodes_output
+      become: yes
+
+    - name: Show cluster nodes
+      debug:
+        msg: "{{ nodes_output.stdout_lines }}"

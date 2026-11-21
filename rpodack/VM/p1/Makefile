@@ -1,5 +1,7 @@
 .PHONY: help test verify up down status ssh-server ssh-worker clean
 
+SHELL := /bin/bash
+
 help: ## Show this help message
 	@echo "Part 1 - K3s and Vagrant Management"
 	@echo ""
@@ -32,11 +34,14 @@ verify: test ## Alias for test
 
 clean: ## Destroy VMs and clean up
 	@echo "WARNING: This will destroy all VMs!"
-	@read -p "Are you sure? [y/N] " 1 -r; \
+	@read -p "Are you sure? [y/N] " -r REPLY; \
 	echo; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
 		vagrant destroy -f; \
+	else \
+		echo "Aborted."; \
 	fi
+
 
 # Additional useful targets
 show-nodes: ## Show Kubernetes cluster nodes
