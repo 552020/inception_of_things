@@ -1,7 +1,22 @@
 # Inception-of-Things (IoT)
-# Technical Knowledge for the Oral Evaluation
 
-Written by Robin (rpodack), shared on Slack on 2026-11-11.
+## The Three Parts at a Glance
+
+The project builds the same thing three times, each time one step further: a cluster, applications on the cluster, and a cluster that deploys by itself.
+
+| | Part 1 | Part 2 | Part 3 |
+|---|---|---|---|
+| Folder | `p1` | `p2` | `p3` |
+| Cluster | K3s on two VMs: one server, one agent | K3s on one VM: server only | K3s in Docker containers made by K3d: one server, one agent |
+| Built with | Vagrant (libvirt) and an Ansible playbook | Vagrant (libvirt) and an Ansible playbook | a Makefile calling k3d, kubectl and argocd; no Vagrant |
+| Runs inside | nothing of ours | three web applications, app2 with three replicas | Argo CD and one application in two versions |
+| Reached by | SSH, then kubectl on the server | `http://192.168.56.110` with a Host header | `localhost:8888` (application), `localhost:8080` (Argo CD) |
+| New idea | the cluster: nodes, server and agent, token | Deployment, Service, Ingress | GitOps: a Git repository decides what runs |
+| Shown to the evaluator | hostnames, the IPs on eth1, both nodes Ready | each application by its Host, the three replicas, the Ingress | the two namespaces, the change from v1 to v2 through GitHub |
+
+Sections 1 to 3 are the theory behind all three parts. Sections 4 to 6 take the parts one by one.
+
+---
 
 ## 1. Kubernetes – Architecture and Fundamentals
 
@@ -360,12 +375,289 @@ Pods execute containers. ReplicaSets maintain the desired number of Pods. Deploy
 
 ---
 
+## 4. Part 1 – K3s and Vagrant
+
+Part 1 builds a cluster and nothing else.
+
+There is no application in it.
+
+The point is to see what a cluster is made of: two machines, one server, one agent, and a token that lets the agent in.
+
+### 4.1 What Is Built
+
+| | Server | Agent |
+|---|---|---|
+| VM and hostname | `rpodackS` | `rpodackSW` |
+| IP on eth1 | 192.168.56.110 | 192.168.56.111 |
+| K3s mode | server (control plane, and a node) | agent (a node only) |
+| Resources | 1 CPU, 512 MB | 1 CPU, 512 MB |
+
+Both VMs start from the box `generic/ubuntu2004` and run on libvirt.
+
+### 4.2 Who Does What
+
+Three tools work in a row.
+
+- **Vagrant** reads the `Vagrantfile`. The file declares the two machines: name, hostname, IP, CPU, memory.
+- **libvirt** creates the VMs when Vagrant asks for them. Vagrant itself is not a hypervisor.
+- **Ansible** installs the software. Vagrant starts the playbook `confs/ansible/playbook.yml` once a machine is up, and Ansible connects to it over SSH.
+
+Vagrant makes the machines. Ansible fills them. Neither is part of Kubernetes.
+
+### 4.3 What the Playbook Does
+
+On the server:
+
+1. It sets the hostname.
+2. It installs Python and curl.
+3. It installs K3s in server mode: `server --node-name rpodackS --write-kubeconfig-mode 644`.
+4. It waits until the kubeconfig and the token file exist.
+
+On the agent:
+
+1. It sets the hostname and installs Python and curl.
+2. It waits until port 6443 answers on 192.168.56.110.
+3. It reads the token from the server. Ansible runs this one task on the server (`delegate_to`), so the token is never written into the repository.
+4. It installs K3s in agent mode with `K3S_URL` and `K3S_TOKEN` (section 2.4).
+
+kubectl comes with K3s. Nothing installs it separately.
+
+### 4.4 The Three Networks
+
+| Network | Range | Made by | Who talks on it |
+|---|---|---|---|
+| VM network | 192.168.56.0/24, on eth1 | Vagrant, through libvirt | the two machines; the agent reaches the server here |
+| Pod network | 10.42.0.0/16, one /24 per node | Flannel | Pods, also across nodes |
+| Service network | 10.43.0.0/16 | kube-proxy | nobody directly; these are virtual addresses in front of Pods |
+
+Each VM has a second interface, eth0. Vagrant uses it for its own SSH access.
+
+### 4.5 What to Show
+
+    vagrant status
+    vagrant ssh rpodackS
+    hostname
+    ip a show eth1
+    kubectl get nodes -o wide
+
+`vagrant ssh` logs in with a key that Vagrant generated. That is the SSH access without a password the subject asks for.
+
+`kubectl get nodes` must list both machines as `Ready`: `rpodackS` with the role `control-plane`, `rpodackSW` without a role.
+
+### Section Summary
+
+Vagrant creates two VMs through libvirt, Ansible installs K3s on them. The first VM is the server and holds the control plane. The second is an agent and joins with the server's address and token.
+
+---
+
+## 5. Part 2 – K3s and Three Applications
+
+Part 2 keeps one machine and puts applications on it.
+
+The new question is how a request from outside finds the right application.
+
+### 5.1 What Is Built
+
+One VM, `rpodackS`, with the IP 192.168.56.110 and K3s in server mode.
+
+There is no agent. The server is also a node, so the Pods run on it.
+
+| Application | Image | Replicas | Port in the container |
+|---|---|---|---|
+| app1 | `nginx` | 1 | 80 |
+| app2 | `hashicorp/http-echo` | 3 | 5678 |
+| app3 | `hashicorp/http-echo` | 1 | 5678 |
+
+### 5.2 Three Objects per Application
+
+Every application is described by three manifests in `confs/`.
+
+- **Deployment** (`confs/deployment/`): which image, and how many Pods. For app2 it says `replicas: 3`.
+- **Service** (`confs/service/`): one stable address in front of the Pods. Pods come and go and change their IP; the Service does not. It finds its Pods by label.
+- **Ingress** (`confs/ingress/`): the rule that says which host name leads to which Service.
+
+The playbook copies the files to the VM and runs `kubectl apply -f` on each.
+
+### 5.3 Why an Ingress
+
+A Service makes one application reachable under one address.
+
+Three applications would need three ports or three IPs.
+
+The subject wants all three behind one IP, 192.168.56.110, on port 80.
+
+The only thing that tells the requests apart is the **Host header**: the host name the client asked for, sent inside the HTTP request.
+
+An Ingress is a rule on that level:
+
+    rules:
+      - host: app1.com
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: app1
+                  port:
+                    number: 80
+
+An Ingress is only an object. It does nothing by itself.
+
+### 5.4 Traefik
+
+Traefik is the program that carries out the Ingress rules.
+
+It is a reverse proxy: it stands in front of the applications, takes every request and passes it on.
+
+K3s installs it as its Ingress controller. It runs as a Pod in the namespace `kube-system` and listens on ports 80 and 443 of the node.
+
+Traefik watches the Ingress objects through the API server. When one is created or changed, it adjusts its routing. Nobody edits a Traefik configuration file.
+
+### 5.5 The Path of a Request
+
+1. The client sends a request to 192.168.56.110, port 80, with `Host: app2.com`.
+2. Traefik receives it and looks for the Ingress rule with that host.
+3. The rule names the Service `app2`.
+4. The Service passes the request to one of the three Pods of app2.
+5. The container in that Pod answers.
+
+The Ingress points to a Service, never to a Pod.
+
+### 5.6 The Default Application
+
+The subject says: `app1.com` shows app1, `app2.com` shows app2, anything else shows app3.
+
+A rule without `host` matches every host name. Traefik prefers the more specific rule, so app1 and app2 keep their own.
+
+The rule for app3 must therefore carry no host.
+
+### 5.7 What to Show
+
+    kubectl get nodes
+    kubectl get deployments
+    kubectl get pods -o wide
+    kubectl get svc
+    kubectl get ingress
+    curl -H "Host: app1.com" http://192.168.56.110
+    curl -H "Host: app2.com" http://192.168.56.110
+    curl http://192.168.56.110
+
+`kubectl get deployments` must show app2 with `3/3`.
+
+To show reconciliation, delete one Pod of app2 and list the Pods again: a new one is already there.
+
+    kubectl delete pod <name of an app2 Pod>
+    kubectl get pods
+
+### Section Summary
+
+A Deployment keeps the Pods running, a Service gives them one address, an Ingress chooses the Service by host name. Traefik is the program that reads the Ingress rules and routes the requests.
+
+---
+
+## 6. Part 3 – K3d and Argo CD
+
+Part 3 drops Vagrant and the VMs.
+
+The cluster runs in Docker, and a program inside the cluster deploys the application from a Git repository.
+
+### 6.1 K3d Instead of Vagrant
+
+K3s is the Kubernetes distribution. K3d is a tool that starts K3s nodes as Docker containers.
+
+In Part 1 a node is a VM made by Vagrant. In Part 3 a node is a container made by K3d. The cluster inside is K3s both times.
+
+    k3d cluster create dockercluster --agents 1 -p "30007:30007@server:0"
+
+This starts a server container, one agent container and a small load balancer container. It needs Docker and takes seconds.
+
+### 6.2 Two Namespaces
+
+A namespace is a named area inside a cluster. Objects in different namespaces do not get in each other's way.
+
+- `argocd` holds Argo CD itself.
+- `dev` holds the application.
+
+### 6.3 Argo CD and GitOps
+
+Argo CD runs inside the cluster, as Pods.
+
+It watches a Git repository, compares the manifests there with what runs in the cluster, and applies the difference.
+
+This way of working is called **GitOps**: the repository is the desired state. Nobody runs `kubectl apply` by hand. A deployment is a `git push`.
+
+It is the reconciliation of section 1, one level up: Kubernetes keeps the cluster equal to its objects, Argo CD keeps the objects equal to Git.
+
+### 6.4 The Application
+
+The application is `wil42/playground` from Docker Hub.
+
+It listens on port 8888 and exists in two versions, the tags `v1` and `v2`.
+
+One file, `deployment.yaml`, describes it: a Deployment with one replica and a Service of type NodePort on port 30007.
+
+### 6.5 Two Repositories
+
+Argo CD does not read files on the machine. It fetches a repository over the network.
+
+The subject asks for a public GitHub repository with the login of a group member in its name.
+
+That repository is `Robin-Lenz/rpodackIoT`. It holds `deployment.yaml`.
+
+The project repository holds everything that builds the setup. `p3/confs/deployment.yaml` is a copy.
+
+### 6.6 The Argo CD Application
+
+`make argocd-setup` creates an Argo CD application called `dev-app`.
+
+| Setting | Value | Meaning |
+|---|---|---|
+| Repository | `rpodackIoT`, path `.` | where the manifests are |
+| Destination | this cluster, namespace `dev` | where they are applied |
+| Sync policy | automated | apply changes without a click |
+| Prune | on | delete from the cluster what was deleted in Git |
+| Self-heal | on | undo changes made by hand in the cluster |
+
+### 6.7 The Order of Commands
+
+    make setup              # k3d, the cluster, both namespaces, Argo CD, a first apply of the application
+    make port-forward       # Argo CD on https://localhost:8080, leave it running
+    make echo-password      # the password of the user admin
+    make argocd-setup       # log in, add the repository, create dev-app
+    make port-forward-app   # the application on localhost:8888
+
+### 6.8 From v1 to v2
+
+1. In `rpodackIoT`, change the image tag in `deployment.yaml` from `v1` to `v2`.
+2. Commit and push.
+3. Argo CD notices the new commit. It checks the repository every three minutes; `argocd app sync dev-app` or the Refresh button does it at once.
+4. Argo CD applies the changed Deployment.
+5. The Deployment replaces the Pod with a rolling update (section 3.5).
+
+Check:
+
+    kubectl get pods -n dev
+    curl http://localhost:8888/
+
+The answer changes from `{"status":"ok", "message": "v1"}` to `"message": "v2"`.
+
+The port-forward is tied to one Pod. After the update that Pod is gone, so `make port-forward-app` has to be started again.
+
+### Section Summary
+
+K3d runs the K3s cluster in Docker. Argo CD lives in the namespace `argocd`, watches a public GitHub repository and keeps the namespace `dev` equal to it. Changing the version means changing one line in Git.
+
+---
+
 ## Glossary
 
 The terms used above, one line each. The full glossary of the project, all three parts and the bonus, is in `glossary.md`.
 
 - **Agent** A K3s node without control plane: kubelet, containerd, kube-proxy, Flannel. Joins a server with K3S_URL and K3S_TOKEN.
+- **Ansible** Installs and configures software on machines over SSH, following a playbook. It needs nothing installed on the target except Python.
 - **API server** The only door into the cluster; validates requests and stores objects in the datastore. kubectl and all components talk to it.
+- **Argo CD** A program running in the cluster that watches a Git repository and applies its manifests. The GitOps tool of Part 3.
 - **CNI** Container Network Interface, the plugin that gives Pods IPs and connects them across Nodes. K3s uses Flannel.
 - **containerd** The container runtime: pulls images, creates and runs containers. Split out of Docker in 2017.
 - **Control plane** The deciding layer: API server, datastore, scheduler, controller manager. In K3s one process, `k3s server`.
@@ -376,22 +668,36 @@ The terms used above, one line each. The full glossary of the project, all three
 - **Deployment** Describes an application: image, replicas, update strategy. Manages ReplicaSets.
 - **etcd** Distributed key-value store, the standard Kubernetes datastore. Name: /etc + distributed.
 - **Flannel** The default CNI of K3s: an overlay network, each Node gets a /24 of Pod IPs, traffic between Nodes is tunnelled (VXLAN).
+- **GitOps** Working so that a Git repository holds the desired state and a tool applies it. A deployment is a git push.
+- **Host header** The host name the client asked for, sent inside the HTTP request. It lets one IP serve several sites.
+- **Ingress** An object with HTTP routing rules: this host or path leads to that Service. It does nothing without an Ingress controller.
+- **Ingress controller** The reverse proxy that reads Ingress objects and routes the requests. In K3s: Traefik.
+- **K3d** A tool that runs K3s nodes as Docker containers. Used in Part 3 instead of VMs.
+- **kube-proxy** Writes the forwarding rules on each Node that make Service IPs reach Pods.
 - **kubectl** The command-line client of the API server.
 - **kubelet** The agent on every Node, server included: starts the Pods assigned to its Node through the runtime, runs probes, reports status.
-- **kube-proxy** Writes the forwarding rules on each Node that make Service IPs reach Pods.
 - **Label / selector** Key-value pairs on objects, and the way Deployments and Services find their Pods.
+- **libvirt** The layer that creates and runs the VMs (with KVM/QEMU). The Vagrant provider of Parts 1 and 2.
 - **Liveness / readiness / startup probe** Alive? restart if not. Ready for traffic? remove from Service if not. Started? hold the other probes until then.
 - **Manifest** A YAML file describing objects, applied with `kubectl apply -f`.
 - **maxSurge / maxUnavailable** Limits of a rolling update: how many extra Pods, how many missing Pods, at any moment.
+- **Namespace** A named area inside a cluster that keeps objects apart. Part 3 uses argocd and dev.
 - **Node** A machine running kubelet and a runtime. Server and agent are both Nodes.
+- **NodePort** A Service type that also opens a port between 30000 and 32767 on every node.
+- **Playbook** The YAML file that tells Ansible what to do on which machine.
 - **Pod** The smallest unit scheduled: one or more containers sharing network and optionally volumes. Ephemeral, made by controllers.
 - **Reconciliation** The loop: compare desired and actual state, act on the difference, repeat.
-- **ReplicaSet** Keeps N identical Pods alive. Created by Deployments, one per Pod template version.
 - **Replicas** The number of Pods a Deployment wants. Replicas are Pods; the number lives in the control plane.
+- **ReplicaSet** Keeps N identical Pods alive. Created by Deployments, one per Pod template version.
+- **Reverse proxy** A server in front of other servers: it takes every request and passes it to the right one.
 - **Rolling update** Replace old Pods with new ones step by step, so the application stays reachable.
 - **Scheduler** Chooses a Node for each new Pod and writes it into spec.nodeName. Starts nothing.
 - **Server** A K3s node with the control plane; also runs Pods by default.
+- **Service** A stable address in front of a group of Pods, found by label. Pods change their IP, the Service does not.
 - **Sidecar** A helper container in the same Pod as the application container.
 - **SQLite** File-based database embedded in K3s, its default datastore on a single server.
 - **Taint / toleration** A taint keeps Pods off a Node; a toleration lets a Pod on anyway. K3s servers have no taint.
 - **Token** The secret an agent presents to join; in /var/lib/rancher/k3s/server/node-token on the server. Never committed.
+- **Traefik** The reverse proxy K3s installs as its Ingress controller. It routes the requests of Part 2 by Host header.
+- **Vagrant** Creates and configures VMs from a description, the Vagrantfile, by asking a provider (here libvirt). Not a hypervisor.
+- **Vagrantfile** The Ruby file that declares the VMs: name, hostname, IP, CPU, memory, provisioner.
