@@ -66,10 +66,6 @@
         timeout: 300
       become: yes
 
-    - name: Install flannel (CNI for creating pod network)
-      shell: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
-      become: yes
-
 ##########################################
 # APP1
 ##########################################
