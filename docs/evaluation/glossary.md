@@ -130,7 +130,7 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **libvirt** The management layer for VMs on Linux: one API and one daemon (libvirtd) through which programs create, start, stop and connect VMs on KVM, QEMU and others. Vagrant's libvirt provider talks to it; libvirt then runs the VM with QEMU on KVM. `virsh list` shows the VMs it manages.
 
-**Nested virtualization** Running a VM inside a VM. Needed for Part 1 because Vagrant creates VMs inside the host VM.
+**Nested virtualization** Running a VM inside a VM. The processor has hardware support for virtualization (Intel VT-x, AMD-V); normally only the first hypervisor gets it, and a VM sees a processor without it, so a hypervisor inside the VM cannot start anything. Nested virtualization passes the feature into the VM. Here: VirtualBox on the school computer runs the host VM; inside it KVM runs the two Part 1 VMs. The host VM must have it switched on in its VirtualBox settings (`VBoxManage modifyvm IoT --nested-hw-virt on`); check inside with `grep -c vmx /proc/cpuinfo`, which must not print 0. The inner VMs are slower than the outer one, which is why Part 1 is kept at 512 MB and 1 CPU.
 
 **Private network** The Vagrant network type giving a VM an IP reachable from the host but not from outside; it becomes eth1.
 
