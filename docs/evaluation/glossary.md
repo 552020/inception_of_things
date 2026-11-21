@@ -68,6 +68,8 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **CoreDNS** The cluster DNS server. It resolves Service names such as `app1-service.default.svc.cluster.local`.
 
+**DHCP (Dynamic Host Configuration Protocol)** A machine joining a network asks, and a DHCP server hands it an address, a gateway and a DNS server for a while. The address can differ at every boot. eth0 of a Vagrant VM gets its address this way; eth1 does not: the Vagrantfile fixes it (`libvirt__dhcp_enabled: false`), so the subject's .110 and .111 are always the same.
+
 **Endpoint** The list of Pod IPs behind a Service, kept current by Kubernetes as Pods come and go.
 
 **Flannel** The default CNI in K3s: a simple overlay network (VXLAN) connecting the Pod networks of all nodes.
@@ -81,6 +83,8 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 **kube-proxy** The component on each node implementing Service IPs with iptables or IPVS rules. K3s runs it by default.
 
 **LoadBalancer** A Service type asking for an external IP. In the cloud a provider supplies it; K3s supplies it with ServiceLB, which is how Traefik is reachable on the VM's IP.
+
+**NAT (Network Address Translation)** A router rewriting the addresses of the packets passing through it, so that many machines with private addresses share one public one. The machines inside can call out; nothing outside can call in uninvited. A home router does it, and so does the eth0 network of a Vagrant VM: the VM downloads K3s through NAT, but the VM is not reachable from outside on that address. This is why the cluster talks on eth1.
 
 **NodePort** A Service type opening a fixed port (30000 to 32767) on every node. Used in Part 3 to reach the application on port 8888, or replaced by a port-forward.
 
