@@ -13,7 +13,7 @@
 | `docs/lab` | experiments that are not turned in: early Vagrantfiles, a Docker-provider setup, an Ansible helper |
 | `docs/deck` | the web deck's code |
 
-Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folders at the root. Each has a `Makefile` with `make help`.
+Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folders at the root. Each has a `Makefile`; `make help` in `p1` and `p2` lists the targets, `make setup` in `p3` builds everything.
 
 ## Host VM
 
