@@ -20,8 +20,8 @@ Replace shell-based provisioning in Vagrantfile with Ansible playbooks to manage
 - [ ] Verify installation: `ansible --version`
 
 ### Step 2: Create Directory Structure
-- [x] Create `slombard/p1/confs/` directory if it doesn't exist
-- [x] Create `slombard/p1/confs/ansible/` directory
+- [x] Create `p1/confs/` directory if it doesn't exist
+- [x] Create `p1/confs/ansible/` directory
 - [x] Minimal structure (only one file needed):
   ```
   confs/ansible/
@@ -59,7 +59,7 @@ Replace shell-based provisioning in Vagrantfile with Ansible playbooks to manage
 ### Step 6: Test Ansible Provisioning
 - [ ] Test with fresh VMs:
   ```bash
-  cd slombard/p1
+  cd p1
   vagrant destroy -f
   vagrant up
   ```
