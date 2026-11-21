@@ -6,8 +6,7 @@ metadata:
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
-    - host: app3.com
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix
