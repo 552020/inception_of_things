@@ -281,6 +281,10 @@ tags: networking part2
 The HTTP header carrying the hostname the client typed. Several names can point to one IP; the server tells them apart only by this header. Browsers send it automatically; curl needs -H "Host: app1.com" or an /etc/hosts entry.
 tags: networking vocabulary part2
 
+### Why must the user be in the docker group after a fresh Docker install?
+The docker command only talks to the Docker daemon, which runs as root, through the socket /var/run/docker.sock. The socket belongs to root and the group docker, so every other user gets "permission denied" and has to write sudo docker. K3d calls Docker for every node, so it would need sudo too. sudo usermod -aG docker $USER adds the user to the group. The catch: group membership is read at login, so the running shell does not have it yet. Log out and in again, or run newgrp docker; an install script cannot simply continue with docker commands after usermod. Whoever is in the docker group is in effect root on the machine, because a container can mount the host's file system.
+tags: docker k3d part3
+
 ### What is K3d, and how does it differ from K3s?
 K3s is the Kubernetes distribution. K3d is a tool that runs K3s nodes as Docker containers on one machine: k3d cluster create starts a server container, optional agent containers and a load balancer container. No VMs, starts in seconds, needs Docker (the d). Part 3 uses it; the cluster inside is still K3s, the same manifests work. In Part 1 the nodes are VMs made by Vagrant, in Part 3 containers made by K3d. K3d is for development and tests, never production.
 tags: k3d part3
