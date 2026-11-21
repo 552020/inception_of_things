@@ -1,121 +1,136 @@
 # VM Setup and Maintenance
 
+The host VM runs under QEMU/KVM on the 42 host since 2026-11-22. The VirtualBox procedure it replaced is kept at the end for reference.
+
 ## Storage layout at 42
 
-| Location | Size | Accessible anywhere | Persistent |
-|----------|------|-------------------|------------|
-| Home (`~`) | 5GB | Yes | Yes |
-| Goinfre | Unlimited | No (local only) | No (deleted on user switch) |
-| Sgoinfre | 30GB | Yes | Yes (if under 30GB) |
+| Location | Size | Accessible anywhere | Persistent | Speed |
+|----------|------|-------------------|------------|-------|
+| Home (`~`) | 5GB | Yes | Yes | local |
+| Goinfre | about 140GB | No (local only) | No (deleted on user switch) | local NVMe |
+| Sgoinfre | 30GB | Yes | Yes (if under 30GB and used within 6 months) | network share |
 
-**VDI files must be stored in sgoinfre** — they are too large for home, and goinfre is lost when another user logs in.
+The running disk sits in goinfre: it is the only place that is both big enough and fast enough. Sgoinfre holds a compressed copy, which is what you restore from at another seat or after a wipe.
 
-Current VM location: `/sgoinfre/goinfre/Perso/slombard/IoT/IoT.vdi` (rebuilt 2026-10-19 after sgoinfre was purged)
-Symlink on host: `~/sgoinfre -> /sgoinfre/goinfre/Perso/slombard`
+Current VM location: `~/goinfre/VMs/IoT.qcow2`
+Backup: `~/sgoinfre/IoT/IoT.qcow2` (compressed, see below)
+Symlinks on the host: `~/goinfre -> /goinfre/slombard`, `~/sgoinfre -> /sgoinfre/goinfre/Perso/slombard`
 
-## VM files explained
+## Start, stop, reach
 
-A VirtualBox VM needs two things:
-- `.vbox` — the VM config (CPU, RAM, network, disk paths). Small, can live in home.
-- `.vdi` — the virtual disk (OS + all data). Large, must live in sgoinfre.
+```bash
+docs/host-vm/iot-kvm.sh              # window on the desktop
+docs/host-vm/iot-kvm.sh headless     # no window
+ssh -p 2222 slombard@localhost
+ssh -p 2222 slombard@localhost sudo poweroff
+```
 
-The `.vdi` is **dynamically allocated**: the file on disk only grows as the VM actually uses space. A 60GB virtual disk won't take 60GB in sgoinfre unless the VM fills it.
+The script takes the disk path, memory, CPU count and SSH port from the environment (`IOT_DISK`, `IOT_MEM`, `IOT_CPUS`, `IOT_SSH_PORT`). It writes a PID file and a QEMU monitor socket next to the disk. Extra QEMU arguments after the first word go through: `docs/host-vm/iot-kvm.sh headless -m 12288`.
 
-## Disk full - recovery procedure
+If a boot hangs or the guest freezes, the monitor socket gives you a screenshot and a hard reset without a window:
 
-If the VM disk hits 100% it will freeze on any write operation (apt, logs, etc.).
+```bash
+echo 'screendump /tmp/iot.ppm' | nc -U ~/goinfre/VMs/IoT.monitor
+echo 'system_reset' | nc -U ~/goinfre/VMs/IoT.monitor
+echo 'quit' | nc -U ~/goinfre/VMs/IoT.monitor        # hard power off
+```
 
-**Do not run apt on a full disk** — it writes heavily and will hang the machine.
+VirtualBox and KVM cannot both hold VT-x. A running VirtualBox VM stops QEMU from starting with KVM, and the other way round.
 
-Instead, use simple `rm` commands:
+## Backup to sgoinfre
+
+Shut the VM down first. A compressed qcow2 copies only the used blocks and shrinks them:
+
+```bash
+mkdir -p ~/sgoinfre/IoT
+qemu-img convert -p -c -O qcow2 ~/goinfre/VMs/IoT.qcow2 ~/sgoinfre/IoT/IoT.qcow2
+du -sh ~/sgoinfre
+```
+
+Do this after real work inside the VM (tool installs, configuration), not after every session; the Vagrant VMs, the K3s clusters and the k3d cluster are rebuilt from the repo and are not worth backing up.
+
+## Restore from sgoinfre
+
+At a new seat, or after goinfre was wiped:
+
+```bash
+mkdir -p ~/goinfre/VMs
+cp ~/sgoinfre/IoT/IoT.qcow2 ~/goinfre/VMs/IoT.qcow2
+docs/host-vm/iot-kvm.sh
+```
+
+The compressed copy runs as it is; QEMU decompresses on read and writes new blocks uncompressed. Copying it is enough.
+
+## Disk full inside the VM
+
+If the VM disk hits 100% it freezes on any write. Do not run apt on a full disk; free space with plain `rm` first:
 
 ```bash
 sudo rm -rf /var/cache/apt/archives/*.deb
 sudo rm -rf /var/log/*.gz /var/log/*.1
-sudo rm -rf /var/lib/libvirt          # if libvirt not needed
-```
-
-Then check freed space:
-```bash
+docker system prune -af          # if Part 3 images pile up
 df -h /
 ```
 
-## Resizing the VDI (host side)
+## Resizing the disk
 
-Shut down the VM first, then on the host:
-
-```bash
-VBoxManage modifyhd "/home/slombard/sgoinfre/IoT/IoT.vdi" --resize 61440
-```
-
-(`61440` = 60GB in MB)
-
-## Expanding the partition (inside VM)
-
-After resizing the VDI, the partition and filesystem still need to be expanded inside the VM:
+Shut down the VM, grow the image on the host, then grow the partition and filesystem inside:
 
 ```bash
-sudo growpart /dev/sda 2
-sudo resize2fs /dev/sda2
+qemu-img resize ~/goinfre/VMs/IoT.qcow2 +20G
+docs/host-vm/iot-kvm.sh headless
+ssh -p 2222 slombard@localhost
+sudo growpart /dev/vda 2
+sudo resize2fs /dev/vda2
 df -h /
 ```
 
-## Backup strategy given 42 storage constraints
+Inside the VM the disk is `/dev/vda` (virtio), no longer `/dev/sda`.
 
-### The problem
-- Sgoinfre is wiped if folder exceeds 30GB or unused for 6 months
-- Goinfre is wiped when another user logs in
-- Home is only 5GB — too small for VDI files
+## Rebuild from scratch
 
-### Current actual usage in sgoinfre
-- `IoT.vdi` — fresh install on 2026-10-19, grows as the VM fills up
-- `iso/ubuntu-24.04.5.1-desktop-amd64.iso` — 5.9GB, can be deleted after the install is confirmed working
-
-### Rules to stay safe
-1. **Monitor sgoinfre size regularly:**
-   ```bash
-   du -h -d 0 /sgoinfre/goinfre/Perso/slombard
-   ```
-2. **Keep the VM disk lean** — don't accumulate Docker images you don't need, clean apt cache after big installs
-3. **The Vagrantfile is in git** — the K3s cluster (p1, p2, p3) can always be rebuilt from scratch with `vagrant up`. Don't treat those VMs as precious.
-4. **The IoT VM (Ubuntu desktop) is precious** — it contains your working environment. Back it up externally (USB drive or personal cloud) before it exceeds 30GB in sgoinfre.
-
-### What to back up externally
-Only the IoT.vdi needs an external backup. Everything else is in git or rebuildable.
-
-Export a compressed copy when you have a stable working state:
-```bash
-VBoxManage clonemedium disk "/home/slombard/sgoinfre/IoT/IoT.vdi" ~/backup-IoT.vdi --format VDI
-```
-Then move `backup-IoT.vdi` to a USB drive or personal cloud storage.
-
-## Current state
-
-- Rebuilt on 2026-10-19: the previous VM and everything else in sgoinfre had been purged
-- Virtual disk size: 60GB, dynamically allocated
-- VM OS: Ubuntu 24.04.5 LTS desktop, user `slombard`
-- 6 CPUs, 8GB RAM, nested VT-x enabled, NAT with host port 2222 forwarded to guest 22
-
-## Rebuild from scratch (host side)
+Only if both the goinfre disk and the sgoinfre backup are gone. Install Ubuntu desktop into a fresh qcow2 under QEMU, then install the tools.
 
 ```bash
-mkdir -p ~/sgoinfre/iso && cd ~/sgoinfre/iso
-curl -L -O https://releases.ubuntu.com/24.04/ubuntu-24.04.5.1-desktop-amd64.iso
-VBoxManage createvm --name IoT --ostype Ubuntu_64 --basefolder ~/sgoinfre --register
-VBoxManage modifyvm IoT --cpus 6 --memory 8192 --vram 128 --graphicscontroller vmsvga \
-  --nested-hw-virt on --nested-paging on --paravirtprovider kvm --ioapic on \
-  --nic1 nat --audio-enabled off --usb off --clipboard-mode bidirectional \
-  --boot1 dvd --boot2 disk --boot3 none --boot4 none
-VBoxManage createmedium disk --filename ~/sgoinfre/IoT/IoT.vdi --size 61440 --format VDI
-VBoxManage storagectl IoT --name SATA --add sata --controller IntelAhci --portcount 2 --bootable on
-VBoxManage storageattach IoT --storagectl SATA --port 0 --device 0 --type hdd --medium ~/sgoinfre/IoT/IoT.vdi
-VBoxManage storageattach IoT --storagectl SATA --port 1 --device 0 --type dvddrive --medium ~/sgoinfre/iso/ubuntu-24.04.5.1-desktop-amd64.iso
-VBoxManage modifyvm IoT --natpf1 "ssh,tcp,127.0.0.1,2222,,22"
-VBoxManage startvm IoT --type gui
+mkdir -p ~/goinfre/VMs ~/sgoinfre/iso
+curl -L -o ~/sgoinfre/iso/ubuntu-26.04-desktop-amd64.iso https://releases.ubuntu.com/26.04/ubuntu-26.04-desktop-amd64.iso
+qemu-img create -f qcow2 ~/goinfre/VMs/IoT.qcow2 60G
+docs/host-vm/iot-kvm.sh window -cdrom ~/sgoinfre/iso/ubuntu-26.04-desktop-amd64.iso -boot d
 ```
 
-Then run the Ubuntu installer interactively (erase disk, user `slombard`). After the first reboot, detach the ISO:
+Run the installer (erase disk, user `slombard`), reboot without the `-cdrom` arguments, then inside the VM:
 
 ```bash
-VBoxManage storageattach IoT --storagectl SATA --port 1 --device 0 --type dvddrive --medium emptydrive
+sudo apt update
+sudo apt install -y openssh-server
+echo "slombard ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/slombard && sudo chmod 440 /etc/sudoers.d/slombard
 ```
+
+From the host, `ssh-copy-id -p 2222 slombard@localhost`, then the tool installs over SSH:
+
+```bash
+sudo apt install -y git curl wget make gnupg cpu-checker \
+  qemu-system-x86 qemu-utils libvirt-daemon-system libvirt-clients virtinst bridge-utils dnsmasq-base \
+  libvirt-dev build-essential ansible
+sudo usermod -aG libvirt,kvm "$USER"
+# Vagrant: Ubuntu 26.04 has no package, use HashiCorp's repository
+wget -qO- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com noble main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install -y vagrant
+vagrant plugin install vagrant-libvirt
+# Part 3: Docker, kubectl (repo script), then k3d and argocd
+bash p3/scripts/installationhost.sh
+make -C p3 check-k3d
+```
+
+Log out and in again so the group memberships apply, then `kvm-ok` must say KVM acceleration can be used.
+
+## History: the VirtualBox VM (2026-10-19 to 2026-11-22)
+
+Built with `VBoxManage` from the Ubuntu 24.04.5 desktop ISO, 6 CPUs, 8 GB, 60 GB VDI in sgoinfre, nested VT-x on, NAT with host port 2222 to guest 22. It froze twice under nested virtualization during Part 1 (see the journal in the README) and was converted to the qcow2 above with:
+
+```bash
+qemu-img convert -p -f vdi -O qcow2 ~/sgoinfre/IoT/IoT.vdi ~/goinfre/VMs/IoT.qcow2
+```
+
+The original `VBoxManage` build commands, if ever needed again, are in this file's history before 2026-11-22 (`git log -- docs/host-vm/vm-setup.md`).
