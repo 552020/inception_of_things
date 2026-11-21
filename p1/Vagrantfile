@@ -6,7 +6,11 @@ NET_NAME = "vagrant-net"
 
 Vagrant.configure("2") do |config|
 
-  config.vm.box = "generic/ubuntu2004"
+  # Debian 13 (trixie), the current stable release; official box with a libvirt build
+  config.vm.box = "debian/trixie64"
+
+  # Ansible copies what the VMs need; no shared folder (the box would ask for NFS)
+  config.vm.synced_folder ".", "/vagrant", disabled: true
 
   config.vm.boot_timeout = 600
   config.ssh.username = "vagrant"
