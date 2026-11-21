@@ -10,7 +10,7 @@ The project builds the same thing three times, each time one step further: a clu
 | Cluster | K3s on two VMs: one server, one agent | K3s on one VM: server only | K3s in Docker containers made by K3d: one server, one agent |
 | Built with | Vagrant (libvirt) and an Ansible playbook | Vagrant (libvirt) and an Ansible playbook | a Makefile calling k3d, kubectl and argocd; no Vagrant |
 | Runs inside | nothing of ours | three web applications, app2 with three replicas | Argo CD and one application in two versions |
-| Reached by | SSH, then kubectl on the server | `http://192.168.56.110` with a Host header | `localhost:8888` (application), `localhost:8080` (Argo CD) |
+| Reached by | SSH, then kubectl on the server | `http://192.168.56.110` with a Host header | `localhost:8888` or `localhost:30007` (application), `localhost:8080` (Argo CD) |
 | New idea | the cluster: nodes, server and agent, token | Deployment, Service, Ingress | GitOps: a Git repository decides what runs |
 | Shown to the evaluator | hostnames, the IPs on eth1, both nodes Ready | each application by its Host, the three replicas, the Ingress | the two namespaces, the change from v1 to v2 through GitHub |
 
@@ -409,7 +409,7 @@ Vagrant makes the machines. Ansible fills them. Neither is part of Kubernetes.
 On the server:
 
 1. It makes sure Python is on the VM. Ansible needs it there before anything else can run.
-2. It sets the hostname and installs curl.
+2. It sets the hostname and tells cloud-init to leave it alone (the box is built from a cloud image, and cloud-init would set the hostname again at boot). It installs curl.
 3. It installs K3s in server mode: `server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1`. The last two flags tie the node and the Pod network to eth1; without them K3s would take the address of eth0.
 4. It waits until the kubeconfig and the token file exist.
 
@@ -430,9 +430,11 @@ kubectl comes with K3s. Nothing installs it separately.
 | Pod network | 10.42.0.0/16, one /24 per node | Flannel | Pods, also across nodes |
 | Service network | 10.43.0.0/16 | kube-proxy | nobody directly; these are virtual addresses in front of Pods |
 
-Each VM has a second interface, eth0. Vagrant uses it for its own SSH access.
+Each VM also has eth0, its first interface: an address from DHCP on a network that leads out through NAT. Vagrant uses it for its own SSH access, and the VM downloads K3s through it.
 
 ### 4.5 What to Show
+
+`make up` runs `vagrant up --provider=libvirt --no-parallel`, one machine after the other, and then `vagrant provision` once more.
 
     vagrant status
     vagrant ssh rpodackS
@@ -458,7 +460,7 @@ The new question is how a request from outside finds the right application.
 
 ### 5.1 What Is Built
 
-One VM, `rpodackS`, with the IP 192.168.56.110 and K3s in server mode.
+One VM, `rpodackS`, with the IP 192.168.56.110 and K3s in server mode. It gets 1 CPU and 1024 MB: the subject allows 512 or 1024, and one server carrying Traefik and five Pods needs the room.
 
 There is no agent. The server is also a node, so the Pods run on it.
 
@@ -597,6 +599,8 @@ It listens on port 8888 and exists in two versions, the tags `v1` and `v2`.
 
 One file, `deployment.yaml`, describes it: a Deployment with one replica and a Service of type NodePort on port 30007.
 
+The cluster was created with `-p "30007:30007@server:0"`, so that port of the server container is mapped to the host: the application also answers on `http://localhost:30007`, without a port-forward, and keeps answering after the Pod is replaced.
+
 ### 6.5 Two Repositories
 
 Argo CD does not read files on the machine. It fetches a repository over the network.
@@ -645,7 +649,7 @@ Check:
 
 The answer changes from `{"status":"ok", "message": "v1"}` to `"message": "v2"`.
 
-The port-forward is tied to one Pod. After the update that Pod is gone, so `make port-forward-app` has to be started again.
+The port-forward is tied to one Pod. After the update that Pod is gone, so `make port-forward-app` has to be started again. `curl http://localhost:30007/` goes through the NodePort instead and needs no restart.
 
 ### Section Summary
 
