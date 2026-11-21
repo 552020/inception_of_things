@@ -11,8 +11,7 @@ ARGOCD := argocd
 KUBECTL := kubectl
 
 # Paths to your k8s YAMLs
-DEV_DEPLOYMENT := ./deployment.yaml
-DEV_SERVICE := k8s/dev-service.yaml
+DEV_DEPLOYMENT := confs/deployment.yaml
 
 # -------------------------------
 # Phony targets
@@ -83,7 +82,6 @@ install-argo:
 deploy-app:
 	@echo "🚀 Deploying app to namespace $(DEV_NAMESPACE)"
 	$(KUBECTL) apply -f $(DEV_DEPLOYMENT) -n $(DEV_NAMESPACE)
-# 	$(KUBECTL) apply -f $(DEV_SERVICE) -n $(DEV_NAMESPACE)
 
 # -------------------------------
 # Delete cluster
