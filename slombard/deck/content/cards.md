@@ -90,7 +90,7 @@ The data is held by several machines that agree on it through a consensus protoc
 tags: vocabulary
 
 ### Which datastore does K3s use, and why?
-SQLite by default on a single server: a file-based database embedded in the k3s process, no second process, far less memory. For several servers K3s can use embedded etcd or an external database (MySQL, PostgreSQL).
+SQLite by default on a single server: a file-based database embedded in the k3s process, no second process, far less memory. SQLite is the default, not the only option: embedded etcd with k3s server --cluster-init (required for an HA cluster of three servers, since SQLite lives on one machine), or external MySQL/MariaDB or PostgreSQL through --datastore-endpoint. The shim kine makes the SQL backends look like etcd to the API server.
 tags: k3s architecture
 
 ### What does the scheduler do, and what does it not do?
@@ -214,7 +214,7 @@ The image nginx from Docker Hub's official library, at the tag stable. Tags are 
 tags: containers vocabulary
 
 ### What is a ReplicaSet, and why do you never write one?
-A controller that keeps exactly N Pods matching a selector alive. A Deployment creates one ReplicaSet per version of the Pod template; on an image change it creates a new ReplicaSet and scales the old one down. You write the Deployment and let it manage the ReplicaSets.
+A controller that keeps exactly N Pods matching a selector alive. A Deployment creates one ReplicaSet per version of the Pod template; on an image change it creates a new ReplicaSet and scales the old one down. You write the Deployment and let it manage the ReplicaSets; the old one stays at zero for kubectl rollout undo. kubectl get rs shows app2-7d9f8c6b5 (Deployment name plus a hash of the template) with DESIRED, CURRENT, READY; its Pods are app2-7d9f8c6b5-x4k2 and so on, the chain Deployment, ReplicaSet, Pod readable in the name.
 tags: kubernetes resources
 
 ### How does a rolling update work?
@@ -474,7 +474,7 @@ Replicas are Pods, not the other way round. Every replica of a Deployment is a P
 tags: kubernetes resources vocabulary
 
 ### Is a Pod a configuration, like a class, or a process?
-Both, in sequence, and the class is one step up: the Deployment's template is the class, a description without a name; the Pod object is an instance, a record with its own name, IP and status in the datastore, pure data with identity. Then the kubelet makes it run: one process per container, plus a tiny pause container that only sleeps and holds the shared namespaces (above all the network with the IP) so the containers share them and can restart one by one. A running Pod is a group of processes in shared namespaces, not one process; ps on the node shows the processes, the Pod is the bracket around them. The object's status (Running, Ready, Restarts) is the kubelet watching the processes and writing back.
+Both, in sequence, and the class is one step up: the Deployment's template is the class, a description without a name; the Pod object is an instance, a record with its own name, IP and status in the datastore, pure data with identity. A replica is such an instance seen as one of N siblings from the same template: an instance of the template, not of a Pod, since a Pod has no instances, it is one. Then the kubelet makes it run: one process per container, plus a tiny pause container that only sleeps and holds the shared namespaces (above all the network with the IP) so the containers share them and can restart one by one. A running Pod is a group of processes in shared namespaces, not one process; ps on the node shows the processes, the Pod is the bracket around them. The object's status (Running, Ready, Restarts) is the kubelet watching the processes and writing back. A Pod is not a running container: a Pending Pod exists as an object with no container running yet; in CrashLoopBackOff the object stays while its container dies and restarts. The object outlives its containers, never the reverse.
 tags: kubernetes resources
 
 ### Which networks exist in Part 1, and who made each?
@@ -484,3 +484,31 @@ tags: kubernetes networking part1
 ### How does a Pod on the agent reach a Pod on the server, if their IPs are not from the Vagrant network?
 Through Flannel, the CNI plugin K3s installs. Flannel runs on every node, gives each node its own Pod range (server 10.42.0.0/24, agent 10.42.1.0/24) and hands every new Pod an IP from it. A packet from 10.42.1.5 to 10.42.0.7 is wrapped by Flannel into a second packet from 192.168.56.111 to 192.168.56.110 and unwrapped on the other side: VXLAN, an overlay network riding on the VM network. Without a CNI plugin Pods get no IP and nodes stay NotReady ("network plugin not ready"). The name is the flannel shirt, made by CoreOS in 2014, the makers of etcd.
 tags: kubernetes networking part1
+
+### What is kubectl?
+The command-line client of the cluster. It does nothing inside the cluster itself: every command becomes an HTTPS request to the API server, get is a GET, apply -f a POST or PUT with your manifest, delete a DELETE; the JSON answer is printed as a table. It finds the server through the kubeconfig (address plus certificate), in K3s at /etc/rancher/k3s/k3s.yaml, which is why kubectl works on the server VM without setup, as k3s kubectl or through the symlink the installer creates. Name: kube control. It is a client, not part of the control plane, like a browser to a web server; with a copied kubeconfig it drives the cluster from a laptop.
+tags: kubernetes kubectl
+
+### What does "the API server validates the request" mean?
+A chain of checks before anything is stored. 1. Authentication: who are you? The certificate from your kubeconfig; unknown is 401. 2. Authorization: may you do this? RBAC roles, e.g. may this user create Deployments in namespace dev; no is 403. 3. Admission: cluster rules that may change or reject the request, where defaults are filled in (an update strategy you did not write) and policies could apply (no container without limits). 4. Schema validation: is this a valid object of its kind, required fields, types, no unknown fields, selector matching the template labels; a typo like replica: instead of replicas: returns "error validating data". Only after all four is the object written and seen by controllers.
+tags: kubernetes architecture
+
+### Who discovers a new Deployment in the datastore, and how?
+The Deployment controller in the controller manager, by subscribing, not by looking. At start every controller opens a request to the API server with ?watch=true, an HTTP connection that never ends; the API server pushes every event for that object kind over it as a line: ADDED, MODIFIED, DELETED, with the object. kubectl apply creates a Deployment, the API server stores it and at once sends ADDED on the controller's open connection. The controller puts the object in a local cache, its name in a work queue, and a loop takes it out and reconciles: ReplicaSet for it exists? No, create one. Watch plus cache plus queue is called an informer and sits in every controller, Argo CD included. The API server gets the events from etcd's own watch; with SQLite, kine imitates it by polling the table. If a connection breaks, the controller re-lists everything and watches again.
+tags: kubernetes architecture
+
+### Is the Deployment controller a process or a daemon?
+Neither: a loop inside the controller manager, one Go routine (a lightweight thread) in the kube-controller-manager process, next to the ReplicaSet, Node, Job and some forty other controllers, all sharing one connection to the API server. kubeadm shows one kube-controller-manager process; in K3s it all lives inside k3s server. Packaging, not law: a controller is only the pattern watch, compare, act, and can run anywhere with API access. Argo CD is a controller for Application objects running as Pods in the argocd namespace; Traefik is a controller for Ingress objects running as a Pod. Built-in ones are bundled; added ones come as Pods.
+tags: kubernetes architecture
+
+### Is a ReplicaSet a process?
+No, only an object: an entry in the datastore with replicas, selector and template, a note saying "three Pods like this template"; the note does nothing, however much is written on it. An object describes a desired state, a controller is the process that produces it. The doing is the ReplicaSet controller, one loop in the controller manager for all ReplicaSets in the cluster, not one per ReplicaSet. The pattern for every kind: the object is passive, its controller active. Deployment, ReplicaSet, Pod, Service, Ingress are entries; Deployment controller, ReplicaSet controller, kubelet, kube-proxy, Traefik are the loops or processes that read and realise them. "The ReplicaSet replaces the Pod" is shorthand for "the ReplicaSet controller replaces the Pod because the ReplicaSet asks for three".
+tags: kubernetes architecture resources
+
+### What is inside a ReplicaSet object?
+replicas: the number. selector: not a pointer to Pods but a query, "all Pods with app=app2"; the controller recounts what matches on every pass, so a hand-made Pod with the label is counted too. A set in the mathematical sense, defined by a condition, not a list of members; the name came in 2016 because, unlike the older ReplicationController, the selector can take set expressions such as app in (app1, app2). template: the full Pod description (containers, image, ports, labels) from which new Pods are built, the largest part. metadata: name, namespace, and ownerReferences pointing to the Deployment that made it; the real pointer, and it points up, not down: Pods point to their ReplicaSet, the ReplicaSet to its Deployment, and deleting the owner removes the children through these pointers. Plus status written by the controller: replicas, readyReplicas, availableReplicas, the numbers kubectl get rs shows.
+tags: kubernetes resources
+
+### How do you show that a Pod is an object?
+kubectl get pod <name> -o yaml prints it: apiVersion v1, kind Pod, metadata with name, labels and ownerReferences to its ReplicaSet, spec with the containers, status with phase, IP and restarts; the same shape as a Deployment, only kind Pod. kubectl api-resources lists every object kind the API server knows, pods in the first line; Pod is the oldest kind, in the core API v1, Deployment came later in apps/v1. The confusion: a Pod is the one object that becomes something running, and people mean the running thing. Both are true in sequence: first the entry, then the processes the kubelet makes from it. Proof by hand: kubectl apply -f pod.yaml with kind Pod, and it appears in kubectl get pods without any Deployment.
+tags: kubernetes resources
