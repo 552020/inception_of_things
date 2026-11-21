@@ -114,7 +114,7 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **Ansible** A configuration tool that runs tasks on machines over SSH from a playbook (YAML). Vagrant uses it as the provisioner in Part 1; it works below Kubernetes, installing it.
 
-**Box** A packaged base image for Vagrant, named in the Vagrantfile. Here `generic/alpine318`: Alpine Linux 3.18, package manager apk.
+**Box** A packaged base image for Vagrant, named in the Vagrantfile. Here `debian/trixie64`: Debian 13, package manager apt.
 
 **eth1** The second network interface of each VM, carrying the private IP 192.168.56.110 or .111 required by the subject.
 

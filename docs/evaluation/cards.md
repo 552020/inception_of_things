@@ -322,7 +322,7 @@ The package manager for Kubernetes. A chart is a set of manifest templates plus 
 tags: helm bonus
 
 ### What is Vagrant, and what is a Vagrantfile?
-Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image, here generic/alpine318), hostname, network, provider settings (libvirt, 512 MB, 1 CPU) and provisioners (here one Ansible playbook run after boot). vagrant up builds everything; vagrant destroy removes it.
+Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image, here debian/trixie64), hostname, network, provider settings (libvirt, 512 MB, 1 CPU) and provisioners (here one Ansible playbook run after boot). vagrant up builds everything; vagrant destroy removes it.
 tags: vagrant part1
 
 ### What is a Vagrant provider, and which one does this project use?
@@ -398,23 +398,23 @@ Outside, one layer below. Vagrant runs it from the host over SSH after both VMs 
 tags: ansible vagrant part1
 
 ### What does the Part 1 playbook do, step by step?
-Play 1 on slombardS: install python3 and curl with apk (Alpine), run the K3s installer, wait for /etc/rancher/k3s/k3s.yaml and the node token. Play 2 on slombardSW: wait for port 6443 on 192.168.56.110, read the token from the server with delegate_to, install the agent with K3S_URL and K3S_TOKEN. Play 3 on the server: k3s kubectl get nodes and print it. The token never touches the repo; Ansible carries it over SSH.
+Play 1 on rpodackS: make sure Python is there, set the hostname, install curl with apt (Debian), run the K3s installer in server mode, wait for /etc/rancher/k3s/k3s.yaml and the node token. Play 2 on rpodackSW: the same preparation, then wait for port 6443 on 192.168.56.110, read the token from the server with delegate_to, install the agent with K3S_URL and K3S_TOKEN. Play 3 on the server: k3s kubectl get nodes and print it. The token never touches the repo; Ansible carries it over SSH.
 tags: ansible part1
 
 ### Draw Part 1 as nested circles: where are the Vagrantfile, the playbook, K3s and the Pods?
-Outer circle: the host VM. Inside: Vagrant with libvirt, and in that ring the Vagrantfile and the playbook as files. Inside Vagrant: the two Alpine VMs. Inside each VM: K3s. The Kubernetes circle with the Pods spans both VMs, one cluster across two machines. The playbook never enters the VMs: Ansible runs on the host and reaches in over SSH to install K3s; afterwards the cluster runs without it.
+Outer circle: the host VM. Inside: Vagrant with libvirt, and in that ring the Vagrantfile and the playbook as files. Inside Vagrant: the two Debian VMs. Inside each VM: K3s. The Kubernetes circle with the Pods spans both VMs, one cluster across two machines. The playbook never enters the VMs: Ansible runs on the host and reaches in over SSH to install K3s; afterwards the cluster runs without it.
 tags: part1 architecture
 
 ### Are the two Part 1 VMs on different physical servers? What does "server" mean in this project?
-No: both run on the same host VM on one physical computer; libvirt gives each its own kernel, disk and IP, so K3s sees two machines. The exercise simulates a two-machine cluster on one laptop. In production nodes are separate physical servers or VMs on separate hosts, otherwise one hardware failure takes the cluster down. "Server" has three meanings here: the physical machine, the K3s server role (slombardS with the control plane, versus the agent slombardSW), and the API server component inside it. Say "server VM" or "server node" for slombardS.
+No: both run on the same host VM on one physical computer; libvirt gives each its own kernel, disk and IP, so K3s sees two machines. The exercise simulates a two-machine cluster on one laptop. In production nodes are separate physical servers or VMs on separate hosts, otherwise one hardware failure takes the cluster down. "Server" has three meanings here: the physical machine, the K3s server role (rpodackS with the control plane, versus the agent rpodackSW), and the API server component inside it. Say "server VM" or "server node" for rpodackS.
 tags: part1 vocabulary
 
 ### How do Vagrant and Ansible relate in Part 1?
 Siblings on the host, neither contains the other. During vagrant up, Vagrant writes an inventory with the two VMs and their SSH details, runs ansible-playbook with it and the playbook, and waits. Ansible is agentless: no daemon, no instance, a run and nothing more. The same playbook works without Vagrant against any machines reachable by SSH. Vagrant owns the VMs, Ansible owns what happens inside them, once.
 tags: ansible vagrant part1
 
-### Where are the two Alpine VMs declared?
-In p1/Vagrantfile, one config.vm.define block each: slombardS and slombardSW. Each block sets hostname, the box generic/alpine318, a private_network with the fixed IP (.110 or .111) on the libvirt network vagrant56 without DHCP, and the libvirt provider settings: 512 MB, 1 CPU, cpu_mode host-passthrough. The Ansible provisioner block at the end applies to both. Alpine is only the word in the box name: no ISO, no installation, Vagrant downloads the ready image from Vagrant Cloud.
+### Where are the two VMs of Part 1 declared?
+In p1/Vagrantfile. The box is named once at the top for both: debian/trixie64, Debian 13. Then one config.vm.define block each, rpodackS and rpodackSW, setting the hostname, a private_network with the fixed IP (.110 or .111) without DHCP, and the libvirt provider settings: 512 MB, 1 CPU. The Ansible provisioner block at the end applies to both. The box is a ready image: no ISO, no installation, Vagrant downloads it from Vagrant Cloud.
 tags: vagrant part1
 
 ### Does the Part 1 setup have a real-world equivalent?
@@ -422,11 +422,11 @@ Vagrant on a laptop is a lab, but take Vagrant away and the rest is a real patte
 tags: part1 context
 
 ### Do you always need at least two servers on two machines? What does real high availability take?
-For availability, two is not enough. Part 1 has workload redundancy (the agent can fail, Pods keep running on the server) but one control plane: slombardS is a single point of failure. Real HA needs three servers, not two, because etcd decides by majority and two minus one has none; three servers plus any number of agents, on separate machines, in the cloud across separate data centres. Availability is not the only point, though: at the edge K3s often runs on one box on purpose, because the gain is uniformity, the same manifests, kubectl and Argo CD for a thousand shops and the data centre. HA is what you get on top when you have enough machines.
+For availability, two is not enough. Part 1 has workload redundancy (the agent can fail, Pods keep running on the server) but one control plane: rpodackS is a single point of failure. Real HA needs three servers, not two, because etcd decides by majority and two minus one has none; three servers plus any number of agents, on separate machines, in the cloud across separate data centres. Availability is not the only point, though: at the edge K3s often runs on one box on purpose, because the gain is uniformity, the same manifests, kubectl and Argo CD for a thousand shops and the data centre. HA is what you get on top when you have enough machines.
 tags: kubernetes architecture context
 
 ### What is Part 1 about?
-Two VMs from one Vagrantfile, Alpine, 512 MB, fixed IPs on eth1: slombardS at 192.168.56.110, slombardSW at .111. Ansible installs K3s on the first as server and on the second as agent, which joins with the server's URL and token. Result: a two-node cluster, kubectl get nodes shows both Ready. Theme: how a cluster comes into being, control plane and worker, a node joining.
+Two VMs from one Vagrantfile, Debian 13, 512 MB, fixed IPs on eth1: rpodackS at 192.168.56.110, rpodackSW at .111. Ansible installs K3s on the first as server and on the second as agent, which joins with the server's URL and token. Result: a two-node cluster, kubectl get nodes shows both Ready. Theme: how a cluster comes into being, control plane and worker, a node joining.
 tags: part1 overview
 
 ### What is Part 2 about?
@@ -450,11 +450,11 @@ Two things. Rancher Labs is the company (California, 2014, part of SUSE since 20
 tags: k3s vocabulary context
 
 ### Are server and agent roles we define, or part of K3s?
-Part of K3s: the two ways the one binary can start. k3s server runs the control plane plus the worker part; k3s agent runs only the worker part and registers with a server. We only choose which machine gets which role. In the install script one thing decides: if K3S_URL is set, an agent is installed, otherwise a server; our playbook calls the installer without variables on slombardS and with K3S_URL and K3S_TOKEN on slombardSW. Standard Kubernetes calls the same roles control-plane node (formerly master) and worker node; the subject says controller mode and agent mode. kubectl get nodes shows it in the ROLES column: control-plane,master for slombardS, none for slombardSW.
+Part of K3s: the two ways the one binary can start. k3s server runs the control plane plus the worker part; k3s agent runs only the worker part and registers with a server. We only choose which machine gets which role. In the install script one thing decides: if K3S_URL is set, an agent is installed, otherwise a server; our playbook calls the installer with INSTALL_K3S_EXEC="server ..." on rpodackS and with K3S_URL and K3S_TOKEN on rpodackSW. Standard Kubernetes calls the same roles control-plane node (formerly master) and worker node; the subject says controller mode and agent mode. kubectl get nodes shows it in the ROLES column: control-plane,master for rpodackS, none for rpodackSW.
 tags: k3s part1
 
 ### Is the agent part of the server, since the server controls it?
-No: it belongs to the cluster, not to the server; two processes on two machines. And the control runs the other way round: the server never logs into the agent or sends it commands. The agent's kubelet keeps a connection to the API server on port 6443 and watches for Pods assigned to its node, starts them itself, reports status, keeps watching. The server only writes "this Pod belongs on slombardSW" into its datastore. Control by asking, not by ordering, which is why the agent keeps running when the server dies. The agent also opens a tunnel to the server through which the server reaches the kubelet for kubectl logs and exec; even that connection is opened by the agent.
+No: it belongs to the cluster, not to the server; two processes on two machines. And the control runs the other way round: the server never logs into the agent or sends it commands. The agent's kubelet keeps a connection to the API server on port 6443 and watches for Pods assigned to its node, starts them itself, reports status, keeps watching. The server only writes "this Pod belongs on rpodackSW" into its datastore. Control by asking, not by ordering, which is why the agent keeps running when the server dies. The agent also opens a tunnel to the server through which the server reaches the kubelet for kubectl logs and exec; even that connection is opened by the agent.
 tags: k3s architecture part1
 
 ### Why does the server node mix control plane and workloads? Is that against the Unix philosophy?
@@ -490,7 +490,7 @@ Creating a Pod object is writing a record into the API server, a document saying
 tags: kubernetes architecture resources
 
 ### What does "scheduling" or "placing" a Pod mean?
-Deciding which node a Pod runs on and writing that decision into the Pod object: one field, spec.nodeName, created empty and filled by the scheduler with, say, slombardSW. The scheduler moves and starts nothing; it writes a name into a field. The word scheduling has nothing to do with time here, only with place. Two stages: filter the nodes that qualify (enough free requests, no taint without toleration, matching labels), then score the rest and pick the best, usually the least loaded. Part 1 has two candidates, Part 2 one. The kubelet seeing its name in the field makes the containers.
+Deciding which node a Pod runs on and writing that decision into the Pod object: one field, spec.nodeName, created empty and filled by the scheduler with, say, rpodackSW. The scheduler moves and starts nothing; it writes a name into a field. The word scheduling has nothing to do with time here, only with place. Two stages: filter the nodes that qualify (enough free requests, no taint without toleration, matching labels), then score the rest and pick the best, usually the least loaded. Part 1 has two candidates, Part 2 one. The kubelet seeing its name in the field makes the containers.
 tags: kubernetes scheduling
 
 ### Does a worker node know about replicas?

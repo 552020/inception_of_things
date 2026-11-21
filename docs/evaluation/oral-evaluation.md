@@ -392,7 +392,7 @@ The point is to see what a cluster is made of: two machines, one server, one age
 | K3s mode | server (control plane, and a node) | agent (a node only) |
 | Resources | 1 CPU, 512 MB | 1 CPU, 512 MB |
 
-Both VMs start from the box `generic/ubuntu2004` and run on libvirt.
+Both VMs start from the box `debian/trixie64`, which is Debian 13, and run on libvirt.
 
 ### 4.2 Who Does What
 
@@ -408,14 +408,14 @@ Vagrant makes the machines. Ansible fills them. Neither is part of Kubernetes.
 
 On the server:
 
-1. It sets the hostname.
-2. It installs Python and curl.
+1. It makes sure Python is on the VM. Ansible needs it there before anything else can run.
+2. It sets the hostname and installs curl.
 3. It installs K3s in server mode: `server --node-name rpodackS --write-kubeconfig-mode 644`.
 4. It waits until the kubeconfig and the token file exist.
 
 On the agent:
 
-1. It sets the hostname and installs Python and curl.
+1. It makes sure Python is there, sets the hostname and installs curl.
 2. It waits until port 6443 answers on 192.168.56.110.
 3. It reads the token from the server. Ansible runs this one task on the server (`delegate_to`), so the token is never written into the repository.
 4. It installs K3s in agent mode with `K3S_URL` and `K3S_TOKEN` (section 2.4).
