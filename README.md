@@ -40,7 +40,7 @@ The full rebuild procedure, disk resizing and recovery steps are in [docs/vm-set
 | Repository | Holds | Read by |
 |------------|-------|---------|
 | The project repository on the 42 Git server | `p1`, `p2`, `p3`: what is turned in | the evaluator, who clones it |
-| [552020/inception_of_things](https://github.com/552020/inception_of_things) | the same, plus `docs`, `deck`, `lab`: where we work | us |
+| [552020/inception_of_things](https://github.com/552020/inception_of_things) | the same, plus `docs` (documents, the card deck, experiments): where we work | us |
 | [Robin-Lenz/rpodackIoT](https://github.com/Robin-Lenz/rpodackIoT) | `deployment.yaml`: the application of Part 3 | Argo CD |
 
 Argo CD does not read files on the machine. It fetches a Git repository over the network and keeps the cluster on what that repository says. So the application of Part 3 has to sit in a repository Argo CD can reach, and the subject fixes which kind: a public GitHub repository with the login of a group member in its name. The 42 server is not public, and `inception_of_things` carries no login. That is why `rpodackIoT` exists and must stay public.
