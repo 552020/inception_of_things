@@ -33,7 +33,7 @@ Reach it from the host once openssh-server is installed inside:
 ssh -p 2222 slombard@localhost
 ```
 
-The full rebuild procedure, disk resizing and recovery steps are in [docs/vm-setup.md](docs/vm-setup.md).
+The full rebuild procedure, disk resizing and recovery steps are in [docs/host-vm/vm-setup.md](docs/host-vm/vm-setup.md).
 
 ## Three repositories
 
@@ -119,7 +119,7 @@ Consequence: one Ubuntu VM in VirtualBox with nested virtualization on, and insi
 
 ### 2026-10-19: The VM was lost and rebuilt
 
-Sgoinfre had been emptied, taking the IoT VM, its disk and the Ubuntu ISO with it. Likely cause is the 6-month inactivity purge. Rebuilt from scratch the same day; the exact commands are in `docs/vm-setup.md`. Lesson: anything in sgoinfre must be rebuildable from the repo, and the rebuild steps must be written down.
+Sgoinfre had been emptied, taking the IoT VM, its disk and the Ubuntu ISO with it. Likely cause is the 6-month inactivity purge. Rebuilt from scratch the same day; the exact commands are in `docs/host-vm/vm-setup.md`. Lesson: anything in sgoinfre must be rebuildable from the repo, and the rebuild steps must be written down.
 
 ### 2026-10-20: Can the host VM be launched without a desktop application?
 
