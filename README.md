@@ -1,5 +1,20 @@
 # inception_of_things
 
+42 project: K3s clusters built three ways, with Robin (rpodack) and Stefano (slombard).
+
+| Folder | What |
+|--------|------|
+| `p1` | Part 1: two VMs with Vagrant and Ansible, K3s server and agent |
+| `p2` | Part 2: one VM, K3s server, three web applications behind one Ingress |
+| `p3` | Part 3: K3d cluster in Docker, Argo CD deploying the application from GitHub |
+| `docs/subject` | the subject and the evaluation sheet |
+| `docs/evaluation` | the study document for the oral, the glossary and the flashcards; the cards are served as a web deck at https://iot-deck-pi.vercel.app |
+| `docs/host-vm` | how the host VM was built and is kept |
+| `docs/lab` | experiments that are not turned in: early Vagrantfiles, a Docker-provider setup, an Ansible helper |
+| `docs/deck` | the web deck's code |
+
+Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folders at the root. Each has a `Makefile` with `make help`.
+
 ## Host VM
 
 The subject requires the whole project to run inside a virtual machine. On the 42 cluster that means one VirtualBox VM (the host VM) in which Vagrant, libvirt, K3s, Docker and K3d all run. Nested virtualization is enabled on it.
@@ -170,10 +185,10 @@ The lesson for us: build the environment as code first, even if it costs a day, 
 
 ### 2026-10-20: Is the Part 1 token exchange "facilitated" by both VMs living on one laptop?
 
-It was, in the first version. The original playbook dropped the K3s node token into the `/vagrant` shared folder, which both VMs see only because they share a host. Two real servers have no shared folder. Commit `41683e9` replaced that with Ansible SSH delegation, and the current flow is honest:
+It was, in the first version. The original playbook dropped the K3s node token into the `/vagrant` shared folder, which both VMs see only because they share a host. Two real servers have no shared folder. Commit `41683e9` replaced that with Ansible SSH delegation; the `p1` in the repo today is Robin's, and it works the same way:
 
 1. Ansible, running on the host VM, SSHes into the server and waits for `/var/lib/rancher/k3s/server/node-token` to appear.
-2. It reads the file over SSH (`slurp` with `delegate_to: slombardS`).
+2. It reads the file over SSH (`slurp` with `delegate_to` to the server VM, today `rpodackS`).
 3. It SSHes into the worker and runs the K3s agent install with the token and `K3S_URL=https://192.168.56.110:6443`.
 4. From then on the worker talks to the server over `eth1` on its own.
 
