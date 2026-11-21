@@ -40,6 +40,9 @@
         regexp: '^preserve_hostname:'
         line: 'preserve_hostname: true'
       when: cloud_cfg.stat.exists
+
+    - name: Classic interface names eth0/eth1, as the subject requires (reboots once on first run)
+      include_tasks: eth-names.yml
     #################################
 
     - name: Ensure Python3 and curl are installed
