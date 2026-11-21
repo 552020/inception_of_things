@@ -249,6 +249,22 @@ tags: kubernetes networking part2
 An Ingress is a resource with HTTP routing rules: this host and path go to that Service. It does nothing by itself. The Ingress controller is a reverse proxy (Traefik in K3s, often nginx elsewhere) that reads Ingress resources and routes real requests accordingly.
 tags: kubernetes networking part2
 
+### Why does Ingress exist: what problem does it solve?
+A Service makes Pods reachable, but only one application per address: a NodePort gives every application its own odd port (30000 to 32767), a LoadBalancer its own IP. Three web applications would mean three ports or three IPs. Ingress puts them behind one IP on port 80 and 443 and tells them apart by what the request says: the host name (app1.com, app2.com) or the path (/shop, /blog). That needs something that reads HTTP, so Ingress works on layer 7, where a Service only knows IPs and ports (layer 4). The same place handles TLS certificates. It is what virtual hosts are in nginx or Apache, written as a Kubernetes object.
+tags: kubernetes networking part2
+
+### What does a request to app2.com pass through in Part 2?
+Client, then 192.168.56.110 port 80 (ServiceLB holds the port on the node), then Traefik, which reads the Host header and finds the matching Ingress rule, then the Service app2 (a stable virtual IP), then one of the three Pods, chosen by kube-proxy. Four objects are involved: Ingress (rule), Service (address), Deployment (how many), Pod (the container). The Ingress never points at Pods, only at a Service.
+tags: networking part2
+
+### Is Ingress used in all three parts?
+No. Part 1 has no application, so no Ingress; Traefik is installed anyway, because K3s brings it, and sits idle. Part 2 is the Ingress part: one IP, three applications, routing by Host header, and the evaluator asks to see the Ingress. Part 3 does not need one: the application is reached through a NodePort or kubectl port-forward on 8888, the Argo CD interface through port-forward; K3d clusters carry Traefik too, unused here. The bonus usually brings it back, to reach GitLab by name.
+tags: networking part1 part2 part3
+
+### What comes after Ingress?
+The Gateway API. The Ingress API is frozen: it stays and keeps working, but new features go to the Gateway API, which splits the one object into several (GatewayClass, Gateway, HTTPRoute) so that the cluster operator and the application team each own their part, and which also covers TCP and gRPC. Traefik supports both. For the project only Ingress matters.
+tags: kubernetes networking context
+
 ### What is Traefik?
 A reverse proxy, open source, written in Go by Traefik Labs; the name is said like "traffic". A reverse proxy stands in front of web servers, takes every request and passes it to the right one. K3s installs it as its Ingress controller: a Pod in the namespace kube-system, behind a Service of type LoadBalancer that ServiceLB puts on the node's IP, ports 80 and 443. Traefik watches the Ingress objects through the API server and rewrites its own routing table when one changes; nobody edits a Traefik config file. Ingress is the rule, Traefik is the program that obeys it. Show it: kubectl get pods -n kube-system, kubectl get svc -n kube-system traefik.
 tags: k3s networking part2
