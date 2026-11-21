@@ -98,7 +98,7 @@ It picks a node for every new Pod that has none, based on free CPU and memory, n
 tags: kubernetes architecture
 
 ### What are taints and tolerations?
-A taint on a node says "keep Pods away unless they tolerate this"; a toleration on a Pod says "I may run on nodes with that taint". Used to reserve nodes. A K3s server has no taint by default, so it runs ordinary workloads next to the control plane.
+A taint (the word means a blemish) on a node says "keep Pods away unless they tolerate this"; a toleration on a Pod says "I may run on nodes with that taint". Form key=value:effect, effects NoSchedule (no new Pods), PreferNoSchedule (only if nothing else fits), NoExecute (new ones kept away, running ones evicted); set with kubectl taint nodes. The taint is the lock on the node, the toleration the key in the Pod. Used to reserve nodes: control plane for system components, GPU nodes for GPU Pods. A K3s server has no taint by default, so it runs ordinary workloads next to the control plane.
 tags: kubernetes scheduling
 
 ### What is node affinity?
@@ -110,11 +110,11 @@ Runs the built-in controllers in one process: Deployment, ReplicaSet, Node, Job,
 tags: kubernetes architecture
 
 ### What is the kubelet?
-The agent on every node, including the server. It watches the API server for Pods assigned to its node, tells the container runtime to start their containers, runs the probes, and reports the Pod status back. It is the only Kubernetes component that is not itself a container.
+The agent on every node, including the server: the server is a node too and runs the system Pods (CoreDNS, Traefik) through its own kubelet; in kubeadm clusters the control plane components themselves run as Pods started by the control-plane node's kubelet, with a taint keeping application Pods away, which K3s does not set. It watches the API server for Pods assigned to its node, tells the container runtime to start their containers, runs the probes, and reports the Pod status back. It is the only Kubernetes component that is not itself a container, and the only one that touches containers. The name: kube plus the diminutive -let, the small Kubernetes piece on every machine; in K3s it lives inside the k3s server or k3s agent process.
 tags: kubernetes architecture
 
 ### What is a container runtime, and which one does K3s use?
-The program that actually creates and runs containers from images: unpacks the image, sets up namespaces and cgroups, starts the process. Kubernetes talks to it through the Container Runtime Interface (CRI). K3s bundles containerd; Docker Engine, CRI-O and others are alternatives.
+The program that actually creates and runs containers from images: unpacks the image, sets up namespaces and cgroups, starts the process. Kubernetes talks to it through the Container Runtime Interface (CRI). K3s bundles containerd, which runs as its own daemon next to k3s server (k3s crictl ps lists its containers). containerd was Docker's core, split out and given to the CNCF in 2017; Docker still uses it underneath, adding the docker command, image building and Compose on top. Kubernetes needs none of that and talks to containerd directly. CRI-O is the other common runtime.
 tags: kubernetes architecture containers
 
 ### What does kube-proxy do?
@@ -258,7 +258,7 @@ The HTTP header carrying the hostname the client typed. Several names can point 
 tags: networking vocabulary part2
 
 ### What is K3d, and how does it differ from K3s?
-K3s is the Kubernetes distribution. K3d is a tool that runs K3s nodes as Docker containers on one machine: k3d cluster create starts a server container, optional agent containers and a load balancer container. No VMs, starts in seconds, needs Docker. Part 3 uses it; the cluster inside is still K3s.
+K3s is the Kubernetes distribution. K3d is a tool that runs K3s nodes as Docker containers on one machine: k3d cluster create starts a server container, optional agent containers and a load balancer container. No VMs, starts in seconds, needs Docker (the d). Part 3 uses it; the cluster inside is still K3s, the same manifests work. In Part 1 the nodes are VMs made by Vagrant, in Part 3 containers made by K3d. K3d is for development and tests, never production.
 tags: k3d part3
 
 ### What is Argo CD?
@@ -294,7 +294,7 @@ The package manager for Kubernetes. A chart is a set of manifest templates plus 
 tags: helm bonus
 
 ### What is Vagrant, and what is a Vagrantfile?
-Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image), hostname, network, provider settings and provisioners (shell scripts run after boot). vagrant up builds everything; vagrant destroy removes it.
+Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image, here generic/alpine318), hostname, network, provider settings (libvirt, 512 MB, 1 CPU) and provisioners (here one Ansible playbook run after boot). vagrant up builds everything; vagrant destroy removes it.
 tags: vagrant part1
 
 ### What is a Vagrant provider, and which one does this project use?
@@ -302,5 +302,185 @@ The hypervisor Vagrant drives: VirtualBox, libvirt (KVM on Linux), VMware, Hyper
 tags: vagrant part1
 
 ### Why eth1 and why 192.168.56.x?
-eth0 is the NAT interface Vagrant uses to reach the VM for SSH and provisioning. eth1 is the private network interface with the fixed IP from the subject, 192.168.56.110 for the server and .111 for the worker, so the two VMs and the host reach each other at known addresses. K3s is told to use it with --node-ip and --flannel-iface.
+eth0 is the NAT interface Vagrant uses to reach the VM for SSH and provisioning. eth1 is the private network interface with the fixed IP from the subject, 192.168.56.110 for the server and .111 for the worker, so the two VMs and the host reach each other at known addresses. Our playbook installs K3s with no interface flags; it works because the agent is pointed at 192.168.56.110 explicitly and both VMs also share libvirt's NAT network on eth0. On other setups --node-ip and --flannel-iface pin K3s to eth1.
 tags: vagrant part1 networking
+
+### What is a Vagrant box?
+A packaged base image of a virtual machine (disk plus metadata) built for one provider, published on Vagrant Cloud under a name such as debian/bookworm64 or generic/ubuntu2204. The Vagrantfile names it in config.vm.box; vagrant up downloads it once, caches it, and clones it for every VM.
+tags: vagrant part1
+
+### What is a Vagrant provisioner?
+A step Vagrant runs against the VM after its first boot: a shell script (inline or from a file), or Ansible, Puppet, Chef. In this project it is an Ansible playbook, confs/ansible/playbook.yml, run from the host over SSH after both VMs are up; it installs K3s as server and agent. It runs once; vagrant provision runs it again.
+tags: vagrant part1
+
+### What do vagrant up, ssh, halt, destroy and status do?
+up: create the VMs from the Vagrantfile, boot them, run the provisioners (just boots them if they exist already). ssh <name>: open a shell in a VM without a password, with the key Vagrant generated. halt: shut the VMs down, keeping their disks. destroy: delete the VMs and their disks. status: show which VMs exist and whether they run.
+tags: vagrant part1
+
+### How does Vagrant give you SSH without a password?
+On first boot Vagrant replaces the box's insecure public key with a freshly generated key pair, stores the private key under .vagrant/, and vagrant ssh uses it. For SSH from the host between the VMs or by name, the private key path is shown by vagrant ssh-config.
+tags: vagrant part1
+
+### Is Vagrant a hypervisor? What is a hypervisor?
+No. A hypervisor is the software that actually runs virtual machines: VirtualBox, KVM (driven through libvirt on Linux), VMware, Hyper-V. Type 1 runs on the hardware (KVM, ESXi, Hyper-V), type 2 as a program inside an operating system (VirtualBox). Vagrant only drives one, called the provider: it reads the Vagrantfile and tells the hypervisor to create the VM from a box, attach the network, then runs the provisioners. This project drives libvirt/KVM inside the host VM, hence nested virtualization.
+tags: vagrant vocabulary part1
+
+### What are the alternatives to Vagrant, and why does the project use Vagrant?
+Why: the subject requires it, and for the reason the subject does: a VM is created reproducibly from one text file, with network and provisioning, independent of the hypervisor, so vagrant up on the evaluator's machine gives the same two VMs. Alternatives: Multipass (Canonical, Ubuntu-only, cloud-init), Terraform with the libvirt or VirtualBox provider (VMs as code, built for larger infrastructure), virt-install/virsh scripts with cloud-init (no layer in between, more manual), Lima or Incus/LXD (light VMs or system containers), or containers instead of VMs, which is what Part 3 does with K3d.
+tags: vagrant part1
+
+### What would a startup use today instead of Vagrant?
+Not VMs. On the laptop: Docker Compose or dev containers (Codespaces, Gitpod); if a local Kubernetes is needed, kind, K3d or minikube with Tilt or Skaffold, which is the step from Part 1 to Part 3. In production: no Kubernetes at all for small teams (Vercel, Fly.io, Railway, Render, Cloud Run), or managed Kubernetes (GKE, EKS, AKS) described with Terraform or Pulumi and deployed with Argo CD or Flux. Vagrant survives where real machines matter: OS tests, Ansible roles, network labs, teaching.
+tags: vagrant context
+
+### What does a large corporation use instead of Vagrant and K3s?
+Still VMs, but without Vagrant: VMware vSphere/ESXi (now Broadcom; migrations to Nutanix, Proxmox, OpenShift Virtualization under way), Windows Server with Hyper-V. A VM comes by ticket from the infrastructure team, configured with Ansible or Puppet, maybe ordered through Terraform or a portal. Kubernetes as a supported product: Red Hat OpenShift, Rancher (SUSE, the company behind K3s), VMware Tanzu. Around it Jenkins, self-hosted GitLab or Bitbucket, Artifactory, Citrix desktops, and in banks still the mainframe. The difference to a startup is less the tool than who operates it: a department with a process.
+tags: context
+
+### How does a startup with real traffic peaks scale, and where do Terraform and Argo CD fit?
+Managed Kubernetes (GKE, EKS) because it scales on two levels: the Horizontal Pod Autoscaler raises a Deployment's replicas when CPU or requests per Pod rise, and the cluster autoscaler (Karpenter on AWS) adds nodes when Pods find no room, returning them after the peak; KEDA scales on queue length or events. In production the replicas number is written by an autoscaler, not by hand. Terraform (or OpenTofu, Pulumi) creates the cluster and cloud resources; Argo CD, CNCF-graduated and the most used GitOps tool, deploys from Git. Teams that want no cluster use serverless containers (Cloud Run, Fargate) or functions (Lambda), which scale from zero automatically but cost more under constant load. A CDN in front keeps most of the peak away.
+tags: context scaling
+
+### What is HCL?
+HashiCorp Configuration Language, the language of Terraform files: declarative like YAML but with blocks, variables, expressions and functions, for example resource "aws_instance" "web" { instance_type = "t3.small" }. Also used by Vault, Consul, Nomad and Packer. Pulumi is the alternative for writing the same thing in TypeScript, Python or Go.
+tags: terraform vocabulary
+
+### Managed versus self-managed Kubernetes: which one is this project?
+Managed (GKE, EKS, AKS): the cloud provider runs the control plane, API server, etcd, scheduler, upgrades, high availability; you get a kubeconfig and pay per cluster-hour plus nodes, and never see the control plane. Self-managed: you install and run it yourself with kubeadm, K3s, RKE2 or kops, and own etcd backups, certificates and upgrades. This project is self-managed: Part 1 runs k3s server on one VM and k3s agent on the other, the control plane in our hands, the layer GKE hides.
+tags: kubernetes context k3s
+
+### Which part of our stack is made by HashiCorp?
+Vagrant, HashiCorp's first product (2010), before Terraform, Packer, Vault, Consul and Nomad. HashiCorp belongs to IBM since 2025. Nothing else in the project is HashiCorp's; Terraform is not used here.
+tags: vagrant context
+
+### Do we use etcd anywhere? Why is it in our documentation?
+No. K3s with one server stores the cluster state in SQLite (/var/lib/rancher/k3s/server/db/state.db), in Part 1 and in K3d in Part 3 alike; etcd would come only with several servers (--cluster-init). It is in the documentation because standard Kubernetes uses etcd and the evaluator asks about it, and because K3s is closer to it than it looks: the API server still speaks the etcd protocol, and a shim called kine translates it to SQLite. Kubernetes believes it has etcd.
+tags: k3s architecture
+
+### Where does the name etcd come from?
+The Unix /etc directory, where configuration lives, plus d for distributed, not daemon: a distributed /etc, configuration for a whole system of machines instead of one. Built by CoreOS in 2013, adopted by Kubernetes in 2014 to hold the cluster objects, which are configuration plus their status.
+tags: vocabulary kubernetes
+
+### etcd is a configuration store, Kubernetes calls it a datastore: what does it actually hold?
+Only Kubernetes objects: Deployments, Services, ConfigMaps, Secrets, Nodes, that is, the manifests as stored, which are configuration. The one part beyond configuration is each object's status, written by controllers: the node a Pod landed on, whether it is ready, replicas up. No application data, files or logs; a whole cluster is a few megabytes, and etcd's default limit is 2 GB. So: configuration plus the current state of that configuration. The Node objects are there too (key /registry/minions/<name>, the old word for nodes): capacity, allocatable, labels, and the kubelet's heartbeat every ten seconds; when it stops, the node turns NotReady. Everything anyone in the cluster knows is in the datastore, which is why it is the one thing to back up: nodes can be replaced, state.db cannot.
+tags: kubernetes architecture
+
+### Is the Ansible playbook inside or outside Kubernetes?
+Outside, one layer below. Vagrant runs it from the host over SSH after both VMs are up; it configures the operating system and installs K3s. Nothing in it is given to kubectl. Layers of Part 1, bottom up: libvirt runs the VMs, Vagrant creates them, Ansible installs K3s, K3s is Kubernetes, and only above that come the manifests. Two YAML files, two worlds: a playbook describes steps on machines, a manifest describes objects in the cluster.
+tags: ansible vagrant part1
+
+### What does the Part 1 playbook do, step by step?
+Play 1 on slombardS: install python3 and curl with apk (Alpine), run the K3s installer, wait for /etc/rancher/k3s/k3s.yaml and the node token. Play 2 on slombardSW: wait for port 6443 on 192.168.56.110, read the token from the server with delegate_to, install the agent with K3S_URL and K3S_TOKEN. Play 3 on the server: k3s kubectl get nodes and print it. The token never touches the repo; Ansible carries it over SSH.
+tags: ansible part1
+
+### Draw Part 1 as nested circles: where are the Vagrantfile, the playbook, K3s and the Pods?
+Outer circle: the host VM. Inside: Vagrant with libvirt, and in that ring the Vagrantfile and the playbook as files. Inside Vagrant: the two Alpine VMs. Inside each VM: K3s. The Kubernetes circle with the Pods spans both VMs, one cluster across two machines. The playbook never enters the VMs: Ansible runs on the host and reaches in over SSH to install K3s; afterwards the cluster runs without it.
+tags: part1 architecture
+
+### Are the two Part 1 VMs on different physical servers? What does "server" mean in this project?
+No: both run on the same host VM on one physical computer; libvirt gives each its own kernel, disk and IP, so K3s sees two machines. The exercise simulates a two-machine cluster on one laptop. In production nodes are separate physical servers or VMs on separate hosts, otherwise one hardware failure takes the cluster down. "Server" has three meanings here: the physical machine, the K3s server role (slombardS with the control plane, versus the agent slombardSW), and the API server component inside it. Say "server VM" or "server node" for slombardS.
+tags: part1 vocabulary
+
+### How do Vagrant and Ansible relate in Part 1?
+Siblings on the host, neither contains the other. During vagrant up, Vagrant writes an inventory with the two VMs and their SSH details, runs ansible-playbook with it and the playbook, and waits. Ansible is agentless: no daemon, no instance, a run and nothing more. The same playbook works without Vagrant against any machines reachable by SSH. Vagrant owns the VMs, Ansible owns what happens inside them, once.
+tags: ansible vagrant part1
+
+### Where are the two Alpine VMs declared?
+In p1/Vagrantfile, one config.vm.define block each: slombardS and slombardSW. Each block sets hostname, the box generic/alpine318, a private_network with the fixed IP (.110 or .111) on the libvirt network vagrant56 without DHCP, and the libvirt provider settings: 512 MB, 1 CPU, cpu_mode host-passthrough. The Ansible provisioner block at the end applies to both. Alpine is only the word in the box name: no ISO, no installation, Vagrant downloads the ready image from Vagrant Cloud.
+tags: vagrant part1
+
+### Does the Part 1 setup have a real-world equivalent?
+Vagrant on a laptop is a lab, but take Vagrant away and the rest is a real pattern: K3s on two small Linux machines, one server, one agent, installed by Ansible, is what edge installations look like: supermarket tills, factory floors, sensor sites, Raspberry Pi clusters. Rancher maintains k3s-ansible, which does nearly what our playbook does, and the playbook would run on real machines with another inventory. Vagrant's real role: testing such a playbook on throwaway VMs before touching hardware. Part 2 (Ingress by host) is everyday cluster work; Part 3 (Argo CD) is the production pattern.
+tags: part1 context
+
+### Do you always need at least two servers on two machines? What does real high availability take?
+For availability, two is not enough. Part 1 has workload redundancy (the agent can fail, Pods keep running on the server) but one control plane: slombardS is a single point of failure. Real HA needs three servers, not two, because etcd decides by majority and two minus one has none; three servers plus any number of agents, on separate machines, in the cloud across separate data centres. Availability is not the only point, though: at the edge K3s often runs on one box on purpose, because the gain is uniformity, the same manifests, kubectl and Argo CD for a thousand shops and the data centre. HA is what you get on top when you have enough machines.
+tags: kubernetes architecture context
+
+### What is Part 1 about?
+Two VMs from one Vagrantfile, Alpine, 512 MB, fixed IPs on eth1: slombardS at 192.168.56.110, slombardSW at .111. Ansible installs K3s on the first as server and on the second as agent, which joins with the server's URL and token. Result: a two-node cluster, kubectl get nodes shows both Ready. Theme: how a cluster comes into being, control plane and worker, a node joining.
+tags: part1 overview
+
+### What is Part 2 about?
+One VM, K3s as server, no agents. Three web applications as Deployments, app2 with three replicas, each behind a Service. One Ingress routes requests to 192.168.56.110 by Host header: app1.com to app1, app2.com to app2, anything else to app3; Traefik executes it. Theme: Deployments, Services, Ingress, replicas.
+tags: part2 overview
+
+### What is Part 3 about?
+No Vagrant VMs. A script installs Docker and K3d; K3d starts the K3s cluster as Docker containers. Two namespaces: argocd with Argo CD, dev with an application Argo CD deploys from a public GitHub repo. The application has two image tags, v1 and v2; change the tag in the repo and push, Argo CD rolls out the new version, curl on port 8888 shows v2. Theme: K3d versus K3s, GitOps, continuous deployment.
+tags: part3 overview
+
+### How do the three parts build on each other, and what does the bonus add?
+Part 1 builds the machines under the cluster, Part 2 the applications inside the cluster, Part 3 the road from Git into the cluster. The bonus repeats Part 3 with a local GitLab instead of GitHub, in a namespace gitlab, installed with Helm.
+tags: overview bonus
+
+### Is K3s used in the real world?
+Yes, wherever clusters are small or numerous, not in large data-centre clusters (there: managed Kubernetes, OpenShift, or RKE2, K3s' hardened sibling from the same company). Edge and IoT: shops, factories, vehicles, wind farms, sold by SUSE as Rancher with K3s to customers with thousands of sites. Civo runs its managed Kubernetes on K3s. CI pipelines that need a cluster per test run. Developer laptops, homelabs, Raspberry Pi. Small companies with one to three servers. A CNCF project since 2020 and the most used lightweight Kubernetes.
+tags: k3s context
+
+### What is Rancher?
+Two things. Rancher Labs is the company (California, 2014, part of SUSE since 2020) that built K3s, RKE and RKE2. Rancher is its main product: a management platform with a web UI for many Kubernetes clusters at once, installing clusters (K3s, RKE2), importing others (EKS, GKE, AKS), and giving users, permissions, monitoring and an app catalogue across all of them. The name is the "cattle, not pets" image: servers are a herd, interchangeable; whoever keeps the herd is a rancher. We use only K3s; the paths /etc/rancher/k3s and /var/lib/rancher on the VMs are the maker's mark.
+tags: k3s vocabulary context
+
+### Are server and agent roles we define, or part of K3s?
+Part of K3s: the two ways the one binary can start. k3s server runs the control plane plus the worker part; k3s agent runs only the worker part and registers with a server. We only choose which machine gets which role. In the install script one thing decides: if K3S_URL is set, an agent is installed, otherwise a server; our playbook calls the installer without variables on slombardS and with K3S_URL and K3S_TOKEN on slombardSW. Standard Kubernetes calls the same roles control-plane node (formerly master) and worker node; the subject says controller mode and agent mode. kubectl get nodes shows it in the ROLES column: control-plane,master for slombardS, none for slombardSW.
+tags: k3s part1
+
+### Is the agent part of the server, since the server controls it?
+No: it belongs to the cluster, not to the server; two processes on two machines. And the control runs the other way round: the server never logs into the agent or sends it commands. The agent's kubelet keeps a connection to the API server on port 6443 and watches for Pods assigned to its node, starts them itself, reports status, keeps watching. The server only writes "this Pod belongs on slombardSW" into its datastore. Control by asking, not by ordering, which is why the agent keeps running when the server dies. The agent also opens a tunnel to the server through which the server reaches the kubelet for kubectl logs and exec; even that connection is opened by the agent.
+tags: k3s architecture part1
+
+### Why does the server node mix control plane and workloads? Is that against the Unix philosophy?
+The Unix philosophy is about programs, and there Kubernetes follows it: API server, scheduler, controller manager, kubelet and kube-proxy are separate programs with one job each, talking through the API. What is mixed is the machine, a choice of distribution, not of design. K3s mixes on purpose: it targets small setups (a 512 MB edge box, a laptop, Part 2 with one VM) where a machine doing only control plane would be waste, and a one-machine cluster would be impossible. Standard Kubernetes separates by taint; K3s can too, with --node-taint CriticalAddonsOnly=true:NoExecute on the server. The single binary is packaging, not mixing: inside, the components stay separate parts in one process.
+tags: k3s architecture
+
+### Who starts the container?
+The kubelet, through the container runtime. The scheduler only writes the node name into the Pod object in the API server. The kubelet on that node sees a new Pod assigned to it and calls containerd over the CRI: pull the image, create namespaces and cgroups, start the process; containerd's helper runc actually creates the container. Then the kubelet watches it and reports status. Three parties, one job each: the scheduler decides where, the kubelet orders, containerd with runc executes.
+tags: kubernetes architecture
+
+### Is there a maximum number of replicas, or Pods, on one worker node?
+Replicas have no limit; a node has one for Pods in total: the kubelet accepts 110 Pods per node by default (K3s too), changeable with --max-pods. Other limits bite first: resources (with CPU and memory requests the scheduler places only what the node covers; without requests the node simply fills up) and IP addresses (Flannel gives each node a /24, about 250 Pod IPs). Cluster-wide, Kubernetes tests up to 5000 nodes and 150 000 Pods. Nothing spreads replicas by default: app2's three Pods may all land on one node. To force different nodes, use podAntiAffinity or topologySpreadConstraints in the Pod template; only then does a replica protect against a machine failure.
+tags: kubernetes scheduling
+
+### Does Kubernetes regulate Pod creation by the machine's available resources?
+Only if told. The scheduler counts what Pods declare, resources.requests (e.g. 100m CPU, 128Mi memory), not what they use: the sum of requests on a node must fit its capacity, and a Pod that fits nowhere stays Pending. Without requests, as in most teaching manifests, it counts only Pods up to 110 and the machine can fill up. After start: limits are enforced by the kernel (over the memory limit: OOMKilled and restarted; over CPU: throttled), and when the node as a whole runs short the kubelet evicts Pods, which are recreated elsewhere. What does not exist: replicas changing by themselves; replicas: 3 stays 3 whatever the load. That is the Horizontal Pod Autoscaler's job, and adding nodes the cluster autoscaler's. Picture: a hotel with 110 rooms where guests must say how many beds they need; whoever says nothing is checked in until the beds run out.
+tags: kubernetes scheduling resources
+
+### What does 100m CPU mean? How are CPU and memory requests written?
+CPU is counted in millicores, thousandths of a core: 1000m is one core, 500m half, 100m a tenth. Memory in bytes with binary suffixes: 128Mi is 128 mebibytes, 1Gi a gibibyte. requests is what the scheduler reserves for the container (it must fit the node's free capacity), limits what the kernel enforces at run time. In the container spec: resources: {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 500m, memory: 256Mi}}.
+tags: kubernetes resources
+
+### How does the scheduler know a node's capacity, if the VM size is set outside Kubernetes?
+From the machine itself. The Vagrantfile tells libvirt how big the VM is and is then out of the picture; the VM's kernel simply sees 1 CPU and 512 MB. At start the kubelet asks that kernel (/proc/cpuinfo, /proc/meminfo, cgroups) and reports the result to the API server into the Node object: status.capacity, and status.allocatable, capacity minus what is reserved for system and kubelet. The scheduler reads only that object. kubectl describe node shows Capacity, Allocatable and Allocated resources, the sum of requests of the Pods there. Same pattern as everywhere: the kubelet looks at its machine and writes into the API, everyone else reads the API.
+tags: kubernetes scheduling architecture
+
+### How do the scheduler and the controller manager depend on each other?
+They do not know each other; both talk only to the API server. The chain: the controller manager (its ReplicaSet controller) creates Pod objects with an empty nodeName; the scheduler watches for Pods without a node, picks one and writes it in; the kubelet watches for Pods with its node name and starts them. Three programs, each reacting to a field another wrote, none calling another. So they fail independently: scheduler down, Pods are still created but stay Pending; controller manager down, nothing new is created or repaired, but what runs keeps running. The pattern of the whole control plane: depend on the API server, never on each other. In K3s both live in one process and still talk through the API.
+tags: kubernetes architecture
+
+### What does "the ReplicaSet controller creates Pod objects" mean?
+Creating a Pod object is writing a record into the API server, a document saying "a Pod named app2-7d9f-x4k2 with this image, ports and labels should exist": a wish, nothing running yet. The scheduler adds the node, the kubelet turns it into containers. In Kubernetes, object always means the database entry; the running thing is its status. The controller manager is one process holding dozens of small loops, one per object kind. The ReplicaSet loop: read all ReplicaSets, count the Pods matching each one's labels, if fewer than replicas write new Pod objects from its template with a random suffix, if more delete the surplus. Delete a Pod of app2 and the loop counts two, writes one: self-healing is a counting loop.
+tags: kubernetes architecture resources
+
+### What does "scheduling" or "placing" a Pod mean?
+Deciding which node a Pod runs on and writing that decision into the Pod object: one field, spec.nodeName, created empty and filled by the scheduler with, say, slombardSW. The scheduler moves and starts nothing; it writes a name into a field. The word scheduling has nothing to do with time here, only with place. Two stages: filter the nodes that qualify (enough free requests, no taint without toleration, matching labels), then score the rest and pick the best, usually the least loaded. Part 1 has two candidates, Part 2 one. The kubelet seeing its name in the field makes the containers.
+tags: kubernetes scheduling
+
+### Does a worker node know about replicas?
+No. A node sees only Pods: the kubelet is told "Pod app2-7d9f-x4k2 is yours" and starts it; whether it is one of three or the only one is written nowhere on the node. replicas is a number in the Deployment, stored in the control plane's datastore and enforced by the ReplicaSet controller on the server. The complete list of what runs on a node: kubelet, container runtime, kube-proxy, the CNI plugin (Flannel), and on top of them the Pods.
+tags: kubernetes architecture
+
+### Are Pods replicas?
+Replicas are Pods, not the other way round. Every replica of a Deployment is a Pod: app2's three replicas are three Pods from the same template. But a Pod is a replica only if a ReplicaSet holds it; a Pod made by hand, or by a DaemonSet or a Job, is a Pod and a replica of nothing. Replica is the role, Pod is the thing.
+tags: kubernetes resources vocabulary
+
+### Is a Pod a configuration, like a class, or a process?
+Both, in sequence, and the class is one step up: the Deployment's template is the class, a description without a name; the Pod object is an instance, a record with its own name, IP and status in the datastore, pure data with identity. Then the kubelet makes it run: one process per container, plus a tiny pause container that only sleeps and holds the shared namespaces (above all the network with the IP) so the containers share them and can restart one by one. A running Pod is a group of processes in shared namespaces, not one process; ps on the node shows the processes, the Pod is the bracket around them. The object's status (Running, Ready, Restarts) is the kubelet watching the processes and writing back.
+tags: kubernetes resources
+
+### Which networks exist in Part 1, and who made each?
+Three, stacked. The VM network from Vagrant: eth1 with 192.168.56.110 and .111 (plus eth0 NAT); machines talk here, the API listens on 6443, requests from outside arrive here; Kubernetes uses it, did not make it. The Pod network from Flannel: 10.42.0.0/16, a /24 per node (server Pods 10.42.0.x, agent Pods 10.42.1.x); every Pod reaches every Pod, between nodes through a tunnel over the VM network; exists only inside the cluster. The Service network: 10.43.0.0/16, the ClusterIPs, no interface at all, only forwarding rules written by kube-proxy on each node; an address without a machine. Traefik bridges bottom and top: it listens on the VM IP, port 80, and forwards into the Service network. Three commands, three layers: ip a, kubectl get pods -o wide, kubectl get svc.
+tags: kubernetes networking part1
+
+### How does a Pod on the agent reach a Pod on the server, if their IPs are not from the Vagrant network?
+Through Flannel, the CNI plugin K3s installs. Flannel runs on every node, gives each node its own Pod range (server 10.42.0.0/24, agent 10.42.1.0/24) and hands every new Pod an IP from it. A packet from 10.42.1.5 to 10.42.0.7 is wrapped by Flannel into a second packet from 192.168.56.111 to 192.168.56.110 and unwrapped on the other side: VXLAN, an overlay network riding on the VM network. Without a CNI plugin Pods get no IP and nodes stay NotReady ("network plugin not ready"). The name is the flannel shirt, made by CoreOS in 2014, the makers of etcd.
+tags: kubernetes networking part1
