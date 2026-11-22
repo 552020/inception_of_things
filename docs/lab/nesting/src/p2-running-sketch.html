@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Part 2, what sits inside what: one node, three Services, five app pods</title>
+<title>Part 2 running: one VM, one node, three Services, five app pods</title>
 <style>
   :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
   html, body { margin:0; background:var(--paper); color:var(--ink); }
@@ -54,6 +54,7 @@
     <rect x="20" y="70" width="1460" height="790" rx="10" class="line fill"/>
     <rect x="40" y="118" width="1420" height="700" rx="8" class="line fill"/>
     <rect x="60" y="400" width="190" height="140" rx="6" class="line fill"/>
+    <rect x="60" y="200" width="190" height="170" rx="6" class="line fill plan"/>
     <rect x="270" y="190" width="1170" height="620" rx="6" class="line fill"/>
     <rect x="290" y="262" width="1130" height="534" rx="6" class="line fill"/>
     <rect x="305" y="330" width="250" height="440" rx="6" class="thin fill"/>
@@ -86,7 +87,7 @@
   <rect x="987.0" y="545.0" width="16" height="30" rx="3" class="door"/>
   <rect x="1192.0" y="545.0" width="16" height="30" rx="3" class="door"/>
   <rect x="842.0" y="695.0" width="16" height="30" rx="3" class="door"/>
-  <text x="750" y="46" class="h" text-anchor="middle">Part 2, what sits inside what: one node, three Services, five app pods</text>
+  <text x="750" y="46" class="h" text-anchor="middle">Part 2 running: one VM, one node, three Services, five app pods</text>
   <text x="40" y="100" class="t">The computer at 42</text>
   <text x="60" y="150" class="t">Host VM</text>
   <text x="60" y="172" class="s">Ubuntu under QEMU/KVM</text>
@@ -95,10 +96,18 @@
   <text x="78" y="476" class="mono">Host: app2.com</text>
   <text x="78" y="498" class="s">any other Host</text>
   <text x="78" y="522" class="xs">to 192.168.56.110</text>
+  <text x="78" y="228" class="t">Not running now</text>
+  <text x="78" y="254" class="xs">Vagrant and Ansible:</text>
+  <text x="78" y="274" class="xs">clients that built the VM</text>
+  <text x="78" y="294" class="xs">and installed K3s and</text>
+  <text x="78" y="314" class="xs">the apps; they act when</text>
+  <text x="78" y="334" class="xs">you call them</text>
+  <text x="1440" y="150" class="a" text-anchor="end">running here: libvirt and the qemu process of the VM</text>
+  <text x="1000" y="222" class="a">process on the host VM: qemu</text>
   <text x="290" y="222" class="t">VM rpodackS</text>
   <text x="290" y="246" class="s">192.168.56.110, 1 CPU, 1024 MB</text>
   <text x="305" y="290" class="t">K3s server: the only node</text>
-  <text x="520" y="290" class="xs">control plane (API server :6443, scheduler, controllers, SQLite) and kubelet, kube-proxy, containerd</text>
+  <text x="540" y="290" class="xs">process in the VM: k3s server (API server :6443, scheduler, controllers, SQLite, kubelet, containerd)</text>
   <text x="320" y="358" class="t">Pod traefik</text>
   <text x="320" y="382" class="s">the Ingress controller</text>
   <text x="332" y="422" class="s">container</text>

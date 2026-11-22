@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bonus, what sits inside what: GitLab and Argo CD in one k3d node</title>
+<title>Bonus running: GitLab and Argo CD in one k3d node</title>
 <style>
   :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
   html, body { margin:0; background:var(--paper); color:var(--ink); }
@@ -55,6 +55,7 @@
     <rect x="40" y="118" width="1420" height="700" rx="8" class="line fill"/>
     <rect x="60" y="420" width="170" height="130" rx="6" class="line fill"/>
     <rect x="60" y="600" width="170" height="130" rx="6" class="line fill"/>
+    <rect x="60" y="200" width="170" height="190" rx="6" class="line fill plan"/>
     <rect x="250" y="190" width="1190" height="610" rx="6" class="line fill"/>
     <rect x="270" y="262" width="1150" height="520" rx="6" class="line fill"/>
     <rect x="290" y="305" width="1110" height="465" rx="6" class="line fill"/>
@@ -79,7 +80,7 @@
   <circle cx="625" cy="495" r="7" class="dot"/>
   <circle cx="236" cy="500" r="7" class="dot"/>
   <circle cx="236" cy="665" r="7" class="dot"/>
-  <text x="750" y="46" class="h" text-anchor="middle">Bonus, what sits inside what: GitLab and Argo CD in one k3d node</text>
+  <text x="750" y="46" class="h" text-anchor="middle">Bonus running: GitLab and Argo CD in one k3d node</text>
   <text x="40" y="100" class="t">The computer at 42</text>
   <text x="60" y="150" class="t">Host VM</text>
   <text x="60" y="172" class="s">Ubuntu under QEMU/KVM</text>
@@ -91,8 +92,15 @@
   <text x="76" y="656" class="mono">localhost:8888</text>
   <text x="76" y="682" class="xs">&quot;message&quot;: &quot;v1&quot;</text>
   <text x="76" y="706" class="a">v2 after the push</text>
+  <text x="76" y="228" class="t">Not running now</text>
+  <text x="76" y="254" class="xs">make, k3d, kubectl:</text>
+  <text x="76" y="274" class="xs">clients that built the</text>
+  <text x="76" y="294" class="xs">cluster and talk to it;</text>
+  <text x="76" y="314" class="xs">they act when you</text>
+  <text x="76" y="334" class="xs">call them</text>
+  <text x="1440" y="150" class="a" text-anchor="end">running here: the Docker daemon</text>
   <text x="268" y="220" class="t">Docker</text>
-  <text x="268" y="244" class="s">k3d starts the node as a container</text>
+  <text x="268" y="244" class="s">the k3d node is a container: a process of Docker</text>
   <text x="288" y="290" class="t">k3d cluster bonus</text>
   <text x="470" y="290" class="a">one server node, no agent node</text>
   <text x="305" y="333" class="t">Server node</text>

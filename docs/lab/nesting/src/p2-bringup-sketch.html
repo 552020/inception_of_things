@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 2: how it comes up, step by step</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Patrick Hand","Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .svc   { stroke:var(--accent); stroke-width:2.2; }
+  .acc   { stroke:var(--accent); }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .door  { fill:var(--accent); stroke:var(--ink); stroke-width:1.6; }
+  .ca { fill:var(--accent); stroke:var(--ink); stroke-width:1; }
+  .cb { fill:var(--ink); stroke:var(--ink); stroke-width:1; }
+  .cc { fill:#c9c6bd; stroke:var(--ink); stroke-width:1; }
+  .cs { fill:url(#hatch); stroke:var(--ink); stroke-width:1; }
+  .ce { fill:none; stroke:#cfcdc6; stroke-width:1; }
+  .pw { fill:#f3d9c6; stroke:var(--accent); stroke-width:2; }
+  .pa { fill:#ffffff; stroke:var(--ink); stroke-width:2.2; }
+  .pk { fill:#dedbd2; stroke:var(--ink); stroke-width:1.4; }
+  .ps { fill:url(#hatch); stroke:var(--ink); stroke-width:1.4; }
+  .cn { fill:#fbfaf6; stroke:var(--ink); stroke-width:1.3; }
+  .cz { fill:none; stroke:var(--accent); stroke-width:3; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .xs    { font-size:16px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+  .monoa { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:16px; fill:var(--accent); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 960" role="img" aria-label="Part 2 coming up: make up starts one VM, Ansible installs K3s and applies the three apps">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    
+  </defs>
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="790" rx="10" class="line fill"/>
+    <rect x="40" y="200" width="260" height="172" rx="6" class="line fill"/>
+    <rect x="330" y="190" width="700" height="626" rx="6" class="line fill"/>
+    <rect x="346" y="200" width="668" height="87" rx="6" class="thin fill"/>
+    <rect x="1060" y="200" width="400" height="87" rx="6" class="thin fill"/>
+    <path d="M1016,243 L1056,243" class="line" marker-end="url(#arrow)"/>
+    <rect x="346" y="301" width="668" height="87" rx="6" class="thin fill"/>
+    <rect x="1060" y="301" width="400" height="87" rx="6" class="thin fill"/>
+    <path d="M1016,344 L1056,344" class="line" marker-end="url(#arrow)"/>
+    <rect x="346" y="402" width="668" height="87" rx="6" class="thin fill"/>
+    <rect x="1060" y="402" width="400" height="87" rx="6" class="thin fill"/>
+    <path d="M1016,445 L1056,445" class="line" marker-end="url(#arrow)"/>
+    <rect x="346" y="503" width="668" height="87" rx="6" class="thin fill"/>
+    <rect x="1060" y="503" width="400" height="87" rx="6" class="thin fill"/>
+    <path d="M1016,546 L1056,546" class="line" marker-end="url(#arrow)"/>
+    <rect x="346" y="604" width="668" height="87" rx="6" class="thin fill"/>
+    <rect x="1060" y="604" width="400" height="87" rx="6" class="thin fill"/>
+    <path d="M1016,647 L1056,647" class="line" marker-end="url(#arrow)"/>
+    <rect x="346" y="705" width="668" height="87" rx="6" class="thin fill"/>
+    <rect x="1060" y="705" width="400" height="87" rx="6" class="thin fill"/>
+    <path d="M1016,748 L1056,748" class="line" marker-end="url(#arrow)"/>
+    <path d="M302,230 L328,230" class="line" marker-end="url(#arrow)"/>
+  </g>
+  <circle cx="306" cy="230" r="7" class="dot"/>
+  <text x="750" y="46" class="h" text-anchor="middle">Part 2: how it comes up, step by step</text>
+  <text x="170" y="122" class="col" text-anchor="middle">THE HOST VM</text>
+  <text x="170" y="150" class="s" text-anchor="middle">where we type</text>
+  <text x="680" y="122" class="col" text-anchor="middle">THE STEPS</text>
+  <text x="680" y="150" class="s" text-anchor="middle">what happens, in order</text>
+  <text x="1260" y="122" class="col" text-anchor="middle">WHAT EXISTS NOW</text>
+  <text x="1260" y="150" class="s" text-anchor="middle">after each step</text>
+  <text x="58" y="232" class="t">Host VM</text>
+  <text x="58" y="262" class="s">Ubuntu under QEMU/KVM</text>
+  <text x="58" y="286" class="s">Vagrant, libvirt, Ansible</text>
+  <text x="58" y="320" class="xs">you type:</text>
+  <text x="58" y="342" class="a">make up</text>
+  <text x="362" y="230" class="t">0</text>
+  <text x="396" y="228" class="t">vagrant up</text>
+  <text x="396" y="252" class="s">creates the VM rpodackS, 1024 MB, from the box debian-13</text>
+  <text x="1002" y="228" class="a" text-anchor="end">Vagrant, libvirt</text>
+  <text x="1074" y="228" class="s">one qemu process, the VM booted, no</text>
+  <text x="1074" y="250" class="xs">K3s yet</text>
+  <text x="362" y="331" class="t">1</text>
+  <text x="396" y="329" class="t">hostname and packages</text>
+  <text x="396" y="353" class="s">hostname set, cloud-init told to keep it, python3 and curl</text>
+  <text x="396" y="375" class="s">installed</text>
+  <text x="1002" y="329" class="a" text-anchor="end">Ansible, over SSH</text>
+  <text x="1074" y="329" class="s">the VM is named rpodackS and ready for</text>
+  <text x="1074" y="351" class="xs">K3s</text>
+  <text x="362" y="432" class="t">2</text>
+  <text x="396" y="430" class="t">K3s server</text>
+  <text x="396" y="454" class="s">installed, then wait until the API answers</text>
+  <text x="1002" y="430" class="a" text-anchor="end">Ansible</text>
+  <text x="1074" y="430" class="s">process k3s server, API server :6443;</text>
+  <text x="1074" y="452" class="xs">add-on pods start: coredns, traefik,</text>
+  <text x="1074" y="474" class="xs">...</text>
+  <text x="362" y="533" class="t">3</text>
+  <text x="396" y="531" class="t">app1</text>
+  <text x="396" y="555" class="s">Deployment, Service and Ingress copied to the node and applied</text>
+  <text x="1002" y="531" class="a" text-anchor="end">Ansible, kubectl</text>
+  <text x="1074" y="531" class="s">pod app1 (nginx) behind Service app1</text>
+  <text x="362" y="634" class="t">4</text>
+  <text x="396" y="632" class="t">app3, then app2</text>
+  <text x="396" y="656" class="s">the same three objects each; the Ingress of app3 has no host:</text>
+  <text x="396" y="678" class="s">the default</text>
+  <text x="1002" y="632" class="a" text-anchor="end">Ansible, kubectl</text>
+  <text x="1074" y="632" class="s">pod app3; app2 with three pods;</text>
+  <text x="1074" y="654" class="xs">Traefik routes by Host</text>
+  <text x="362" y="735" class="t">5</text>
+  <text x="396" y="733" class="t">check</text>
+  <text x="396" y="757" class="s">the nodes are shown; then curl with a Host header</text>
+  <text x="1002" y="733" class="a" text-anchor="end">you</text>
+  <text x="1074" y="733" class="s">three Services answer: app1.com,</text>
+  <text x="1074" y="755" class="xs">app2.com, anything else</text>
+  <text x="60" y="898" class="s">Vagrant starts the VM and calls Ansible, which does steps 1 to 4 over SSH. Afterwards only the VM, K3s and the pods run.</text>
+  <text x="60" y="926" class="s">Do not start it while the Part 1 VMs run: both use 192.168.56.110.</text>
+  <text x="60" y="954" class="a">Status: written and reviewed, not run yet.</text>
+  <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>

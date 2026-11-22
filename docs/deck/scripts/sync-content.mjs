@@ -102,20 +102,6 @@ for (const entry of readdirSync(path.join(docs, "lab"), { withFileTypes: true })
 }
 library.lab.sort((a, b) => a.title.localeCompare(b.title));
 
-// Final-state sketches of the three parts, shown on the public pages /parts/1 to /parts/3. The sources live in
-// docs/diagrams once that folder is on this branch; until then the committed copies in public/diagrams are used.
-const sketches = path.join(docs, "diagrams");
-if (existsSync(sketches)) {
-  mkdirSync(path.join(here, "../public/diagrams"), { recursive: true });
-  for (const n of [1, 2, 3]) {
-    const file = `p${n}-final-state-sketch.png`;
-    if (existsSync(path.join(sketches, file))) {
-      copyFileSync(path.join(sketches, file), path.join(here, "../public/diagrams", file));
-      console.log(`synced ${file}`);
-    }
-  }
-}
-
 // The Nesting pictures are shown on the public pages as well (cropped above their notes).
 const nesting = path.join(docs, "lab/nesting/img");
 if (existsSync(nesting)) {

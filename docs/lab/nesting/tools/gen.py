@@ -1,3 +1,4 @@
+import textwrap
 """Nesting sketches of Kubernetes: what sits inside what, with the ports as small doors.
 Same hand-drawn style as docs/diagrams (paper, ink, one accent colour). Writes ../src/*.html; the PNGs in ../img are
 screenshots of them (see ../NOTES.md). Usage: python3 gen.py"""
@@ -232,15 +233,17 @@ def part1():
 
 # ---------------------------------------------------------------- part 2
 def part2():
-    sk = Sketch("Part 2, what sits inside what: one node, three Services, five app pods", "Part 2 drawn as nested boxes: one VM with one K3s node; Traefik at port 80 and three Services in front of the app pods")
-    sk.t(750, 46, "Part 2, what sits inside what: one node, three Services, five app pods", "h", "middle")
+    sk = Sketch("Part 2 running: one VM, one node, three Services, five app pods", "Part 2 drawn as nested boxes: one VM with one K3s node; Traefik at port 80 and three Services in front of the app pods")
+    sk.t(750, 46, "Part 2 running: one VM, one node, three Services, five app pods", "h", "middle")
     sk.box(20, 70, 1460, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t")
     sk.box(40, 118, 1420, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM", "s")
     sk.box(60, 400, 190, 140, "line", rx=6)
     sk.t(78, 428, "curl", "t"); sk.t(78, 454, "Host: app1.com", "mono"); sk.t(78, 476, "Host: app2.com", "mono"); sk.t(78, 498, "any other Host", "s"); sk.t(78, 522, "to 192.168.56.110", "xs")
+    sk.box(60, 200, 190, 170, "line", plan=True, rx=6); sk.t(78, 228, "Not running now", "t"); sk.t(78, 254, "Vagrant and Ansible:", "xs"); sk.t(78, 274, "clients that built the VM", "xs"); sk.t(78, 294, "and installed K3s and", "xs"); sk.t(78, 314, "the apps; they act when", "xs"); sk.t(78, 334, "you call them", "xs")
+    sk.t(1440, 150, "running here: libvirt and the qemu process of the VM", "a", "end")
+    sk.t(1000, 222, "process on the host VM: qemu", "a")
     sk.box(270, 190, 1170, 620, "line"); sk.t(290, 222, "VM rpodackS", "t"); sk.t(290, 246, "192.168.56.110, 1 CPU, 1024 MB", "s")
-    sk.box(290, 262, 1130, 534, "line"); sk.t(305, 290, "K3s server: the only node", "t")
-    sk.t(520, 290, "control plane (API server :6443, scheduler, controllers, SQLite) and kubelet, kube-proxy, containerd", "xs")
+    sk.box(290, 262, 1130, 534, "line"); sk.t(305, 290, "K3s server: the only node", "t"); sk.t(540, 290, "process in the VM: k3s server (API server :6443, scheduler, controllers, SQLite, kubelet, containerd)", "xs")
     # Traefik
     y0 = 330
     sk.box(305, y0, 250, 440, "thin"); sk.t(320, y0 + 28, "Pod traefik", "t"); sk.t(320, y0 + 52, "the Ingress controller", "s")
@@ -273,15 +276,17 @@ def part2():
 
 # ---------------------------------------------------------------- part 3
 def part3():
-    sk = Sketch("Part 3, what sits inside what: Argo CD in a k3d cluster in Docker", "Part 3 drawn as nested boxes: the host VM holds Docker, Docker holds the two k3d node containers, the nodes hold the pods of Argo CD and of the app")
-    sk.t(750, 46, "Part 3, what sits inside what: Argo CD in a k3d cluster in Docker", "h", "middle")
+    sk = Sketch("Part 3 running: Argo CD in a k3d cluster in Docker", "Part 3 drawn as nested boxes: the host VM holds Docker, Docker holds the two k3d node containers, the nodes hold the pods of Argo CD and of the app")
+    sk.t(750, 46, "Part 3 running: Argo CD in a k3d cluster in Docker", "h", "middle")
     sk.box(20, 70, 1110, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t")
     sk.box(40, 118, 1070, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM", "s")
     # clients
     sk.box(60, 470, 170, 120, "line", rx=6); sk.t(76, 498, "Browser", "t"); sk.t(76, 524, "localhost:8080", "mono"); sk.t(76, 548, "the Argo CD UI", "s")
     sk.box(60, 660, 170, 120, "line", rx=6); sk.t(76, 688, "curl", "t"); sk.t(76, 714, "localhost:8888", "mono"); sk.t(76, 738, '"message": "v1"', "s")
     # docker, cluster, nodes
-    sk.box(250, 190, 840, 610, "line"); sk.t(268, 220, "Docker", "t"); sk.t(268, 244, "k3d starts each node as a container", "s")
+    sk.box(60, 200, 170, 190, "line", plan=True, rx=6); sk.t(76, 228, "Not running now", "t"); sk.t(76, 254, "make, k3d, kubectl:", "xs"); sk.t(76, 274, "clients that built the", "xs"); sk.t(76, 294, "cluster and talk to it;", "xs"); sk.t(76, 314, "they act when you", "xs"); sk.t(76, 334, "call them", "xs")
+    sk.t(1100, 150, "running here: the Docker daemon", "a", "end")
+    sk.box(250, 190, 840, 610, "line"); sk.t(268, 220, "Docker", "t"); sk.t(268, 244, "each k3d node is a container: a process of Docker", "s")
     sk.box(270, 262, 800, 520, "line"); sk.t(288, 290, "k3d cluster dockercluster", "t")
     sk.box(290, 305, 380, 465, "line"); sk.t(305, 333, "Server node", "t"); sk.t(470, 333, "a container running K3s", "xs")
     sk.box(305, 345, 350, 50, "thin"); sk.t(318, 366, "API server :6443, scheduler,", "xs"); sk.t(318, 386, "controllers, kubelet, containerd", "xs")
@@ -456,13 +461,15 @@ def bonus_final():
 
 # ---------------------------------------------------------------- bonus, nested
 def bonus_nested():
-    sk = Sketch("Bonus, what sits inside what: GitLab and Argo CD in one k3d node", "The bonus as nested boxes: the host VM holds Docker, Docker holds the k3d cluster, the cluster holds one server node, the node holds the pods of GitLab, Argo CD and the app")
-    sk.t(750, 46, "Bonus, what sits inside what: GitLab and Argo CD in one k3d node", "h", "middle")
+    sk = Sketch("Bonus running: GitLab and Argo CD in one k3d node", "The bonus as nested boxes: the host VM holds Docker, Docker holds the k3d cluster, the cluster holds one server node, the node holds the pods of GitLab, Argo CD and the app")
+    sk.t(750, 46, "Bonus running: GitLab and Argo CD in one k3d node", "h", "middle")
     sk.box(20, 70, 1460, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t")
     sk.box(40, 118, 1420, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM", "s")
     sk.box(60, 420, 170, 130, "line", rx=6); sk.t(76, 450, "You", "t"); sk.t(76, 476, "browser or git", "s"); sk.t(76, 502, "localhost:8929", "mono"); sk.t(76, 528, "push v2 here", "a")
     sk.box(60, 600, 170, 130, "line", rx=6); sk.t(76, 630, "curl", "t"); sk.t(76, 656, "localhost:8888", "mono"); sk.t(76, 682, '"message": "v1"', "xs"); sk.t(76, 706, "v2 after the push", "a")
-    sk.box(250, 190, 1190, 610, "line"); sk.t(268, 220, "Docker", "t"); sk.t(268, 244, "k3d starts the node as a container", "s")
+    sk.box(60, 200, 170, 190, "line", plan=True, rx=6); sk.t(76, 228, "Not running now", "t"); sk.t(76, 254, "make, k3d, kubectl:", "xs"); sk.t(76, 274, "clients that built the", "xs"); sk.t(76, 294, "cluster and talk to it;", "xs"); sk.t(76, 314, "they act when you", "xs"); sk.t(76, 334, "call them", "xs")
+    sk.t(1440, 150, "running here: the Docker daemon", "a", "end")
+    sk.box(250, 190, 1190, 610, "line"); sk.t(268, 220, "Docker", "t"); sk.t(268, 244, "the k3d node is a container: a process of Docker", "s")
     sk.box(270, 262, 1150, 520, "line"); sk.t(288, 290, "k3d cluster bonus", "t"); sk.t(470, 290, "one server node, no agent node", "a")
     sk.box(290, 305, 1110, 465, "line"); sk.t(305, 333, "Server node", "t"); sk.t(430, 333, "a container running K3s: control plane, kubelet, kube-proxy, containerd", "xs")
     # pods, left to right: GitLab | Git reader | UI | Sync | app
@@ -583,8 +590,95 @@ def part1_running():
            "Status: run on 2026-11-22. The server node was Ready; the worker joining has not been checked yet.")
     return sk
 
+# ---------------------------------------------------------------- how a part comes up, step by step
+def bringup(title, label, host_lines, you_type, steps, foot, status):
+    sk = Sketch(title, label)
+    sk.t(750, 46, title, "h", "middle")
+    sk.box(20, 70, 1460, 790, "line", rx=10)
+    sk.t(170, 122, "THE HOST VM", "col", "middle"); sk.t(170, 150, "where we type", "s", "middle")
+    sk.t(680, 122, "THE STEPS", "col", "middle"); sk.t(680, 150, "what happens, in order", "s", "middle")
+    sk.t(1260, 122, "WHAT EXISTS NOW", "col", "middle"); sk.t(1260, 150, "after each step", "s", "middle")
+    n = len(steps)
+    rowh = min(105, 610 // n)
+    top = 200
+    sk.box(40, 200, 260, 40 + 24 * len(host_lines) + 84, "line", rx=6)
+    sk.t(58, 232, "Host VM", "t")
+    for i, ln in enumerate(host_lines): sk.t(58, 262 + i * 24, ln, "s")
+    yy = 262 + len(host_lines) * 24 + 10
+    sk.t(58, yy, "you type:", "xs"); sk.t(58, yy + 22, you_type, "a")
+    sk.box(330, top - 10, 700, rowh * n + 20, "line")
+    for i, (name, detail, actor, exists) in enumerate(steps):
+        y = top + i * rowh
+        bh = rowh - 14
+        sk.box(346, y, 668, bh, "thin")
+        sk.t(362, y + 30, str(i), "t")
+        sk.t(396, y + 28, name, "t")
+        lines = textwrap.wrap(detail, 64)[:(2 if rowh >= 95 else 1)]
+        for j, ln in enumerate(lines): sk.t(396, y + 52 + j * 22, ln, "s")
+        sk.t(1002, y + 28, actor, "a", "end")
+        sk.box(1060, y, 400, bh, "thin")
+        for j, ln in enumerate(textwrap.wrap(exists, 38)[:3]): sk.t(1074, y + 28 + j * 22, ln, "s" if j == 0 else "xs")
+        sk.arrow(1016, y + bh // 2, 1056, y + bh // 2)
+    sk.arrow(302, top + 30, 328, top + 30); sk.dot(306, top + 30)
+    footer(sk, foot, status)
+    return sk
+
+def p1_bringup():
+    return bringup("Part 1: how it comes up, step by step", "Part 1 coming up: make up runs vagrant up, then Ansible over SSH installs K3s on both VMs and joins the agent",
+        ["Ubuntu under QEMU/KVM", "Vagrant, libvirt, Ansible"], "make up",
+        [("vagrant up", "creates both VMs from the box debian-13", "Vagrant, libvirt", "two qemu processes, two VMs booted, no K3s yet"),
+         ("rename the interfaces", "eth0 and eth1, one reboot each", "Ansible, over SSH", "eth0 (NAT) and eth1 with 192.168.56.110 and .111"),
+         ("K3s server on rpodackS", "node IP 192.168.56.110, flannel on eth1", "Ansible", "process k3s server, API server :6443; add-on pods start: coredns, traefik, metrics-server, local-path"),
+         ("join token", "read from the server over SSH", "Ansible", "the token, in the playbook run"),
+         ("K3s agent on rpodackSW", "joins https://192.168.56.110:6443 with the token", "Ansible", "process k3s agent; the cluster has two nodes"),
+         ("check", "kubectl get nodes: both Ready", "make test, you", "a working cluster, no apps of ours")],
+        ["Vagrant starts the VMs and then calls Ansible, which does steps 1 to 4 over SSH. After that Vagrant and Ansible are gone; only the VMs and K3s run.",
+         "make up passed in 102 s on 22 November 2026."],
+        "Known: the second provisioning pass (make provision) stalled the server twice; the cause is not found yet.")
+
+def p2_bringup():
+    return bringup("Part 2: how it comes up, step by step", "Part 2 coming up: make up starts one VM, Ansible installs K3s and applies the three apps",
+        ["Ubuntu under QEMU/KVM", "Vagrant, libvirt, Ansible"], "make up",
+        [("vagrant up", "creates the VM rpodackS, 1024 MB, from the box debian-13", "Vagrant, libvirt", "one qemu process, the VM booted, no K3s yet"),
+         ("hostname and packages", "hostname set, cloud-init told to keep it, python3 and curl installed", "Ansible, over SSH", "the VM is named rpodackS and ready for K3s"),
+         ("K3s server", "installed, then wait until the API answers", "Ansible", "process k3s server, API server :6443; add-on pods start: coredns, traefik, ..."),
+         ("app1", "Deployment, Service and Ingress copied to the node and applied", "Ansible, kubectl", "pod app1 (nginx) behind Service app1"),
+         ("app3, then app2", "the same three objects each; the Ingress of app3 has no host: the default", "Ansible, kubectl", "pod app3; app2 with three pods; Traefik routes by Host"),
+         ("check", "the nodes are shown; then curl with a Host header", "you", "three Services answer: app1.com, app2.com, anything else")],
+        ["Vagrant starts the VM and calls Ansible, which does steps 1 to 4 over SSH. Afterwards only the VM, K3s and the pods run.",
+         "Do not start it while the Part 1 VMs run: both use 192.168.56.110."],
+        "Status: written and reviewed, not run yet.")
+
+def p3_bringup():
+    return bringup("Part 3: how it comes up, step by step", "Part 3 coming up: make setup creates the k3d cluster and Argo CD, and Argo CD then deploys the app from GitHub",
+        ["Ubuntu under QEMU/KVM", "Docker, k3d, kubectl, make"], "make setup",
+        [("check the tools", "docker, kubectl and k3d present; k3d is installed if missing", "make", "the tools on the host VM"),
+         ("k3d cluster create", "one server and one agent as Docker containers; host 8888 to NodePort 30007", "k3d, Docker", "two node containers running K3s; the cluster is up and empty"),
+         ("namespaces", "argocd and dev", "kubectl", "two empty namespaces"),
+         ("install Argo CD", "its install manifest applied into argocd", "kubectl", "the Argo CD pods start: server, repo-server, application-controller, ..."),
+         ("the Application", "wait for its CRD, then apply p3/confs/application.yaml", "kubectl", "Application dev-app: repo rpodackIoT, namespace dev, automatic sync"),
+         ("Argo CD syncs", "reads the GitHub repository, applies the Deployment and the Service into dev", "Argo CD, not make", "pod wil-playground in dev; curl localhost:8888 answers v1")],
+        ["Steps 0 to 4 are make and kubectl; from step 5 on Argo CD does the work: nobody applies the application by hand. The Application is the only thing make creates in the cluster.",
+         "This describes p3 as in pull request 7."],
+        "Status: written and reviewed, not run yet. The repository rpodackIoT still says v2 and must say v1 before the defense.")
+
+def bonus_bringup():
+    return bringup("Bonus: how it comes up, step by step", "The bonus coming up: make setup creates the cluster, Argo CD and a GitLab; make repo and make deploy-app connect them",
+        ["Ubuntu under QEMU/KVM", "Docker, k3d, kubectl, git, make"], "make setup",
+        [("check the tools", "docker, kubectl, k3d, git and openssl present", "make", "the tools on the host VM"),
+         ("k3d cluster create bonus", "one server node; host 8888 to 30007 and 8929 to 30929", "k3d, Docker", "one node container running K3s; the cluster is empty"),
+         ("namespaces", "argocd, dev and gitlab", "kubectl", "three empty namespaces"),
+         ("install Argo CD", "its install manifest applied into argocd", "kubectl", "the Argo CD pods start"),
+         ("install GitLab", "Secret gitlab-root, its disk, Deployment and Service", "kubectl", "the GitLab pod starts (gitlab-ce)"),
+         ("wait for GitLab", "rollout status, up to 30 minutes (image, first start)", "make", "GitLab answers on localhost:8929"),
+         ("make repo", "pushes the first commit, the app at v1, to root/rpodackIoT", "git", "the project in GitLab, private"),
+         ("make deploy-app", "Secret gitlab-repo, then the Application dev-app", "kubectl", "Argo CD follows the GitLab project; curl localhost:8888 answers v1")],
+        ["After that make v2 changes the image tag in the GitLab project; Argo CD notices it and the app answers v2. Delete the cluster of Part 3 first: both do not fit in memory.",
+         "make setup takes about 10 minutes, most of it GitLab."],
+        "Status: ran up to step 5 on 22 November 2026; steps 6 and 7 and the change to v2 have not been run.")
+
 if __name__ == "__main__":
     out = os.path.join(HERE, "..", "src")
-    for name, fn in (("p1-running-sketch", part1_running), ("bonus-final-state-sketch", bonus_final), ("nesting-bonus", bonus_nested), ("nesting-architecture", architecture), ("nesting-node110", node110), ("nesting-scale", scale), ("nesting-general", general), ("nesting-p1", part1), ("nesting-p2", part2), ("nesting-p3", part3)):
+    for name, fn in (("p1-running-sketch", part1_running), ("p2-running-sketch", part2), ("p3-running-sketch", part3), ("bonus-running-sketch", bonus_nested), ("p1-bringup-sketch", p1_bringup), ("p2-bringup-sketch", p2_bringup), ("p3-bringup-sketch", p3_bringup), ("bonus-bringup-sketch", bonus_bringup), ("nesting-architecture", architecture), ("nesting-node110", node110), ("nesting-scale", scale), ("nesting-general", general)):
         open(os.path.join(out, name + ".html"), "w").write(fn().html())
         print("wrote", name)

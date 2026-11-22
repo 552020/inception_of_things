@@ -58,19 +58,19 @@ export default async function PartPage({ params }: { params: Promise<{ n: string
       </section>
 
       <figure className="ui-panel p-3">
-        <div className="sketch">
+        <div className="sketch is-nesting">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={n === "1" ? "/diagrams/p1-running-sketch.png" : `/diagrams/p${n}-final-state-sketch.png`} alt={`Sketch of Part ${n} when it runs`} width={3064} height={n === "1" ? 1984 : 1884} />
+          <img src={`/diagrams/p${n}-running-sketch.png`} alt={`Part ${n} when everything runs`} width={3064} height={1984} />
         </div>
-        <figcaption className="mt-2 text-sm text-muted">The target state of Part {n}. A dot marks who opens a connection; dashed lines are written but not run yet.</figcaption>
+        <figcaption className="mt-2 text-sm text-muted">Part {n} when everything runs, read from the outside in: the computer, the host VM, what runs in it. The small doors are ports; the dashed boxes are Services; dashed boxes at the side are clients that are not running now.</figcaption>
       </figure>
 
       <figure className="ui-panel p-3">
         <div className="sketch is-nesting">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/diagrams/nesting-p${n}.png`} alt={`Part ${n} as nested boxes`} width={3064} height={1984} />
+          <img src={`/diagrams/p${n}-bringup-sketch.png`} alt={`How Part ${n} comes up`} width={3064} height={1984} />
         </div>
-        <figcaption className="mt-2 text-sm text-muted">The same part as nested boxes, read from the outside in. The small doors are ports; the dashed boxes are Services.</figcaption>
+        <figcaption className="mt-2 text-sm text-muted">How Part {n} comes up: the commands in order, who runs each one, and what exists after it.</figcaption>
       </figure>
 
       <section>
