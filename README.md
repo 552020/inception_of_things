@@ -27,7 +27,7 @@ Work from 2026-11-22, in two pull requests, to be discussed before merging:
 - `make up` no longer provisions twice; the server VM of `p1` needs 1024 MB, not 512;
 - the bonus (GitLab CE and Argo CD on k3d) in progress under `bonus/`.
 
-Start from that branch for anything touching the host VM, `p1` or `p2`. The host-VM section below still describes the VirtualBox setup until the branch is merged.
+Start from `host-vm-kvm` for anything touching the host VM, `p1`, `p2` or `p3`. The host-VM section below still describes the VirtualBox setup until PR #6 is merged.
 
 Personal checklist for the next session: [docs/slombard-start-here.md](docs/slombard-start-here.md).
 
