@@ -26,6 +26,8 @@ Work from 2026-11-22, open as [PR #6](https://github.com/552020/inception_of_thi
 
 Start from that branch for anything touching the host VM, `p1` or `p2`. The host-VM section below still describes the VirtualBox setup until the branch is merged.
 
+Personal checklist for the next session: [docs/slombard-start-here.md](docs/slombard-start-here.md).
+
 ## Host VM
 
 The subject requires the whole project to run inside a virtual machine. On the 42 cluster that means one VirtualBox VM (the host VM) in which Vagrant, libvirt, K3s, Docker and K3d all run. Nested virtualization is enabled on it.
