@@ -74,74 +74,12 @@ html[data-skin="desktop"] body { background: var(--wallpaper) fixed; }
   .dk-window { margin-left: 124px; margin-right: 124px; }
 }
 
-/* ---------- 98 skin: a grey window on a teal desktop ---------- */
-html[data-skin="win98"] {
-  color-scheme: light;
-  font-size: 13px;
-  --background: #c0c0c0;
-  --foreground: #000000;
-  --muted: #404040;
-  --surface: #ffffff;
-  --line: #808080;
-  --accent: #0000ee;
-  --ic-a: #ffffff;
-  --ic-b: #ffd84a;
-  --ic-line: #000000;
-}
-html[data-skin="win98"] body { background: #008080; font-family: Tahoma, "MS Sans Serif", Geneva, Verdana, sans-serif; color: #000; }
-html[data-skin="win98"] [class*="rounded"] { border-radius: 0 !important; }
-html[data-skin="win98"] .glyph rect, html[data-skin="win98"] .glyph circle { rx: 0; }
-html[data-skin="win98"] .glyph { shape-rendering: crispEdges; }
-
-.w98 { min-height: 100vh; position: relative; }
-.w98-icons { position: fixed; top: 44px; display: none; flex-direction: column; gap: 18px; width: 75px; z-index: 5; }
-.w98-left { left: 8px; }
-.w98-right { right: 8px; }
-.w98-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #fff; font-size: 11px; line-height: 1.2; text-align: center; padding: 2px; }
-.w98-icon .pixel-icon { image-rendering: pixelated; }
-.w98-icon:hover span, .w98-icon:focus span { background: #000080; outline: 1px dotted #fff; }
-.w98-window {
-  margin: 40px 6px 6px; background: #c0c0c0; padding: 3px; display: flex; flex-direction: column;
-  min-height: calc(100vh - 48px);
-  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px #808080, inset 2px 2px #fff;
-}
-.w98-title { background: linear-gradient(90deg, #000080, #1084d0); color: #fff; font-weight: 700; padding: 3px 3px 3px 5px; display: flex; align-items: center; }
-.w98-title > span:first-child { flex: 1; }
-.w98-ctl { display: flex; gap: 2px; }
-.w98-ctl i { font-style: normal; width: 16px; height: 14px; line-height: 12px; text-align: center; background: #c0c0c0; color: #000; font-size: 11px; box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf; }
-.w98-body { flex: 1; padding: 10px; margin: 2px; display: flex; flex-direction: column; box-shadow: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a; background: #c0c0c0; }
-.w98-body > * { flex: 0 0 auto; }
-
-/* the taskbar, docked to the top: same place as the bar of the desktop skin */
-.w98-bar { position: fixed; top: 0; left: 0; right: 0; height: 34px; z-index: 30; display: flex; align-items: center; gap: 4px; padding: 3px; background: #c0c0c0; box-shadow: inset 0 -1px #808080, inset 0 -2px #0a0a0a, inset 0 1px #dfdfdf, inset 0 2px #fff; overflow-x: auto; white-space: nowrap; }
-.w98-start { height: 26px; padding: 0 10px; background: #c0c0c0; display: flex; align-items: center; box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf; }
-.w98-start:active { box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080; }
-.w98-bar-nav { display: flex; gap: 4px; }
-.w98-bar-nav a { height: 26px; padding: 0 10px; display: flex; align-items: center; background: #c0c0c0; box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf; }
-.w98-tray { display: flex; align-items: center; gap: 10px; padding: 0 8px; height: 26px; box-shadow: inset 1px 1px #808080, inset -1px -1px #fff; }
-.w98-user { display: flex; align-items: center; gap: 8px; }
-.w98-user button { text-decoration: underline; }
-@media (min-width: 1000px) {
-  .w98-icons { display: flex; }
-  .w98-bar-nav { display: none; }
-  /* a window on a desktop, not a panel next to a sidebar: the teal shows around it and the icons sit beside it */
-  .w98-window { margin: 44px 96px 28px 96px; min-height: calc(100vh - 90px); }
-}
-@media (max-width: 700px) {
-  .w98-tray { gap: 6px; white-space: nowrap; }
-}
-
 /* ---------- Skin switch (both skins) ---------- */
 .skin-switch { display: inline-flex; gap: 0; }
 .skin-switch-btn { padding: 4px 10px; font-size: 12px; font-weight: 500; border: 1px solid var(--line); background: transparent; color: inherit; }
 .skin-switch-btn:first-child { border-radius: 8px 0 0 8px; }
 .skin-switch-btn:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
 .skin-switch-btn[aria-pressed="true"] { background: var(--foreground); color: var(--background); }
-html[data-skin="win98"] .skin-switch { gap: 2px; }
-html[data-skin="win98"] .skin-switch-btn,
-html[data-skin="win98"] .skin-switch-btn:first-child,
-html[data-skin="win98"] .skin-switch-btn:last-child { padding: 2px 10px; background: #c0c0c0; color: #000; border: 0; border-radius: 0; box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf; }
-html[data-skin="win98"] .skin-switch-btn[aria-pressed="true"] { box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080; font-weight: 700; background: repeating-conic-gradient(#c0c0c0 0 25%, #fff 0 50%) 0 0 / 2px 2px; }
 
 /* ---------- Semantic components, both skins ---------- */
 .ui-panel, .ui-row { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
@@ -157,30 +95,9 @@ html[data-skin="win98"] .skin-switch-btn[aria-pressed="true"] { box-shadow: inse
 .ui-icon-btn { padding: 8px; border-radius: 8px; color: var(--muted); }
 .ui-icon-btn:hover { color: var(--foreground); background: var(--surface); }
 
-html[data-skin="win98"] .ui-panel, html[data-skin="win98"] .ui-input {
-  background: #fff; border: 0; border-radius: 0;
-  box-shadow: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
-}
-html[data-skin="win98"] .ui-row, html[data-skin="win98"] .ui-btn, html[data-skin="win98"] .ui-btn-primary, html[data-skin="win98"] .ui-chip {
-  background: #c0c0c0; color: #000; border: 0; border-radius: 0; font-weight: 400; transform: none;
-  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
-}
-html[data-skin="win98"] .ui-row:hover { border: 0; }
-html[data-skin="win98"] .ui-btn:active, html[data-skin="win98"] .ui-btn-primary:active, html[data-skin="win98"] .ui-chip-on {
-  background: #c0c0c0; color: #000; transform: none;
-  box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080;
-}
-html[data-skin="win98"] .ui-btn-primary { font-weight: 700; outline: 1px solid #000; outline-offset: -1px; }
-html[data-skin="win98"] .ui-chip-on { font-weight: 700; }
-html[data-skin="win98"] .ui-icon-btn:hover { background: #c0c0c0; }
-html[data-skin="win98"] .doc a, html[data-skin="win98"] a.underline { color: #0000ee; }
-html[data-skin="win98"] .doc table, html[data-skin="win98"] .doc th, html[data-skin="win98"] .doc td { border-color: #808080; }
-
 /* The mark */
 .logo { display: inline-block; flex: none; }
 .dk-logo { width: 40px; height: 40px; margin-right: 10px; vertical-align: -13px; color: var(--accent); }
 .dk-brand { font-size: 16px; }
-.w98-logo-start { width: 24px; height: 24px; margin-right: 6px; color: #000; }
 .hero-title { display: flex; align-items: center; gap: 20px; }
 .hero-logo { width: 96px; height: 96px; color: var(--accent); }
-html[data-skin="win98"] .hero-logo { color: #000080; image-rendering: pixelated; }

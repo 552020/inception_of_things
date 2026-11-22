@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { TaskButtons, Win98Window, WindowsProvider, useWindows } from "@/components/win98/WindowManager";
 import { LogoPixel } from "./Logo";
 import { PixelIcon } from "./PixelIcon";
 import { SkinSwitch } from "./SkinSwitch";
@@ -18,23 +19,22 @@ function Clock() {
       clearInterval(id);
     };
   }, []);
-  return <span className="w98-clock">{now ? now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</span>;
+  return <span>{now ? now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</span>;
 }
 
-// Same places as the desktop skin: the bar on top (brand left, switch and account right), desk icons left,
-// site icons right. The bar is a taskbar docked to the top, and the page is a grey window on a teal desktop.
-export function Win98Chrome({ user, children }: { user: string | null; children: ReactNode }) {
-  const pathname = usePathname();
-  const title = windowTitle(pathname);
+function Inner({ user, children }: { user: string | null; children: ReactNode }) {
+  const { open } = useWindows();
+  const reopen = () => open("site");
   return (
     <div className="w98">
       <header className="w98-bar">
-        <Link href="/" className="w98-start">
-          <LogoPixel className="logo w98-logo-start" />
+        <Link href="/" className="w98-start" onClick={reopen}>
+          <LogoPixel className="logo" />
           <b>Inception of Things</b>
         </Link>
+        <TaskButtons />
         <nav className="w98-bar-nav" aria-label="Desk">
-          {user && deskNav.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
+          {user && deskNav.map((item) => <Link key={item.href} href={item.href} onClick={reopen}>{item.label}</Link>)}
         </nav>
         <span className="grow" />
         <div className="w98-tray">
@@ -45,7 +45,7 @@ export function Win98Chrome({ user, children }: { user: string | null; children:
               <button type="submit">log out</button>
             </form>
           ) : (
-            <Link href="/login">Log in</Link>
+            <Link href="/login" onClick={reopen}>Log in</Link>
           )}
           <Clock />
         </div>
@@ -54,7 +54,7 @@ export function Win98Chrome({ user, children }: { user: string | null; children:
       {user && (
         <aside className="w98-icons w98-left" aria-label="Desk">
           {deskNav.map((item) => (
-            <Link key={item.href} href={item.href} className="w98-icon">
+            <Link key={item.href} href={item.href} className="w98-icon" onClick={reopen}>
               <PixelIcon name={item.glyph} />
               <span>{item.label}</span>
             </Link>
@@ -62,7 +62,7 @@ export function Win98Chrome({ user, children }: { user: string | null; children:
         </aside>
       )}
       <aside className="w98-icons w98-right" aria-label="Site">
-        <Link href="/" className="w98-icon">
+        <Link href="/" className="w98-icon" onClick={reopen}>
           <PixelIcon name="home" />
           <span>Home</span>
         </Link>
@@ -71,24 +71,38 @@ export function Win98Chrome({ user, children }: { user: string | null; children:
           <span>Code</span>
         </a>
         {!user && (
-          <Link href="/login" className="w98-icon">
+          <Link href="/login" className="w98-icon" onClick={reopen}>
             <PixelIcon name="login" />
             <span>Log in</span>
           </Link>
         )}
       </aside>
 
-      <main className="w98-window">
-        <div className="w98-title">
-          <span>Inception of Things - {title}</span>
-          <span className="w98-ctl" aria-hidden="true">
-            <i>_</i>
-            <i>□</i>
-            <i>×</i>
-          </span>
-        </div>
-        <div className="w98-body">{children}</div>
-      </main>
+      <Win98Window
+        id="site"
+        className="w98-site-window"
+        clientClassName="w98-client-grey"
+        statusBar={
+          <div className="w98-statusbar">
+            <span className="w98-status is-grow">Done</span>
+            <span className="w98-status">{user ?? "guest"}</span>
+          </div>
+        }
+      >
+        <div className="w98-inner">{children}</div>
+      </Win98Window>
     </div>
+  );
+}
+
+// Same places as the desktop skin: the bar on top (brand left, switch and account right), desk icons left, site icons
+// right. The page is an application window you can move, minimize to the taskbar, maximize and close; clicking an
+// icon or the brand opens it again. See the style guide in the lab.
+export function Win98Chrome({ user, children }: { user: string | null; children: ReactNode }) {
+  const pathname = usePathname();
+  return (
+    <WindowsProvider titles={{ site: `Inception of Things - ${windowTitle(pathname)}` }}>
+      <Inner user={user}>{children}</Inner>
+    </WindowsProvider>
   );
 }
