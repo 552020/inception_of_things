@@ -322,7 +322,7 @@ The package manager for Kubernetes. A chart is a set of manifest templates plus 
 tags: helm bonus
 
 ### What is Vagrant, and what is a Vagrantfile?
-Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image, here cloud-image/debian-13), hostname, network, provider settings (libvirt, 512 MB, 1 CPU) and provisioners (here one Ansible playbook run after boot). vagrant up builds everything; vagrant destroy removes it.
+Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image, here cloud-image/debian-13), hostname, network, provider settings (libvirt, 1 CPU, 1024 MB for the server and 512 MB for the worker) and provisioners (here one Ansible playbook run after boot). vagrant up builds everything; vagrant destroy removes it.
 tags: vagrant part1
 
 ### What is a Vagrant provider, and which one does this project use?
@@ -330,7 +330,7 @@ The hypervisor Vagrant drives: VirtualBox, libvirt (KVM on Linux), VMware, Hyper
 tags: vagrant part1
 
 ### Why eth1 and why 192.168.56.x?
-eth0 is the NAT interface Vagrant uses to reach the VM for SSH and provisioning. eth1 is the private network interface with the fixed IP from the subject, 192.168.56.110 for the server and .111 for the worker, so the two VMs and the host reach each other at known addresses. Our playbook installs K3s with no interface flags; it works because the agent is pointed at 192.168.56.110 explicitly and both VMs also share libvirt's NAT network on eth0. On other setups --node-ip and --flannel-iface pin K3s to eth1.
+eth0 is the NAT interface Vagrant uses to reach the VM for SSH and provisioning. eth1 is the private network interface with the fixed IP from the subject, 192.168.56.110 for the server and .111 for the worker, so the two VMs and the host reach each other at known addresses. Our playbook pins K3s to it with --node-ip and --flannel-iface eth1; without the flags K3s would take the address of eth0. The box itself calls the interfaces ens5 and ens6, so the playbook renames them to eth0 and eth1 first (eth-names.yml).
 tags: vagrant part1 networking
 
 ### What is a Vagrant box?
@@ -338,7 +338,7 @@ A packaged base image of a virtual machine (disk plus metadata) built for one pr
 tags: vagrant part1
 
 ### What is a Vagrant provisioner?
-A step Vagrant runs against the VM after its first boot: a shell script (inline or from a file), or Ansible, Puppet, Chef. In this project it is an Ansible playbook, confs/ansible/playbook.yml, run from the host over SSH after both VMs are up; it installs K3s as server and agent. It runs once; vagrant provision runs it again.
+A step Vagrant runs against the VM after its first boot: a shell script (inline or from a file), or Ansible, Puppet, Chef. In this project it is an Ansible playbook, confs/ansible/playbook.yml, run from the host over SSH after both VMs are up; it installs K3s as server and agent. It runs once, during vagrant up; vagrant provision (make provision) runs it again on VMs that already exist.
 tags: vagrant part1
 
 ### What do vagrant up, ssh, halt, destroy and status do?
@@ -418,7 +418,7 @@ Siblings on the host, neither contains the other. During vagrant up, Vagrant wri
 tags: ansible vagrant part1
 
 ### Where are the two VMs of Part 1 declared?
-In p1/Vagrantfile. The box is named once at the top for both: cloud-image/debian-13, Debian 13. Then one config.vm.define block each, rpodackS and rpodackSW, setting the hostname, a private_network with the fixed IP (.110 or .111) without DHCP, and the libvirt provider settings: 512 MB, 1 CPU. The Ansible provisioner block at the end applies to both. The box is a ready image: no ISO, no installation, Vagrant downloads it from Vagrant Cloud.
+In p1/Vagrantfile. The box is named once at the top for both: cloud-image/debian-13, Debian 13. Then one config.vm.define block each, rpodackS and rpodackSW, setting the hostname, a private_network with the fixed IP (.110 or .111) without DHCP, and the libvirt provider settings: 1 CPU, and 1024 MB for the server, 512 MB for the worker (with 512 MB the K3s server ran out of memory). The Ansible provisioner block at the end applies to both. The box is a ready image: no ISO, no installation, Vagrant downloads it from Vagrant Cloud.
 tags: vagrant part1
 
 ### Does the Part 1 setup have a real-world equivalent?
@@ -430,7 +430,7 @@ For availability, two is not enough. Part 1 has workload redundancy (the agent c
 tags: kubernetes architecture context
 
 ### What is Part 1 about?
-Two VMs from one Vagrantfile, Debian 13, 512 MB, fixed IPs on eth1: rpodackS at 192.168.56.110, rpodackSW at .111. Ansible installs K3s on the first as server and on the second as agent, which joins with the server's URL and token. Result: a two-node cluster, kubectl get nodes shows both Ready. Theme: how a cluster comes into being, control plane and worker, a node joining.
+Two VMs from one Vagrantfile, Debian 13, 1 CPU each, 1024 MB for the server and 512 MB for the worker, fixed IPs on eth1: rpodackS at 192.168.56.110, rpodackSW at .111. Ansible installs K3s on the first as server and on the second as agent, which joins with the server's URL and token. Result: a two-node cluster, kubectl get nodes shows both Ready. Theme: how a cluster comes into being, control plane and worker, a node joining.
 tags: part1 overview
 
 ### What is Part 2 about?
@@ -482,7 +482,7 @@ CPU is counted in millicores, thousandths of a core: 1000m is one core, 500m hal
 tags: kubernetes resources
 
 ### How does the scheduler know a node's capacity, if the VM size is set outside Kubernetes?
-From the machine itself. The Vagrantfile tells libvirt how big the VM is and is then out of the picture; the VM's kernel simply sees 1 CPU and 512 MB. At start the kubelet asks that kernel (/proc/cpuinfo, /proc/meminfo, cgroups) and reports the result to the API server into the Node object: status.capacity, and status.allocatable, capacity minus what is reserved for system and kubelet. The scheduler reads only that object. kubectl describe node shows Capacity, Allocatable and Allocated resources, the sum of requests of the Pods there. Same pattern as everywhere: the kubelet looks at its machine and writes into the API, everyone else reads the API.
+From the machine itself. The Vagrantfile tells libvirt how big the VM is and is then out of the picture; the VM's kernel simply sees 1 CPU and 512 MB (1024 MB on the server). At start the kubelet asks that kernel (/proc/cpuinfo, /proc/meminfo, cgroups) and reports the result to the API server into the Node object: status.capacity, and status.allocatable, capacity minus what is reserved for system and kubelet. The scheduler reads only that object. kubectl describe node shows Capacity, Allocatable and Allocated resources, the sum of requests of the Pods there. Same pattern as everywhere: the kubelet looks at its machine and writes into the API, everyone else reads the API.
 tags: kubernetes scheduling architecture
 
 ### How do the scheduler and the controller manager depend on each other?
@@ -510,7 +510,7 @@ Both, in sequence, and the class is one step up: the Deployment's template is th
 tags: kubernetes resources
 
 ### What is eth0, and why does the subject ask for eth1?
-eth0 and eth1 are the names Linux gives the network interfaces of a machine: eth for Ethernet, numbered in the order found (lo is the loopback, the machine talking to itself). Every Vagrant VM gets eth0 without being asked: with libvirt it sits on a management network (192.168.121.0/24 by default), gets its address by DHCP and goes out to the internet through NAT. Vagrant uses it for vagrant ssh and for Ansible; the VM uses it to download K3s. Its address is not fixed and differs on every machine. eth1 exists only because the Vagrantfile declares a private_network: a second card with the fixed address 192.168.56.110 or .111, on a network the two VMs share. The cluster is supposed to talk there, which is why the subject names eth1. Show both: ip a.
+eth0 and eth1 are the names Linux gives the network interfaces of a machine: eth for Ethernet, numbered in the order found (lo is the loopback, the machine talking to itself). Every Vagrant VM gets eth0 without being asked: with libvirt it sits on a management network (192.168.121.0/24 by default), gets its address by DHCP and goes out to the internet through NAT. Vagrant uses it for vagrant ssh and for Ansible; the VM uses it to download K3s. Its address is not fixed and differs on every machine. eth1 exists only because the Vagrantfile declares a private_network: a second card with the fixed address 192.168.56.110 or .111, on a network the two VMs share. The cluster is supposed to talk there, which is why the subject names eth1. The box does not use these names: Debian's cloud image calls them ens5 and ens6, so the playbook renames them to eth0 and eth1 before K3s is installed (eth-names.yml). Show both: ip a.
 tags: networking vagrant part1
 
 ### Which networks exist in Part 1, and who made each?
@@ -548,3 +548,7 @@ tags: kubernetes resources
 ### How do you show that a Pod is an object?
 kubectl get pod <name> -o yaml prints it: apiVersion v1, kind Pod, metadata with name, labels and ownerReferences to its ReplicaSet, spec with the containers, status with phase, IP and restarts; the same shape as a Deployment, only kind Pod. kubectl api-resources lists every object kind the API server knows, pods in the first line; Pod is the oldest kind, in the core API v1, Deployment came later in apps/v1. The confusion: a Pod is the one object that becomes something running, and people mean the running thing. Both are true in sequence: first the entry, then the processes the kubelet makes from it. Proof by hand: kubectl apply -f pod.yaml with kind Pod, and it appears in kubectl get pods without any Deployment.
 tags: kubernetes resources
+
+### Why does the playbook rename the network interfaces, and how?
+The box cloud-image/debian-13 uses systemd's predictable interface names: the NAT interface is ens5 and the private one with 192.168.56.110 is ens6. The subject says the IP must sit on eth1, the playbook pins K3s with --flannel-iface eth1, and the test script checks eth1, so the first make up ended with K3s refusing to start: unable to find interface eth1. Two ways out: make the playbook look the interface up by its IP, or give the VMs the classic names. The second was chosen, in confs/ansible/eth-names.yml, included once per play in p1 and p2: a GRUB drop-in with net.ifnames=0 biosdevname=0 switches the kernel back to eth0, eth1; the netplan file (cloud-init, DHCP) is rewritten from ens5 to eth0 and the systemd-networkd file (Vagrant, the private IP) from ens6 to eth1; then one reboot, about 40 seconds. On a second run the drop-in exists already, so nothing changes and no reboot happens. Check: ip a shows eth0 and eth1; cat /proc/cmdline shows net.ifnames=0.
+tags: networking vagrant ansible part1

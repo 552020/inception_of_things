@@ -390,7 +390,9 @@ The point is to see what a cluster is made of: two machines, one server, one age
 | VM and hostname | `rpodackS` | `rpodackSW` |
 | IP on eth1 | 192.168.56.110 | 192.168.56.111 |
 | K3s mode | server (control plane, and a node) | agent (a node only) |
-| Resources | 1 CPU, 512 MB | 1 CPU, 512 MB |
+| Resources | 1 CPU, 1024 MB | 1 CPU, 512 MB |
+
+The server has 1024 MB because with 512 MB K3s ran out of memory: 11 MB left, cluster unresponsive. The worker keeps 512 MB.
 
 Both VMs start from the box `cloud-image/debian-13`, which is Debian 13, and run on libvirt.
 
@@ -409,13 +411,14 @@ Vagrant makes the machines. Ansible fills them. Neither is part of Kubernetes.
 On the server:
 
 1. It makes sure Python is on the VM. Ansible needs it there before anything else can run.
-2. It sets the hostname and tells cloud-init to leave it alone (the box is built from a cloud image, and cloud-init would set the hostname again at boot). It installs curl.
-3. It installs K3s in server mode: `server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1`. The last two flags tie the node and the Pod network to eth1; without them K3s would take the address of eth0.
-4. It waits until the kubeconfig and the token file exist.
+2. It sets the hostname and tells cloud-init to leave it alone (the box is built from a cloud image, and cloud-init would set the hostname again at boot).
+3. It renames the network interfaces to eth0 and eth1 with the included file `eth-names.yml` (section 4.4) and reboots the VM once. It installs curl.
+4. It installs K3s in server mode: `server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1`. The last two flags tie the node and the Pod network to eth1; without them K3s would take the address of eth0.
+5. It waits until the kubeconfig and the token file exist.
 
 On the agent:
 
-1. It makes sure Python is there, sets the hostname and installs curl.
+1. It makes sure Python is there, sets the hostname, renames the interfaces the same way and installs curl.
 2. It waits until port 6443 answers on 192.168.56.110.
 3. It reads the token from the server. Ansible runs this one task on the server (`delegate_to`), so the token is never written into the repository.
 4. It installs K3s in agent mode with `K3S_URL` and `K3S_TOKEN` (section 2.4), and the same two flags for .111.
@@ -432,9 +435,11 @@ kubectl comes with K3s. Nothing installs it separately.
 
 Each VM also has eth0, its first interface: an address from DHCP on a network that leads out through NAT. Vagrant uses it for its own SSH access, and the VM downloads K3s through it.
 
+The box does not call the interfaces eth0 and eth1. Debian's cloud image uses predictable interface names, so the NAT interface is `ens5` and the private one is `ens6`. The subject says the IP must sit on eth1, so the playbook includes `confs/ansible/eth-names.yml` on both VMs. It writes a GRUB drop-in with `net.ifnames=0 biosdevname=0`, which switches the kernel back to the classic names, rewrites the netplan file (cloud-init, DHCP on the first interface) to eth0 and the systemd-networkd file (Vagrant, the private IP on the second interface) to eth1, and reboots once. On a second run the drop-in exists already, so nothing changes and there is no reboot.
+
 ### 4.5 What to Show
 
-`make up` runs `vagrant up --provider=libvirt --no-parallel`, one machine after the other, and then `vagrant provision` once more.
+`make up` runs `vagrant up --provider=libvirt --no-parallel`, one machine after the other. `vagrant up` runs the playbook itself, so nothing is provisioned twice. `make provision` runs the playbook again on VMs that already exist. With the box cached, `make up` takes about 102 s (measured in the host VM under QEMU/KVM, 6 vCPUs, 8 GB).
 
     vagrant status
     vagrant ssh rpodackS
