@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Card } from "@/lib/content";
-import { grade, isDue, isNew, loadProgress, ratings, resetProgress, stateOf } from "@/lib/progress";
+import { grade, isDue, isNew, loadProgress, ratings, resetProgress, stateOf, type Stored } from "@/lib/progress";
 import { TagFilter } from "./TagFilter";
 
 type Props = { cards: Card[]; tags: string[] };
@@ -21,14 +21,18 @@ function ReviewInner({ cards, tags }: Props) {
   const params = useSearchParams();
   const tag = params.get("tag");
 
-  const [store, setStore] = useState<ReturnType<typeof loadProgress> | null>(null);
+  const [store, setStore] = useState<Stored | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [sessionStart] = useState(() => new Date());
 
   useEffect(() => {
-    // localStorage is only readable after hydration
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStore(loadProgress());
+    let active = true;
+    loadProgress().then((loaded) => {
+      if (active) setStore(loaded);
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const pool = useMemo(() => (tag ? cards.filter((c) => c.tags.includes(tag)) : cards), [cards, tag]);
@@ -55,8 +59,8 @@ function ReviewInner({ cards, tags }: Props) {
   }
 
   function reset() {
-    if (!confirm("Delete all review progress on this device?")) return;
-    resetProgress();
+    if (!confirm("Delete all your review progress?")) return;
+    void resetProgress();
     setStore({});
     setRevealed(false);
   }

@@ -1,36 +1,64 @@
 "use client";
 import { createEmptyCard, fsrs, generatorParameters, Rating, type Card as FsrsCard, type Grade } from "ts-fsrs";
 
+// Progress lives on the server, one file per user (see lib/store.ts).
+// localStorage keeps a copy so the page opens without waiting, and is the
+// source for a one-time migration of progress made before the login existed.
 const KEY = "iot-deck-progress-v1";
-type Stored = Record<string, FsrsCard>;
+export type Stored = Record<string, FsrsCard>;
 
 const scheduler = fsrs(generatorParameters({ enable_fuzz: true }));
 
-function readStore(): Stored {
+function revive(parsed: Stored): Stored {
+  for (const card of Object.values(parsed)) {
+    card.due = new Date(card.due);
+    if (card.last_review) card.last_review = new Date(card.last_review);
+  }
+  return parsed;
+}
+
+function readLocal(): Stored {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as Stored;
-    for (const card of Object.values(parsed)) {
-      card.due = new Date(card.due);
-      if (card.last_review) card.last_review = new Date(card.last_review);
-    }
-    return parsed;
+    return raw ? revive(JSON.parse(raw) as Stored) : {};
   } catch {
     return {};
   }
 }
 
-function writeStore(store: Stored) {
+function writeLocal(store: Stored) {
   try {
     localStorage.setItem(KEY, JSON.stringify(store));
   } catch {
-    // storage unavailable: progress lives for this page view only
+    // storage unavailable: the server copy is the one that counts
   }
 }
 
-export function loadProgress(): Stored {
-  return readStore();
+async function push(store: Stored): Promise<void> {
+  await fetch("/api/progress", {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(store),
+  });
+}
+
+/** Server copy, falling back to the local one; migrates local progress to an empty server file once. */
+export async function loadProgress(): Promise<Stored> {
+  const local = readLocal();
+  try {
+    const res = await fetch("/api/progress", { cache: "no-store" });
+    if (!res.ok) return local;
+    const data = (await res.json()) as { progress: Stored };
+    const server = revive(data.progress ?? {});
+    if (Object.keys(server).length === 0 && Object.keys(local).length > 0) {
+      await push(local);
+      return local;
+    }
+    writeLocal(server);
+    return server;
+  } catch {
+    return local;
+  }
 }
 
 export function stateOf(store: Stored, id: string): FsrsCard {
@@ -49,16 +77,18 @@ export function grade(store: Stored, id: string, rating: Grade, now: Date): Stor
   const current = stateOf(store, id);
   const result = scheduler.next(current, now, rating);
   const next = { ...store, [id]: result.card };
-  writeStore(next);
+  writeLocal(next);
+  void push(next);
   return next;
 }
 
-export function resetProgress() {
+export async function resetProgress(): Promise<void> {
   try {
     localStorage.removeItem(KEY);
   } catch {
     // nothing to remove
   }
+  await push({});
 }
 
 export const ratings = [
