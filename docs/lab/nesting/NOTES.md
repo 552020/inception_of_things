@@ -1,4 +1,4 @@
-# Matryoshka sketches: how they are made
+# Nesting sketches: how they are made
 
 `tools/gen.py` writes the four HTML sources in `src/` (one inline SVG each, in the hand-drawn style of the other sketches). The PNGs in `img/` are screenshots of them at 2x with the font Patrick Hand:
 

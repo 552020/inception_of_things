@@ -66,11 +66,11 @@ export default async function PartPage({ params }: { params: Promise<{ n: string
       </figure>
 
       <figure className="ui-panel p-3">
-        <div className="sketch is-matryoshka">
+        <div className="sketch is-nesting">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/diagrams/matryoshka-p${n}.png`} alt={`Part ${n} as nested dolls`} width={3064} height={1984} />
+          <img src={`/diagrams/nesting-p${n}.png`} alt={`Part ${n} as nested boxes`} width={3064} height={1984} />
         </div>
-        <figcaption className="mt-2 text-sm text-muted">The same part as nested dolls, read from the outside in. The small doors are ports; the dashed boxes are Services.</figcaption>
+        <figcaption className="mt-2 text-sm text-muted">The same part as nested boxes, read from the outside in. The small doors are ports; the dashed boxes are Services.</figcaption>
       </figure>
 
       <section>

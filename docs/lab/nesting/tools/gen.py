@@ -1,4 +1,4 @@
-"""Matryoshka sketches of Kubernetes: what sits inside what, with the ports as small doors.
+"""Nesting sketches of Kubernetes: what sits inside what, with the ports as small doors.
 Same hand-drawn style as docs/diagrams (paper, ink, one accent colour). Writes ../src/*.html; the PNGs in ../img are
 screenshots of them (see ../NOTES.md). Usage: python3 gen.py"""
 import os
@@ -94,7 +94,7 @@ class Sketch:
 '''
 
 def pod(sk, x, y, w, h, title, sub=None, tag=None, container="container", port=None, plan=False, two=None):
-    """a pod doll with its container(s) inside; the door on the left wall carries the container port"""
+    """a pod box with its container(s) inside; the door on the left wall carries the container port"""
     sk.box(x, y, w, h, "thin", plan=plan)
     sk.t(x + 12, y + 26, title, "t")
     yy = y + 48
@@ -130,8 +130,8 @@ def footer(sk, lines, accent_line=None):
 
 # ---------------------------------------------------------------- general
 def general():
-    sk = Sketch("Kubernetes as a Matryoshka: what sits inside what", "A Kubernetes cluster drawn as nested dolls: the cluster holds nodes, nodes hold pods, pods hold containers; ports are small doors")
-    sk.t(750, 46, "Kubernetes as a Matryoshka: what sits inside what", "h", "middle")
+    sk = Sketch("Kubernetes: what sits inside what", "A Kubernetes cluster drawn as nested boxes: the cluster holds nodes, nodes hold pods, pods hold containers; ports are small doors")
+    sk.t(750, 46, "Kubernetes: what sits inside what", "h", "middle")
     # outside: kubectl
     sk.box(20, 245, 150, 100, "line", rx=6)
     sk.t(38, 278, "kubectl", "t"); sk.t(38, 304, "you, from outside", "s"); sk.t(38, 328, "knocks at 6443", "a")
@@ -183,9 +183,9 @@ def general():
 
 # ---------------------------------------------------------------- part 1
 def part1():
-    sk = Sketch("Part 1 as a Matryoshka: two VMs, two nodes, one cluster", "Part 1 drawn as nested dolls: the computer holds the host VM, which holds two VMs; each VM holds a K3s node with its pods")
-    sk.t(750, 46, "Part 1 as a Matryoshka: two VMs, two nodes, one cluster", "h", "middle")
-    sk.box(20, 70, 1460, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t"); sk.t(1460, 100, "the outermost doll", "s", "end")
+    sk = Sketch("Part 1, what sits inside what: two VMs, two nodes, one cluster", "Part 1 drawn as nested boxes: the computer holds the host VM, which holds two VMs; each VM holds a K3s node with its pods")
+    sk.t(750, 46, "Part 1, what sits inside what: two VMs, two nodes, one cluster", "h", "middle")
+    sk.box(20, 70, 1460, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t"); sk.t(1460, 100, "the outermost box", "s", "end")
     sk.box(40, 118, 1420, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM, 6 CPUs, 8 GB", "s")
     # tools beside the VMs
     sk.box(60, 200, 190, 100, "line", rx=6); sk.t(78, 232, "Vagrant", "t"); sk.t(78, 258, "creates the two VMs", "s"); sk.t(78, 282, "make up", "a")
@@ -223,15 +223,15 @@ def part1():
     # private network
     sk.line("M540,812 L540,830 L1160,830 L1160,812", False, False)
     sk.t(850, 848, "private network eth1, 192.168.56.0/24", "s", "middle")
-    footer(sk, ["Read it from the outside in: computer, host VM, VM, node, pod, container. The cluster is not one doll: it is the two nodes together, joined at port 6443.",
+    footer(sk, ["Read it from the outside in: computer, host VM, VM, node, pod, container. The cluster is not one box: it is the two nodes together, joined at port 6443.",
                 "eth0 of both VMs is NAT and only reaches the internet, for image pulls; everything between the VMs goes over eth1."][:2],
            "Status: Part 1 was run; the pods on the worker are expected, to be checked with kubectl get pods -A -o wide.")
     return sk
 
 # ---------------------------------------------------------------- part 2
 def part2():
-    sk = Sketch("Part 2 as a Matryoshka: one node, three Services, five app pods", "Part 2 drawn as nested dolls: one VM with one K3s node; Traefik at port 80 and three Services in front of the app pods")
-    sk.t(750, 46, "Part 2 as a Matryoshka: one node, three Services, five app pods", "h", "middle")
+    sk = Sketch("Part 2, what sits inside what: one node, three Services, five app pods", "Part 2 drawn as nested boxes: one VM with one K3s node; Traefik at port 80 and three Services in front of the app pods")
+    sk.t(750, 46, "Part 2, what sits inside what: one node, three Services, five app pods", "h", "middle")
     sk.box(20, 70, 1460, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t")
     sk.box(40, 118, 1420, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM", "s")
     sk.box(60, 400, 190, 140, "line", rx=6)
@@ -264,15 +264,15 @@ def part2():
         sk.door(x, 560)
     pod(sk, 850, 650, 220, 100, "Pod app3", container="http-echo", port=":5678")
     sk.door(850, 710)
-    footer(sk, ["Read it from the outside in: computer, host VM, VM, node, pods. A Service is not a doll: it is the dashed address in front of its pods. Doors are ports.",
+    footer(sk, ["Read it from the outside in: computer, host VM, VM, node, pods. A Service is not a box: it is the dashed address in front of its pods. Doors are ports.",
                 "A request travels: curl, port 80 of the node, Traefik, the Service named by the Host header, one of its pods. app2 has three replicas; with one node, all three sit on the same node."],
            "Status: written and reviewed, not run yet. Do not start it while the Part 1 VMs run: both use 192.168.56.110.")
     return sk
 
 # ---------------------------------------------------------------- part 3
 def part3():
-    sk = Sketch("Part 3 as a Matryoshka: Argo CD inside a k3d cluster inside Docker", "Part 3 drawn as nested dolls: the host VM holds Docker, Docker holds the two k3d node containers, the nodes hold the pods of Argo CD and of the app")
-    sk.t(750, 46, "Part 3 as a Matryoshka: Argo CD inside a k3d cluster inside Docker", "h", "middle")
+    sk = Sketch("Part 3, what sits inside what: Argo CD in a k3d cluster in Docker", "Part 3 drawn as nested boxes: the host VM holds Docker, Docker holds the two k3d node containers, the nodes hold the pods of Argo CD and of the app")
+    sk.t(750, 46, "Part 3, what sits inside what: Argo CD in a k3d cluster in Docker", "h", "middle")
     sk.box(20, 70, 1110, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t")
     sk.box(40, 118, 1070, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM", "s")
     # clients
@@ -306,15 +306,15 @@ def part3():
     sk.arrow(1052, 500, 1166, 500); sk.dot(1056, 500)
     sk.arrow(1325, 698, 1325, 634); sk.dot(1325, 692); sk.t(1345, 672, "pushes", "a")
     footer(sk, ["Read it from the outside in: computer, host VM, Docker, cluster, node, pod, container. Namespaces are not boxes: argocd and dev are tags on pods, and their pods can sit on either node.",
-                "GitHub is outside the dolls: Argo CD reaches out and polls it about every three minutes, and applies what it finds to the namespace dev."],
+                "GitHub is outside the boxes: Argo CD reaches out and polls it about every three minutes, and applies what it finds to the namespace dev."],
            "Status: written and reviewed, not run yet. Which node each pod lands on is to be read from kubectl get pods -A -o wide after a run.")
     return sk
 
 # ---------------------------------------------------------------- at scale
 def scale():
-    sk = Sketch("Kubernetes as a Matryoshka, at scale: up to 110 pods on a node", "Kubernetes at scale as nested dolls: a cluster of many nodes, a node with up to 110 small squares for pods, replicas as squares of one colour spread over the nodes")
+    sk = Sketch("Kubernetes at scale: up to 110 pods on a node", "Kubernetes at scale as nested boxes: a cluster of many nodes, a node with up to 110 small squares for pods, replicas as squares of one colour spread over the nodes")
     sk.defs.append('<pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#fbfaf6"/><line x1="0" y1="0" x2="0" y2="6" stroke="#1d1d1b" stroke-width="2"/></pattern>')
-    sk.t(750, 46, "Kubernetes as a Matryoshka, at scale: up to 110 pods on a node", "h", "middle")
+    sk.t(750, 46, "Kubernetes at scale: up to 110 pods on a node", "h", "middle")
     sk.box(20, 70, 1460, 740, "line", rx=10)
     sk.t(40, 104, "THE CLUSTER", "col"); sk.t(250, 104, "one control plane and many nodes: up to 5,000, with up to 150,000 pods together", "s")
     nodes = [(45, "Node 1: the server", "also runs the control plane (API server :6443)", [("s", 6), ("a", 14), ("b", 8), ("c", 4)], 40),
@@ -408,6 +408,6 @@ def node110():
 
 if __name__ == "__main__":
     out = os.path.join(HERE, "..", "src")
-    for name, fn in (("matryoshka-node110", node110), ("matryoshka-scale", scale), ("matryoshka-general", general), ("matryoshka-p1", part1), ("matryoshka-p2", part2), ("matryoshka-p3", part3)):
+    for name, fn in (("nesting-node110", node110), ("nesting-scale", scale), ("nesting-general", general), ("nesting-p1", part1), ("nesting-p2", part2), ("nesting-p3", part3)):
         open(os.path.join(out, name + ".html"), "w").write(fn().html())
         print("wrote", name)

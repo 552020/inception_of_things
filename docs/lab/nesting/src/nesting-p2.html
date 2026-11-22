@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Part 2 as a Matryoshka: one node, three Services, five app pods</title>
+<title>Part 2, what sits inside what: one node, three Services, five app pods</title>
 <style>
   :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
   html, body { margin:0; background:var(--paper); color:var(--ink); }
@@ -39,7 +39,7 @@
 </style>
 </head>
 <body>
-<svg viewBox="0 0 1500 960" role="img" aria-label="Part 2 drawn as nested dolls: one VM with one K3s node; Traefik at port 80 and three Services in front of the app pods">
+<svg viewBox="0 0 1500 960" role="img" aria-label="Part 2 drawn as nested boxes: one VM with one K3s node; Traefik at port 80 and three Services in front of the app pods">
   <defs>
     <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
       <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
@@ -86,7 +86,7 @@
   <rect x="987.0" y="545.0" width="16" height="30" rx="3" class="door"/>
   <rect x="1192.0" y="545.0" width="16" height="30" rx="3" class="door"/>
   <rect x="842.0" y="695.0" width="16" height="30" rx="3" class="door"/>
-  <text x="750" y="46" class="h" text-anchor="middle">Part 2 as a Matryoshka: one node, three Services, five app pods</text>
+  <text x="750" y="46" class="h" text-anchor="middle">Part 2, what sits inside what: one node, three Services, five app pods</text>
   <text x="40" y="100" class="t">The computer at 42</text>
   <text x="60" y="150" class="t">Host VM</text>
   <text x="60" y="172" class="s">Ubuntu under QEMU/KVM</text>
@@ -134,7 +134,7 @@
   <text x="862" y="676" class="t">Pod app3</text>
   <text x="872" y="728" class="s">http-echo</text>
   <text x="1048" y="728" class="mono" text-anchor="end">:5678</text>
-  <text x="60" y="898" class="s">Read it from the outside in: computer, host VM, VM, node, pods. A Service is not a doll: it is the dashed address in front of its pods. Doors are ports.</text>
+  <text x="60" y="898" class="s">Read it from the outside in: computer, host VM, VM, node, pods. A Service is not a box: it is the dashed address in front of its pods. Doors are ports.</text>
   <text x="60" y="926" class="s">A request travels: curl, port 80 of the node, Traefik, the Service named by the Host header, one of its pods. app2 has three replicas; with one node, all three sit on the same node.</text>
   <text x="60" y="954" class="a">Status: written and reviewed, not run yet. Do not start it while the Part 1 VMs run: both use 192.168.56.110.</text>
   <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>

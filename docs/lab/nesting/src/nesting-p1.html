@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Part 1 as a Matryoshka: two VMs, two nodes, one cluster</title>
+<title>Part 1, what sits inside what: two VMs, two nodes, one cluster</title>
 <style>
   :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
   html, body { margin:0; background:var(--paper); color:var(--ink); }
@@ -39,7 +39,7 @@
 </style>
 </head>
 <body>
-<svg viewBox="0 0 1500 960" role="img" aria-label="Part 1 drawn as nested dolls: the computer holds the host VM, which holds two VMs; each VM holds a K3s node with its pods">
+<svg viewBox="0 0 1500 960" role="img" aria-label="Part 1 drawn as nested boxes: the computer holds the host VM, which holds two VMs; each VM holds a K3s node with its pods">
   <defs>
     <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
       <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
@@ -87,9 +87,9 @@
   <circle cx="682" cy="312" r="7" class="dot"/>
   <circle cx="902" cy="560" r="7" class="dot"/>
   <rect x="782.0" y="545.0" width="16" height="30" rx="3" class="door"/>
-  <text x="750" y="46" class="h" text-anchor="middle">Part 1 as a Matryoshka: two VMs, two nodes, one cluster</text>
+  <text x="750" y="46" class="h" text-anchor="middle">Part 1, what sits inside what: two VMs, two nodes, one cluster</text>
   <text x="40" y="100" class="t">The computer at 42</text>
-  <text x="1460" y="100" class="s" text-anchor="end">the outermost doll</text>
+  <text x="1460" y="100" class="s" text-anchor="end">the outermost box</text>
   <text x="60" y="150" class="t">Host VM</text>
   <text x="60" y="172" class="s">Ubuntu under QEMU/KVM, 6 CPUs, 8 GB</text>
   <text x="78" y="232" class="t">Vagrant</text>
@@ -139,7 +139,7 @@
   <text x="850" y="588" class="mono" text-anchor="middle">:6443</text>
   <text x="910" y="306" class="a">THE CLUSTER: both nodes together, in two VMs</text>
   <text x="850" y="848" class="s" text-anchor="middle">private network eth1, 192.168.56.0/24</text>
-  <text x="60" y="898" class="s">Read it from the outside in: computer, host VM, VM, node, pod, container. The cluster is not one doll: it is the two nodes together, joined at port 6443.</text>
+  <text x="60" y="898" class="s">Read it from the outside in: computer, host VM, VM, node, pod, container. The cluster is not one box: it is the two nodes together, joined at port 6443.</text>
   <text x="60" y="926" class="s">eth0 of both VMs is NAT and only reaches the internet, for image pulls; everything between the VMs goes over eth1.</text>
   <text x="60" y="954" class="a">Status: Part 1 was run; the pods on the worker are expected, to be checked with kubectl get pods -A -o wide.</text>
   <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>

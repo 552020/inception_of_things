@@ -116,12 +116,12 @@ if (existsSync(sketches)) {
   }
 }
 
-// The Matryoshka pictures are shown on the public pages as well (cropped above their notes).
-const matryoshka = path.join(docs, "lab/matryoshka/img");
-if (existsSync(matryoshka)) {
+// The Nesting pictures are shown on the public pages as well (cropped above their notes).
+const nesting = path.join(docs, "lab/nesting/img");
+if (existsSync(nesting)) {
   mkdirSync(path.join(here, "../public/diagrams"), { recursive: true });
-  for (const file of readdirSync(matryoshka)) {
-    if (file.endsWith(".png")) copyFileSync(path.join(matryoshka, file), path.join(here, "../public/diagrams", file));
+  for (const file of readdirSync(nesting)) {
+    if (file.endsWith(".png")) copyFileSync(path.join(nesting, file), path.join(here, "../public/diagrams", file));
   }
 }
 

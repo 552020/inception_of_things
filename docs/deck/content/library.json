@@ -78,16 +78,16 @@
       "title": "Logo study"
     },
     {
-      "slug": "matryoshka",
-      "title": "Matryoshka sketches"
-    },
-    {
       "slug": "minimal",
       "title": "minimal"
     },
     {
       "slug": "minimal_qemu",
       "title": "minimal qemu"
+    },
+    {
+      "slug": "nesting",
+      "title": "Nesting sketches"
     },
     {
       "slug": "sketches",

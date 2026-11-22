@@ -51,9 +51,9 @@ export default async function HomePage() {
       </section>
 
       <figure className="ui-panel p-3">
-        <div className="sketch is-matryoshka">
+        <div className="sketch is-nesting">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/diagrams/matryoshka-general.png" alt="Kubernetes as nested dolls" width={3064} height={1984} />
+          <img src="/diagrams/nesting-general.png" alt="Kubernetes as nested boxes" width={3064} height={1984} />
         </div>
         <figcaption className="mt-2 text-sm text-muted">How Kubernetes nests: a cluster holds nodes, a node holds pods, a pod holds containers. The control plane sits in the server node; replicas are spread over the nodes behind one Service.</figcaption>
       </figure>
