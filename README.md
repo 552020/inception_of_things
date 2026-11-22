@@ -15,9 +15,12 @@
 
 Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folders at the root. Each has a `Makefile`; `make help` in `p1` and `p2` lists the targets, `make setup` in `p3` builds everything.
 
-## Active branch: `host-vm-kvm`
+## Active branches
 
-Work from 2026-11-22, open as [PR #6](https://github.com/552020/inception_of_things/pull/6), to be discussed before merging:
+Work from 2026-11-22, in two pull requests, to be discussed before merging:
+
+- [PR #7](https://github.com/552020/inception_of_things/pull/7), branch `fix-p1-p2-p3`: code only, can go first. The eth0/eth1 fix for the Debian 13 box, 1024 MB for the p1 server, `make up` without the second provisioning, p2 waiting for the API, p3 creating the Argo CD Application itself with the app on `localhost:8888`, the p1 test fixed, `make watch`.
+- [PR #6](https://github.com/552020/inception_of_things/pull/6), branch `host-vm-kvm`: the same plus everything else:
 
 - the host VM moved from VirtualBox to QEMU/KVM after two nested-virtualization freezes (README host-VM section, `docs/host-vm/`, launch script);
 - fix for `p1` and `p2`: the Debian 13 box names its interfaces `ens5`/`ens6`, the subject wants `eth1` (`confs/ansible/eth-names.yml`);
