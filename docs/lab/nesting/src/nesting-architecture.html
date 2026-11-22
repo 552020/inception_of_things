@@ -100,7 +100,8 @@
     <path d="M182,160 L214,205" class="line" marker-end="url(#arrow)"/>
   </g>
   <rect x="228.0" y="197.0" width="16" height="30" rx="3" class="door"/>
-  <circle cx="186" cy="162" r="7" class="dot"/>
+  <circle cx="186" cy="162" r="6" class="dot"/>
+  <circle cx="46" cy="40" r="6" class="dot"/>
   <text x="750" y="46" class="h" text-anchor="middle">Kubernetes architecture, with the technologies we use</text>
   <text x="32" y="138" class="t">kubectl</text>
   <text x="32" y="164" class="xs">a client, you type it</text>
@@ -192,6 +193,7 @@
   <text x="60" y="926" class="s">K3s bundles containerd, Flannel, CoreDNS, Traefik, ServiceLB, metrics-server and local-path in one binary; full Kubernetes installs each of them on its own. Argo CD v2.7.12 runs inside the cluster as pods.</text>
   <text x="60" y="954" class="a">Which pods sit on which node is shown as an example: the scheduler decides, to be read from kubectl get pods -A -o wide.</text>
   <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>
+  <text x="62" y="47" class="s">who opens the connection</text>
 </svg>
 </body>
 </html>

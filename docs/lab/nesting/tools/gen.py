@@ -27,11 +27,14 @@ class Sketch:
         self.marks.append(f'<rect x="{x - w/2}" y="{y - h/2}" width="{w}" height="{h}" rx="3" class="door"/>')
     def doorh(self, x, y, w=30, h=14):
         self.marks.append(f'<rect x="{x - w/2}" y="{y - h/2}" width="{w}" height="{h}" rx="3" class="door"/>')
-    def dot(self, x, y): self.marks.append(f'<circle cx="{x}" cy="{y}" r="7" class="dot"/>')
+    def dot(self, x, y): self.marks.append(f'<circle cx="{x}" cy="{y}" r="6" class="dot"/>')
     def t(self, x, y, s, cls="s", anchor=None):
         a = f' text-anchor="{anchor}"' if anchor else ""
         self.texts.append(f'<text x="{x}" y="{y}" class="{cls}"{a}>{escape(s)}</text>')
     def html(self):
+        if any('class="dot"' in m for m in self.marks):
+            self.dot(46, 40)
+            self.t(62, 47, getattr(self, "legend", "who opens the connection"), "s")
         return f'''<!doctype html>
 <html lang="en">
 <head>
@@ -237,9 +240,10 @@ def part2():
     sk.t(750, 46, "Part 2 running: one VM, one node, three Services, five app pods", "h", "middle")
     sk.box(20, 70, 1460, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t")
     sk.box(40, 118, 1420, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM", "s")
-    sk.box(60, 400, 190, 140, "line", rx=6)
-    sk.t(78, 428, "curl", "t"); sk.t(78, 454, "Host: app1.com", "mono"); sk.t(78, 476, "Host: app2.com", "mono"); sk.t(78, 498, "any other Host", "s"); sk.t(78, 522, "to 192.168.56.110", "xs")
-    sk.box(60, 200, 190, 170, "line", plan=True, rx=6); sk.t(78, 228, "Not running now", "t"); sk.t(78, 254, "Vagrant and Ansible:", "xs"); sk.t(78, 274, "clients that built the VM", "xs"); sk.t(78, 294, "and installed K3s and", "xs"); sk.t(78, 314, "the apps; they act when", "xs"); sk.t(78, 334, "you call them", "xs")
+    sk.box(60, 650, 190, 140, "line", rx=6)
+    sk.t(78, 678, "curl", "t"); sk.t(78, 704, "Host: app1.com", "mono"); sk.t(78, 726, "Host: app2.com", "mono"); sk.t(78, 748, "any other Host", "s"); sk.t(78, 772, "to 192.168.56.110", "xs")
+    y = note_box(sk, 60, 200, 190, "Clients with access", ["not running now: they act when you call them"] + CLIENTS_VM, plan=True)
+    note_box(sk, 60, y + 14, 190, "make", MAKE_NOTE)
     sk.t(1440, 150, "running here: libvirt and the qemu process of the VM", "a", "end")
     sk.t(1000, 222, "process on the host VM: qemu", "a")
     sk.box(270, 190, 1170, 620, "line"); sk.t(290, 222, "VM rpodackS", "t"); sk.t(290, 246, "192.168.56.110, 1 CPU, 1024 MB", "s")
@@ -252,7 +256,7 @@ def part2():
     sk.t(320, y0 + 194, "app1.com: app1", "mono"); sk.t(320, y0 + 222, "app2.com: app2", "mono"); sk.t(320, y0 + 250, "anything else: app3", "mono")
     sk.t(320, y0 + 300, "it reads the Host", "xs"); sk.t(320, y0 + 320, "header and picks", "xs"); sk.t(320, y0 + 340, "the Service", "xs")
     sk.door(305, y0 + 96)
-    sk.arrow(252, y0 + 96, 296, y0 + 96); sk.dot(256, y0 + 96); sk.t(258, y0 + 78, ":80", "mono")
+    sk.shapes.append(f'<path d="M252,720 L260,720 L260,{y0 + 96} L296,{y0 + 96}" class="line" marker-end="url(#arrow)"/>'); sk.dot(256, 720); sk.t(268, y0 + 78, ":80", "mono")
     # the three Services with their pods
     bands = [(330, 120, "Service app1", "port 80 to 80", None), (465, 160, "Service app2", "port 80 to 5678", "spreads over 3 pods"), (640, 120, "Service app3", "port 80 to 5678", "the default")]
     for (by, bh, name, ports, note) in bands:
@@ -281,10 +285,11 @@ def part3():
     sk.box(20, 70, 1110, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t")
     sk.box(40, 118, 1070, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM", "s")
     # clients
-    sk.box(60, 470, 170, 120, "line", rx=6); sk.t(76, 498, "Browser", "t"); sk.t(76, 524, "localhost:8080", "mono"); sk.t(76, 548, "the Argo CD UI", "s")
+    sk.box(60, 530, 170, 120, "line", rx=6); sk.t(76, 558, "Browser", "t"); sk.t(76, 584, "localhost:8080", "mono"); sk.t(76, 608, "the Argo CD UI", "s")
     sk.box(60, 660, 170, 120, "line", rx=6); sk.t(76, 688, "curl", "t"); sk.t(76, 714, "localhost:8888", "mono"); sk.t(76, 738, '"message": "v1"', "s")
     # docker, cluster, nodes
-    sk.box(60, 200, 170, 190, "line", plan=True, rx=6); sk.t(76, 228, "Not running now", "t"); sk.t(76, 254, "make, k3d, kubectl:", "xs"); sk.t(76, 274, "clients that built the", "xs"); sk.t(76, 294, "cluster and talk to it;", "xs"); sk.t(76, 314, "they act when you", "xs"); sk.t(76, 334, "call them", "xs")
+    y = note_box(sk, 60, 200, 170, "Clients", CLIENTS_K3D, plan=True)
+    note_box(sk, 60, y + 10, 170, "make", MAKE_NOTE_K3D)
     sk.t(1100, 150, "running here: the Docker daemon", "a", "end")
     sk.box(250, 190, 840, 610, "line"); sk.t(268, 220, "Docker", "t"); sk.t(268, 244, "each k3d node is a container: a process of Docker", "s")
     sk.box(270, 262, 800, 520, "line"); sk.t(288, 290, "k3d cluster dockercluster", "t")
@@ -304,7 +309,7 @@ def part3():
     sk.t(485, 700, "the scheduler decides on", "xs"); sk.t(485, 720, "which node a pod lands;", "xs"); sk.t(485, 740, "dashed placement: expected", "xs")
     sk.t(705, 600, "more pods can land here;", "xs"); sk.t(705, 620, "the scheduler spreads them", "xs")
     # arrows from the clients and to GitHub
-    sk.arrow(232, 500, 296, 500); sk.dot(236, 500)
+    sk.shapes.append('<path d="M232,590 L240,590 L240,500 L296,500" class="line" marker-end="url(#arrow)"/>'); sk.dot(236, 590)
     sk.arrow(232, 690, 296, 690); sk.dot(236, 690)
     # GitHub, outside everything
     sk.box(1170, 430, 310, 200, "line", rx=6); sk.t(1188, 462, "GitHub", "t"); sk.t(1188, 490, "Robin-Lenz/rpodackIoT", "mono")
@@ -465,9 +470,10 @@ def bonus_nested():
     sk.t(750, 46, "Bonus running: GitLab and Argo CD in one k3d node", "h", "middle")
     sk.box(20, 70, 1460, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t")
     sk.box(40, 118, 1420, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM", "s")
-    sk.box(60, 420, 170, 130, "line", rx=6); sk.t(76, 450, "You", "t"); sk.t(76, 476, "browser or git", "s"); sk.t(76, 502, "localhost:8929", "mono"); sk.t(76, 528, "push v2 here", "a")
-    sk.box(60, 600, 170, 130, "line", rx=6); sk.t(76, 630, "curl", "t"); sk.t(76, 656, "localhost:8888", "mono"); sk.t(76, 682, '"message": "v1"', "xs"); sk.t(76, 706, "v2 after the push", "a")
-    sk.box(60, 200, 170, 190, "line", plan=True, rx=6); sk.t(76, 228, "Not running now", "t"); sk.t(76, 254, "make, k3d, kubectl:", "xs"); sk.t(76, 274, "clients that built the", "xs"); sk.t(76, 294, "cluster and talk to it;", "xs"); sk.t(76, 314, "they act when you", "xs"); sk.t(76, 334, "call them", "xs")
+    sk.box(60, 530, 170, 120, "line", rx=6); sk.t(76, 558, "You", "t"); sk.t(76, 582, "browser or git", "s"); sk.t(76, 606, "localhost:8929", "mono"); sk.t(76, 630, "push v2 here", "a")
+    sk.box(60, 665, 170, 120, "line", rx=6); sk.t(76, 693, "curl", "t"); sk.t(76, 719, "localhost:8888", "mono"); sk.t(76, 743, '"message": "v1"', "xs"); sk.t(76, 767, "v2 after the push", "a")
+    y = note_box(sk, 60, 200, 170, "Clients", CLIENTS_K3D, plan=True)
+    note_box(sk, 60, y + 10, 170, "make", MAKE_NOTE_K3D)
     sk.t(1440, 150, "running here: the Docker daemon", "a", "end")
     sk.box(250, 190, 1190, 610, "line"); sk.t(268, 220, "Docker", "t"); sk.t(268, 244, "the k3d node is a container: a process of Docker", "s")
     sk.box(270, 262, 1150, 520, "line"); sk.t(288, 290, "k3d cluster bonus", "t"); sk.t(470, 290, "one server node, no agent node", "a")
@@ -486,8 +492,8 @@ def bonus_nested():
     sk.arrow(1163, 495, 1215, 495, plan=True)
     sk.t(603, 478, "polls", "xs", "middle"); sk.t(1189, 478, "applies", "xs", "middle")
     # client arrows
-    sk.arrow(232, 500, 296, 500, plan=True); sk.dot(236, 500); sk.t(244, 484, "8929", "mono")
-    sk.shapes.append('<path d="M232,665 L1292,665 L1292,598" class="line plan" marker-end="url(#arrow)"/>'); sk.dot(236, 665)
+    sk.shapes.append('<path d="M232,590 L240,590 L240,500 L296,500" class="line plan" marker-end="url(#arrow)"/>'); sk.dot(236, 590); sk.t(250, 530, "8929", "mono")
+    sk.shapes.append('<path d="M232,725 L240,725 L240,665 L1292,665 L1292,598" class="line plan" marker-end="url(#arrow)"/>'); sk.dot(236, 725)
     sk.t(760, 690, "8888 to NodePort 30007: through the Service of the app into the pod", "s", "middle")
     sk.t(305, 722, "Argo CD finds the project at gitlab.gitlab.svc.cluster.local:8929/root/rpodackIoT.git,", "s")
     sk.t(305, 746, "the Service name inside the cluster; 8929 on the host is NodePort 30929 of the node.", "s")
@@ -555,27 +561,48 @@ def architecture():
     return sk
 
 # ---------------------------------------------------------------- part 1 running, with the computer and the processes
+def note_box(sk, x, y, w, title, items, plan=False):
+    """A box of short paragraphs; each item is wrapped to the box width. Returns the y of its bottom edge."""
+    width = (w - 28) // 7
+    rows = []
+    for k, item in enumerate(items):
+        if k: rows.append(None)
+        rows += textwrap.wrap(item, width)
+    h = 44 + sum(8 if r is None else 20 for r in rows) + 12
+    sk.box(x, y, w, h, "line", plan=plan, rx=6)
+    sk.t(x + 18, y + 28, title, "t")
+    yy = y + 54
+    for r in rows:
+        if r is None: yy += 8
+        else:
+            sk.t(x + 18, yy, r, "xs"); yy += 20
+    return y + h
+
+CLIENTS_VM = ["Vagrant keeps the VMs in .vagrant and libvirt knows them: it reaches them at any time with up, halt, ssh, destroy",
+              "Ansible reads a list of hosts and connects over SSH; it installed K3s and the apps"]
+MAKE_NOTE = ["runs the commands of the Makefile only; no access of its own"]
+CLIENTS_K3D = ["(not running now)", "k3d: lists, stops, deletes the cluster; Docker keeps it", "kubectl: asks the API server"]
+MAKE_NOTE_K3D = ["runs commands only; no access of its own"]
+
 def part1_running():
     sk = Sketch("Part 1 running: two VMs on the host VM, on the computer at 42", "Part 1 when it runs: the computer at 42 holds the host VM, which runs two VMs as qemu processes; in them run the K3s server and the K3s agent, with kubectl as a client inside the server VM")
     sk.t(750, 46, "Part 1 running: two VMs on the host VM, on the computer at 42", "h", "middle")
     sk.box(20, 70, 1460, 800, "line", rx=10); sk.t(40, 102, "The computer at 42", "t"); sk.t(300, 102, "the physical machine you sit at", "s")
     sk.box(40, 118, 1420, 732, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 174, "Ubuntu under QEMU/KVM, 6 CPUs, 8 GB", "s")
     sk.t(1440, 150, "running here: libvirt and one qemu process per VM", "a", "end")
-    # what is not running
-    sk.box(60, 215, 190, 230, "line", plan=True, rx=6)
-    sk.t(78, 245, "Not running now", "t"); sk.t(78, 273, "Vagrant and Ansible", "s")
-    sk.t(78, 299, "clients that built the", "xs"); sk.t(78, 319, "VMs and installed K3s;", "xs"); sk.t(78, 339, "they act again only", "xs"); sk.t(78, 359, "when you call them", "xs")
-    sk.t(78, 395, "vagrant up, halt, ssh,", "xs"); sk.t(78, 415, "destroy", "xs")
+    # clients that are not running, and make
+    y = note_box(sk, 60, 215, 190, "Clients with access", ["not running now: they act when you call them"] + CLIENTS_VM, plan=True)
+    note_box(sk, 60, y + 18, 190, "make", MAKE_NOTE)
     # VM 1
-    sk.box(270, 190, 540, 600, "line"); sk.t(290, 222, "VM rpodackS", "t"); sk.t(290, 246, "192.168.56.110 on eth1, 1 CPU, 1024 MB", "s"); sk.t(290, 270, "process on the host VM: qemu", "a")
-    sk.box(290, 290, 250, 80, "thin"); sk.t(304, 318, "kubectl", "t"); sk.t(304, 342, "a client: runs only while", "xs"); sk.t(304, 360, "you type it, after vagrant ssh", "xs")
+    sk.box(270, 190, 540, 600, "line"); sk.t(290, 222, "VM rpodackS", "t"); sk.t(290, 246, "192.168.56.110 on eth1, 1 CPU, 1024 MB", "s"); sk.t(790, 222, "process on the host VM: qemu", "a", "end")
+    sk.box(290, 268, 500, 88, "thin"); sk.t(304, 296, "kubectl", "t"); sk.t(470, 296, "process in the VM: kubectl, a short one", "a"); sk.t(304, 322, "a client: it starts when you type it after vagrant ssh and ends with the command;", "xs"); sk.t(304, 342, "K3s installs it as a link to the k3s program", "xs")
     sk.box(290, 400, 500, 170, "line"); sk.t(305, 430, "K3s server", "t"); sk.t(470, 430, "process in the VM: k3s server", "a")
     sk.t(305, 458, "API server on port 6443, scheduler, controllers, SQLite", "s"); sk.t(305, 484, "the control plane; kubelet and containerd run here too", "s")
     sk.box(290, 590, 500, 180, "thin"); sk.t(305, 620, "Pods on this node", "t"); sk.t(305, 648, "coredns, traefik, metrics-server, local-path", "s")
     sk.t(305, 674, "the K3s add-ons; containerd starts their containers", "s"); sk.t(305, 700, "as processes of this VM", "s"); sk.t(305, 736, "no apps of ours in Part 1", "a")
-    sk.arrow(415, 372, 415, 398); sk.dot(415, 378); sk.t(430, 392, "asks, :6443", "mono")
+    sk.arrow(415, 358, 415, 398); sk.dot(415, 363); sk.t(430, 380, "asks, :6443", "mono")
     # VM 2
-    sk.box(890, 190, 540, 600, "line"); sk.t(910, 222, "VM rpodackSW", "t"); sk.t(910, 246, "192.168.56.111 on eth1, 1 CPU, 512 MB", "s"); sk.t(910, 270, "process on the host VM: qemu", "a")
+    sk.box(890, 190, 540, 600, "line"); sk.t(910, 222, "VM rpodackSW", "t"); sk.t(910, 246, "192.168.56.111 on eth1, 1 CPU, 512 MB", "s"); sk.t(1410, 222, "process on the host VM: qemu", "a", "end")
     sk.box(910, 400, 500, 170, "line"); sk.t(925, 430, "K3s agent", "t"); sk.t(1090, 430, "process in the VM: k3s agent", "a")
     sk.t(925, 458, "kubelet, container runtime", "s"); sk.t(925, 484, "joined the server with the node token", "s"); sk.t(925, 510, "the client of the API server", "a")
     sk.box(910, 590, 500, 180, "thin", plan=True); sk.t(925, 620, "Pods on this node", "t"); sk.t(925, 648, "the scheduler places them here and on the server", "s")
@@ -593,19 +620,20 @@ def part1_running():
 # ---------------------------------------------------------------- how a part comes up, step by step
 def bringup(title, label, host_lines, you_type, steps, foot, status):
     sk = Sketch(title, label)
+    sk.legend = "who types the command"
     sk.t(750, 46, title, "h", "middle")
     sk.box(20, 70, 1460, 790, "line", rx=10)
-    sk.t(170, 122, "THE HOST VM", "col", "middle"); sk.t(170, 150, "where we type", "s", "middle")
+    sk.t(150, 122, "THE HOST VM", "col", "middle"); sk.t(150, 150, "where we type", "s", "middle")
     sk.t(680, 122, "THE STEPS", "col", "middle"); sk.t(680, 150, "what happens, in order", "s", "middle")
     sk.t(1260, 122, "WHAT EXISTS NOW", "col", "middle"); sk.t(1260, 150, "after each step", "s", "middle")
     n = len(steps)
     rowh = min(105, 610 // n)
     top = 200
-    sk.box(40, 200, 260, 40 + 24 * len(host_lines) + 84, "line", rx=6)
-    sk.t(58, 232, "Host VM", "t")
-    for i, ln in enumerate(host_lines): sk.t(58, 262 + i * 24, ln, "s")
+    sk.box(30, 200, 240, 40 + 24 * len(host_lines) + 84, "line", rx=6)
+    sk.t(46, 232, "Host VM", "t")
+    for i, ln in enumerate(host_lines): sk.t(46, 262 + i * 24, ln, "s")
     yy = 262 + len(host_lines) * 24 + 10
-    sk.t(58, yy, "you type:", "xs"); sk.t(58, yy + 22, you_type, "a")
+    sk.t(46, yy, "you type:", "xs"); sk.t(46, yy + 22, you_type, "a")
     sk.box(330, top - 10, 700, rowh * n + 20, "line")
     for i, (name, detail, actor, exists) in enumerate(steps):
         y = top + i * rowh
@@ -619,7 +647,7 @@ def bringup(title, label, host_lines, you_type, steps, foot, status):
         sk.box(1060, y, 400, bh, "thin")
         for j, ln in enumerate(textwrap.wrap(exists, 38)[:3]): sk.t(1074, y + 28 + j * 22, ln, "s" if j == 0 else "xs")
         sk.arrow(1016, y + bh // 2, 1056, y + bh // 2)
-    sk.arrow(302, top + 30, 328, top + 30); sk.dot(306, top + 30)
+    sk.arrow(274, top + 30, 328, top + 30); sk.dot(280, top + 30)
     footer(sk, foot, status)
     return sk
 

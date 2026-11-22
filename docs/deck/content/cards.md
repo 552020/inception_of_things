@@ -305,8 +305,8 @@ tags: networking vocabulary part2
 The docker command only talks to the Docker daemon, which runs as root, through the socket /var/run/docker.sock. The socket belongs to root and the group docker, so every other user gets "permission denied" and has to write sudo docker. K3d calls Docker for every node, so it would need sudo too. sudo usermod -aG docker $USER adds the user to the group. The catch: group membership is read at login, so the running shell does not have it yet. Log out and in again, or run newgrp docker; an install script cannot simply continue with docker commands after usermod. Whoever is in the docker group is in effect root on the machine, because a container can mount the host's file system.
 tags: docker k3d part3
 
-### What is K3d, and how does it differ from K3s?
-K3s is the Kubernetes distribution. K3d is a tool that runs K3s nodes as Docker containers on one machine: k3d cluster create starts a server container, optional agent containers and a load balancer container. No VMs, starts in seconds, needs Docker (the d). Part 3 uses it; the cluster inside is still K3s, the same manifests work. In Part 1 the nodes are VMs made by Vagrant, in Part 3 containers made by K3d. K3d is for development and tests, never production.
+### What is the difference between K3d and K3s?
+One letter, two different things. K3s is the Kubernetes itself: a lightweight distribution (one binary) that runs the control plane and the workloads. K3d is only a tool that starts K3s inside Docker (the d): k3d cluster create makes a server container, optional agent containers and a load balancer container, each node a container, not a VM. The cluster inside is still K3s, so the same manifests work. Part 1 and 2: K3s on VMs made by Vagrant. Part 3: K3s in containers made by K3d, in seconds, on one machine, needs Docker. K3d is for development and tests, never production. The memory hook: K3d is not a Kubernetes, it is a launcher for one.
 tags: k3d part3
 
 ### What is Argo CD?

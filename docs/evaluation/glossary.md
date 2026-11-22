@@ -2,7 +2,7 @@
 
 Terms of the Inception-of-Things project, grouped by area, alphabetical inside each group. Each entry is what the term means and, where it matters, where it appears in the project.
 
-## Kubernetes core
+## Kubernetes
 
 **API server (kube-apiserver)** The entry point of the cluster. Every request, from kubectl or from an internal component, goes through it; it validates the request and stores the result in the datastore.
 
@@ -144,7 +144,7 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **Vagrantfile** The Ruby file describing the VMs: box, hostname, network, provider settings, provisioners.
 
-## K3d and Docker
+## Part 3: K3d and Docker
 
 **Docker** The container engine K3d needs on the host VM. Installed by the Part 3 script.
 

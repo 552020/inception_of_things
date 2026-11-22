@@ -53,9 +53,10 @@
   <g filter="url(#hand)">
     <rect x="20" y="70" width="1460" height="790" rx="10" class="line fill"/>
     <rect x="40" y="118" width="1420" height="700" rx="8" class="line fill"/>
-    <rect x="60" y="420" width="170" height="130" rx="6" class="line fill"/>
-    <rect x="60" y="600" width="170" height="130" rx="6" class="line fill"/>
-    <rect x="60" y="200" width="170" height="190" rx="6" class="line fill plan"/>
+    <rect x="60" y="530" width="170" height="120" rx="6" class="line fill"/>
+    <rect x="60" y="665" width="170" height="120" rx="6" class="line fill"/>
+    <rect x="60" y="200" width="170" height="192" rx="6" class="line fill plan"/>
+    <rect x="60" y="402" width="170" height="96" rx="6" class="line fill"/>
     <rect x="250" y="190" width="1190" height="610" rx="6" class="line fill"/>
     <rect x="270" y="262" width="1150" height="520" rx="6" class="line fill"/>
     <rect x="290" y="305" width="1110" height="465" rx="6" class="line fill"/>
@@ -72,32 +73,37 @@
     <rect x="1229" y="486" width="126" height="92" rx="6" class="thin fill plan"/>
     <path d="M629,495 L577,495" class="line plan" marker-end="url(#arrow)"/>
     <path d="M1163,495 L1215,495" class="line plan" marker-end="url(#arrow)"/>
-    <path d="M232,500 L296,500" class="line plan" marker-end="url(#arrow)"/>
-    <path d="M232,665 L1292,665 L1292,598" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M232,590 L240,590 L240,500 L296,500" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M232,725 L240,725 L240,665 L1292,665 L1292,598" class="line plan" marker-end="url(#arrow)"/>
   </g>
   <rect x="297.0" y="485.0" width="16" height="30" rx="3" class="door"/>
   <rect x="1277.0" y="583.0" width="30" height="14" rx="3" class="door"/>
-  <circle cx="625" cy="495" r="7" class="dot"/>
-  <circle cx="236" cy="500" r="7" class="dot"/>
-  <circle cx="236" cy="665" r="7" class="dot"/>
+  <circle cx="625" cy="495" r="6" class="dot"/>
+  <circle cx="236" cy="590" r="6" class="dot"/>
+  <circle cx="236" cy="725" r="6" class="dot"/>
+  <circle cx="46" cy="40" r="6" class="dot"/>
   <text x="750" y="46" class="h" text-anchor="middle">Bonus running: GitLab and Argo CD in one k3d node</text>
   <text x="40" y="100" class="t">The computer at 42</text>
   <text x="60" y="150" class="t">Host VM</text>
   <text x="60" y="172" class="s">Ubuntu under QEMU/KVM</text>
-  <text x="76" y="450" class="t">You</text>
-  <text x="76" y="476" class="s">browser or git</text>
-  <text x="76" y="502" class="mono">localhost:8929</text>
-  <text x="76" y="528" class="a">push v2 here</text>
-  <text x="76" y="630" class="t">curl</text>
-  <text x="76" y="656" class="mono">localhost:8888</text>
-  <text x="76" y="682" class="xs">&quot;message&quot;: &quot;v1&quot;</text>
-  <text x="76" y="706" class="a">v2 after the push</text>
-  <text x="76" y="228" class="t">Not running now</text>
-  <text x="76" y="254" class="xs">make, k3d, kubectl:</text>
-  <text x="76" y="274" class="xs">clients that built the</text>
-  <text x="76" y="294" class="xs">cluster and talk to it;</text>
-  <text x="76" y="314" class="xs">they act when you</text>
-  <text x="76" y="334" class="xs">call them</text>
+  <text x="76" y="558" class="t">You</text>
+  <text x="76" y="582" class="s">browser or git</text>
+  <text x="76" y="606" class="mono">localhost:8929</text>
+  <text x="76" y="630" class="a">push v2 here</text>
+  <text x="76" y="693" class="t">curl</text>
+  <text x="76" y="719" class="mono">localhost:8888</text>
+  <text x="76" y="743" class="xs">&quot;message&quot;: &quot;v1&quot;</text>
+  <text x="76" y="767" class="a">v2 after the push</text>
+  <text x="78" y="228" class="t">Clients</text>
+  <text x="78" y="254" class="xs">(not running now)</text>
+  <text x="78" y="282" class="xs">k3d: lists, stops,</text>
+  <text x="78" y="302" class="xs">deletes the cluster;</text>
+  <text x="78" y="322" class="xs">Docker keeps it</text>
+  <text x="78" y="350" class="xs">kubectl: asks the</text>
+  <text x="78" y="370" class="xs">API server</text>
+  <text x="78" y="430" class="t">make</text>
+  <text x="78" y="456" class="xs">runs commands only;</text>
+  <text x="78" y="476" class="xs">no access of its own</text>
   <text x="1440" y="150" class="a" text-anchor="end">running here: the Docker daemon</text>
   <text x="268" y="220" class="t">Docker</text>
   <text x="268" y="244" class="s">the k3d node is a container: a process of Docker</text>
@@ -131,7 +137,7 @@
   <text x="1239" y="552" class="mono">:8888</text>
   <text x="603" y="478" class="xs" text-anchor="middle">polls</text>
   <text x="1189" y="478" class="xs" text-anchor="middle">applies</text>
-  <text x="244" y="484" class="mono">8929</text>
+  <text x="250" y="530" class="mono">8929</text>
   <text x="760" y="690" class="s" text-anchor="middle">8888 to NodePort 30007: through the Service of the app into the pod</text>
   <text x="305" y="722" class="s">Argo CD finds the project at gitlab.gitlab.svc.cluster.local:8929/root/rpodackIoT.git,</text>
   <text x="305" y="746" class="s">the Service name inside the cluster; 8929 on the host is NodePort 30929 of the node.</text>
@@ -139,6 +145,7 @@
   <text x="60" y="926" class="s">GitLab is the official image gitlab-ce as one Deployment, not the Helm chart; it fits in the memory of the host VM, the Helm chart would not.</text>
   <text x="60" y="954" class="a">Status: GitLab and Argo CD came up once; the push, Argo CD following the GitLab project and the change to v2 have not been run.</text>
   <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>
+  <text x="62" y="47" class="s">who opens the connection</text>
 </svg>
 </body>
 </html>

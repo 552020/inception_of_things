@@ -53,41 +53,52 @@
   <g filter="url(#hand)">
     <rect x="20" y="70" width="1460" height="800" rx="10" class="line fill"/>
     <rect x="40" y="118" width="1420" height="732" rx="8" class="line fill"/>
-    <rect x="60" y="215" width="190" height="230" rx="6" class="line fill plan"/>
+    <rect x="60" y="215" width="190" height="292" rx="6" class="line fill plan"/>
+    <rect x="60" y="525" width="190" height="116" rx="6" class="line fill"/>
     <rect x="270" y="190" width="540" height="600" rx="6" class="line fill"/>
-    <rect x="290" y="290" width="250" height="80" rx="6" class="thin fill"/>
+    <rect x="290" y="268" width="500" height="88" rx="6" class="thin fill"/>
     <rect x="290" y="400" width="500" height="170" rx="6" class="line fill"/>
     <rect x="290" y="590" width="500" height="180" rx="6" class="thin fill"/>
-    <path d="M415,372 L415,398" class="line" marker-end="url(#arrow)"/>
+    <path d="M415,358 L415,398" class="line" marker-end="url(#arrow)"/>
     <rect x="890" y="190" width="540" height="600" rx="6" class="line fill"/>
     <rect x="910" y="400" width="500" height="170" rx="6" class="line fill"/>
     <rect x="910" y="590" width="500" height="180" rx="6" class="thin fill plan"/>
     <path d="M908,480 L792,480" class="line" marker-end="url(#arrow)"/>
     <path d="M540,792 L540,812 L1160,812 L1160,792" class="line"/>
   </g>
-  <circle cx="415" cy="378" r="7" class="dot"/>
-  <circle cx="902" cy="480" r="7" class="dot"/>
+  <circle cx="415" cy="363" r="6" class="dot"/>
+  <circle cx="902" cy="480" r="6" class="dot"/>
   <rect x="782.0" y="465.0" width="16" height="30" rx="3" class="door"/>
+  <circle cx="46" cy="40" r="6" class="dot"/>
   <text x="750" y="46" class="h" text-anchor="middle">Part 1 running: two VMs on the host VM, on the computer at 42</text>
   <text x="40" y="102" class="t">The computer at 42</text>
   <text x="300" y="102" class="s">the physical machine you sit at</text>
   <text x="60" y="150" class="t">Host VM</text>
   <text x="60" y="174" class="s">Ubuntu under QEMU/KVM, 6 CPUs, 8 GB</text>
   <text x="1440" y="150" class="a" text-anchor="end">running here: libvirt and one qemu process per VM</text>
-  <text x="78" y="245" class="t">Not running now</text>
-  <text x="78" y="273" class="s">Vagrant and Ansible</text>
-  <text x="78" y="299" class="xs">clients that built the</text>
-  <text x="78" y="319" class="xs">VMs and installed K3s;</text>
-  <text x="78" y="339" class="xs">they act again only</text>
-  <text x="78" y="359" class="xs">when you call them</text>
-  <text x="78" y="395" class="xs">vagrant up, halt, ssh,</text>
-  <text x="78" y="415" class="xs">destroy</text>
+  <text x="78" y="243" class="t">Clients with access</text>
+  <text x="78" y="269" class="xs">not running now: they</text>
+  <text x="78" y="289" class="xs">act when you call them</text>
+  <text x="78" y="317" class="xs">Vagrant keeps the VMs</text>
+  <text x="78" y="337" class="xs">in .vagrant and libvirt</text>
+  <text x="78" y="357" class="xs">knows them: it reaches</text>
+  <text x="78" y="377" class="xs">them at any time with</text>
+  <text x="78" y="397" class="xs">up, halt, ssh, destroy</text>
+  <text x="78" y="425" class="xs">Ansible reads a list of</text>
+  <text x="78" y="445" class="xs">hosts and connects over</text>
+  <text x="78" y="465" class="xs">SSH; it installed K3s</text>
+  <text x="78" y="485" class="xs">and the apps</text>
+  <text x="78" y="553" class="t">make</text>
+  <text x="78" y="579" class="xs">runs the commands of</text>
+  <text x="78" y="599" class="xs">the Makefile only; no</text>
+  <text x="78" y="619" class="xs">access of its own</text>
   <text x="290" y="222" class="t">VM rpodackS</text>
   <text x="290" y="246" class="s">192.168.56.110 on eth1, 1 CPU, 1024 MB</text>
-  <text x="290" y="270" class="a">process on the host VM: qemu</text>
-  <text x="304" y="318" class="t">kubectl</text>
-  <text x="304" y="342" class="xs">a client: runs only while</text>
-  <text x="304" y="360" class="xs">you type it, after vagrant ssh</text>
+  <text x="790" y="222" class="a" text-anchor="end">process on the host VM: qemu</text>
+  <text x="304" y="296" class="t">kubectl</text>
+  <text x="470" y="296" class="a">process in the VM: kubectl, a short one</text>
+  <text x="304" y="322" class="xs">a client: it starts when you type it after vagrant ssh and ends with the command;</text>
+  <text x="304" y="342" class="xs">K3s installs it as a link to the k3s program</text>
   <text x="305" y="430" class="t">K3s server</text>
   <text x="470" y="430" class="a">process in the VM: k3s server</text>
   <text x="305" y="458" class="s">API server on port 6443, scheduler, controllers, SQLite</text>
@@ -97,10 +108,10 @@
   <text x="305" y="674" class="s">the K3s add-ons; containerd starts their containers</text>
   <text x="305" y="700" class="s">as processes of this VM</text>
   <text x="305" y="736" class="a">no apps of ours in Part 1</text>
-  <text x="430" y="392" class="mono">asks, :6443</text>
+  <text x="430" y="380" class="mono">asks, :6443</text>
   <text x="910" y="222" class="t">VM rpodackSW</text>
   <text x="910" y="246" class="s">192.168.56.111 on eth1, 1 CPU, 512 MB</text>
-  <text x="910" y="270" class="a">process on the host VM: qemu</text>
+  <text x="1410" y="222" class="a" text-anchor="end">process on the host VM: qemu</text>
   <text x="925" y="430" class="t">K3s agent</text>
   <text x="1090" y="430" class="a">process in the VM: k3s agent</text>
   <text x="925" y="458" class="s">kubelet, container runtime</text>
@@ -116,6 +127,7 @@
   <text x="60" y="926" class="s">kubectl is a client: it runs only while you type a command, here inside rpodackS. eth0 of both VMs is NAT and only reaches the internet, for image pulls.</text>
   <text x="60" y="954" class="a">Status: run on 2026-11-22. The server node was Ready; the worker joining has not been checked yet.</text>
   <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>
+  <text x="62" y="47" class="s">who opens the connection</text>
 </svg>
 </body>
 </html>

@@ -21,5 +21,6 @@ Collected while reading the documents. One line per question; the answer goes in
 - What are the alternatives to Kubernetes? Is Terraform one? (no: Terraform provisions; alternatives are Swarm, Nomad, ECS, or compose / serverless / PaaS)
 - Why are the control plane components named like kube-apiserver? (name of the executable)
 - Where are those components in K3s? (inside the one process `k3s server`)
+- What is the difference between K3d and K3s? (tricky, one letter: K3s is the Kubernetes, K3d a launcher that runs K3s nodes as Docker containers)
 
 The complete list of questions is the set of headings in cards.md (`grep '^### ' cards.md`); this file keeps only the questions Stefano raised while reading, with the hint of the answer.
