@@ -53,8 +53,10 @@
   <g filter="url(#hand)">
     <rect x="20" y="70" width="1460" height="790" rx="10" class="line fill"/>
     <rect x="40" y="118" width="1420" height="700" rx="8" class="line fill"/>
-    <rect x="60" y="200" width="190" height="100" rx="6" class="line fill"/>
-    <rect x="60" y="320" width="190" height="100" rx="6" class="line fill"/>
+    <rect x="60" y="200" width="190" height="130" rx="6" class="line fill"/>
+    <rect x="60" y="350" width="190" height="130" rx="6" class="line fill"/>
+    <path d="M252,265 L268,265" class="line" marker-end="url(#arrow)"/>
+    <path d="M252,415 L268,415" class="line" marker-end="url(#arrow)"/>
     <rect x="270" y="190" width="540" height="620" rx="6" class="line fill"/>
     <rect x="580" y="258" width="205" height="46" rx="6" class="thin fill"/>
     <rect x="290" y="330" width="500" height="460" rx="6" class="line fill"/>
@@ -84,6 +86,8 @@
     <path d="M1400,318 L1400,330" class="line acc"/>
     <path d="M540,812 L540,830 L1160,830 L1160,812" class="line"/>
   </g>
+  <circle cx="256" cy="265" r="7" class="dot"/>
+  <circle cx="256" cy="415" r="7" class="dot"/>
   <circle cx="682" cy="312" r="7" class="dot"/>
   <circle cx="902" cy="560" r="7" class="dot"/>
   <rect x="782.0" y="545.0" width="16" height="30" rx="3" class="door"/>
@@ -93,15 +97,17 @@
   <text x="60" y="150" class="t">Host VM</text>
   <text x="60" y="172" class="s">Ubuntu under QEMU/KVM, 6 CPUs, 8 GB</text>
   <text x="78" y="232" class="t">Vagrant</text>
-  <text x="78" y="258" class="s">creates the two VMs</text>
-  <text x="78" y="282" class="a">make up</text>
-  <text x="78" y="352" class="t">Ansible</text>
-  <text x="78" y="378" class="s">installs K3s in each VM</text>
-  <text x="78" y="402" class="a">runs on the host VM</text>
+  <text x="78" y="256" class="a">a client, not a process</text>
+  <text x="78" y="282" class="s">controls the two VMs:</text>
+  <text x="78" y="304" class="xs">up, halt, ssh, destroy</text>
+  <text x="78" y="382" class="t">Ansible</text>
+  <text x="78" y="406" class="a">a client, runs once</text>
+  <text x="78" y="432" class="s">over SSH into both VMs:</text>
+  <text x="78" y="454" class="xs">installs K3s in each</text>
   <text x="290" y="222" class="t">VM rpodackS</text>
   <text x="290" y="246" class="s">192.168.56.110 on eth1, 1 CPU, 1024 MB</text>
   <text x="592" y="280" class="t">kubectl</text>
-  <text x="592" y="298" class="xs">on this VM</text>
+  <text x="592" y="298" class="xs">a client, on this VM</text>
   <text x="305" y="358" class="t">K3s server: node 1</text>
   <text x="320" y="398" class="t">Control plane</text>
   <text x="320" y="424" class="s">scheduler, controllers, SQLite</text>

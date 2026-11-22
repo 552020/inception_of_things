@@ -188,11 +188,13 @@ def part1():
     sk.box(20, 70, 1460, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t"); sk.t(1460, 100, "the outermost box", "s", "end")
     sk.box(40, 118, 1420, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM, 6 CPUs, 8 GB", "s")
     # tools beside the VMs
-    sk.box(60, 200, 190, 100, "line", rx=6); sk.t(78, 232, "Vagrant", "t"); sk.t(78, 258, "creates the two VMs", "s"); sk.t(78, 282, "make up", "a")
-    sk.box(60, 320, 190, 100, "line", rx=6); sk.t(78, 352, "Ansible", "t"); sk.t(78, 378, "installs K3s in each VM", "s"); sk.t(78, 402, "runs on the host VM", "a")
+    sk.box(60, 200, 190, 130, "line", rx=6); sk.t(78, 232, "Vagrant", "t"); sk.t(78, 256, "a client, not a process", "a"); sk.t(78, 282, "controls the two VMs:", "s"); sk.t(78, 304, "up, halt, ssh, destroy", "xs")
+    sk.box(60, 350, 190, 130, "line", rx=6); sk.t(78, 382, "Ansible", "t"); sk.t(78, 406, "a client, runs once", "a"); sk.t(78, 432, "over SSH into both VMs:", "s"); sk.t(78, 454, "installs K3s in each", "xs")
+    sk.arrow(252, 265, 268, 265); sk.dot(256, 265)
+    sk.arrow(252, 415, 268, 415); sk.dot(256, 415)
     # VM 1: the server
     sk.box(270, 190, 540, 620, "line"); sk.t(290, 222, "VM rpodackS", "t"); sk.t(290, 246, "192.168.56.110 on eth1, 1 CPU, 1024 MB", "s")
-    sk.box(580, 258, 205, 46, "thin"); sk.t(592, 280, "kubectl", "t"); sk.t(592, 298, "on this VM", "xs")
+    sk.box(580, 258, 205, 46, "thin"); sk.t(592, 280, "kubectl", "t"); sk.t(592, 298, "a client, on this VM", "xs")
     sk.box(290, 330, 500, 460, "line"); sk.t(305, 358, "K3s server: node 1", "t")
     sk.box(305, 372, 470, 70, "thin"); sk.t(320, 398, "Control plane", "t"); sk.t(320, 424, "scheduler, controllers, SQLite", "s")
     sk.box(560, 384, 205, 44, "thin"); sk.t(572, 404, "API server", "s"); sk.t(572, 422, ":6443", "mono")
@@ -492,10 +494,10 @@ def architecture():
     sk = Sketch("Kubernetes architecture, with the technologies we use", "A full Kubernetes architecture as nested boxes: the cluster, the control plane, the objects, the nodes with their components and the add-on pods, with the tool that fills each part in our project")
     sk.t(750, 46, "Kubernetes architecture, with the technologies we use", "h", "middle")
     # outside tools
-    tools = [("kubectl", "you, from outside", "asks the API server"),
-             ("Vagrant", "with libvirt, QEMU/KVM", "builds VMs (Parts 1, 2)"),
-             ("Ansible", "from the host VM", "installs K3s (Parts 1, 2)"),
-             ("k3d, Docker", "nodes as containers", "Part 3 and the bonus"),
+    tools = [("kubectl", "a client, you type it", "asks the API server"),
+             ("Vagrant", "client of libvirt", "controls the VMs (1, 2)"),
+             ("Ansible", "client, runs once", "installs K3s (1, 2)"),
+             ("k3d, Docker", "client of Docker", "builds the cluster (3)"),
              ("GitHub, GitLab", "outside, or inside", "Argo CD follows it")]
     for i, (a, b, c) in enumerate(tools):
         y = 110 + i * 142

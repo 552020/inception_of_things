@@ -73,6 +73,18 @@ tags: kubernetes basics
 It is the only door into the cluster: it receives requests, authenticates them, validates them and stores the result in the datastore. kubectl talks to it, and so do all internal components (scheduler, controllers, kubelets); they never talk to the datastore directly.
 tags: kubernetes architecture
 
+### Where is kubectl in the Part 1 picture, and is it part of the server or the worker?
+Neither. kubectl is a client, like a browser is a client of a web server. The cluster is the server and the worker: the API server on the server node, and the kubelets on both nodes. kubectl is not one of them and the cluster runs the same without it. It only turns your command into an HTTPS request to the API server, on port 6443 of rpodackS. In Part 1 you type it on rpodackS itself, after vagrant ssh, so it sits inside that VM but outside the K3s server process; it finds the API server through the file /etc/rancher/k3s/k3s.yaml. The worker needs no kubectl: it only joins the server with the node token and takes its orders from the API server.
+tags: kubectl architecture part1
+
+### Do I have to install kubectl to reach the cluster, like installing a browser?
+Yes, you need a client wherever you want to talk to a cluster, and a way to find the cluster, like a browser plus a web address and a login. In Part 1 and Part 2 you do not install it: the K3s installer puts a kubectl on every machine it installs K3s on (a link to the k3s program), and you use the one on rpodackS, where the file /etc/rancher/k3s/k3s.yaml holds the address and the credentials. The worker has the program too but no cluster file to read, so it is useless there. In Part 3 there is no K3s installer on the host: you install kubectl on the host VM yourself, and p3/scripts/installationhost.sh does it together with Docker. To use it from another machine you also copy the cluster file and put the server's address into it.
+tags: kubectl part1 part3 installation
+
+### Is Vagrant just a Makefile that builds the VMs?
+No, it also keeps control of them. A Makefile builds something and has no relation to it afterwards. Vagrant is a client of libvirt: vagrant up asks libvirt for the VMs and starts Ansible, and Vagrant keeps in the folder .vagrant which machine belongs to which name. Later it can start, stop, delete and enter them again (vagrant halt, destroy, ssh). It is not a running process: while the VMs run, only libvirt and the QEMU processes are there. So Vagrant is for the VMs what kubectl is for the cluster: a client that controls, not part of what it controls. Ansible is the second client: it goes into the VMs once over SSH and installs K3s.
+tags: vagrant architecture part1
+
 ### What happens when you run kubectl get pods?
 kubectl reads the kubeconfig for the server address and credentials, sends an HTTPS GET to the API server (port 6443), the API server reads the Pod objects from the datastore and returns JSON, kubectl prints it as a table.
 tags: kubernetes architecture kubectl
