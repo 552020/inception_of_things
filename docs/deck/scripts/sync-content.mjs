@@ -1,10 +1,10 @@
 // Copies the sources from ../ into content/, so a deploy from this folder has them:
 //   ../evaluation/{cards,glossary}.md        -> content/
 //   desk documents (see DESK below)          -> content/desk/<slug>.md
-//   ../lab/<dir>/README.md or Vagrantfile    -> content/lab/<slug>.md
+//   ../lab/<dir>/README.md or Vagrantfile    -> content/lab/<slug>.md (images in <dir>/img -> public/lab-img/<dir>/)
 //   the lists of both                        -> content/library.json
 // On Vercel ../ is absent; the committed copies in content/ are used as they are.
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -84,6 +84,11 @@ for (const entry of readdirSync(path.join(docs, "lab"), { withFileTypes: true })
   let title;
   if (existsSync(path.join(dir, "README.md"))) {
     md = readFileSync(path.join(dir, "README.md"), "utf8");
+    if (existsSync(path.join(dir, "img"))) {
+      // images next to the page: img/x.png in the Markdown is served from /lab-img/<folder>/x.png
+      cpSync(path.join(dir, "img"), path.join(here, "../public/lab-img", entry.name), { recursive: true });
+      md = md.replaceAll("](img/", `](/lab-img/${entry.name}/`);
+    }
     title = LAB_TITLES[entry.name] ?? titleOf(md, humanise(entry.name));
   } else if (existsSync(path.join(dir, "Vagrantfile"))) {
     title = humanise(entry.name);

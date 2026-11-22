@@ -44,7 +44,7 @@ export default function DesignPage() {
     <div className="flex flex-col gap-10">
       <div>
         <h1 className="text-2xl font-semibold">Design proposals</h1>
-        <p className="text-sm text-muted mt-1">The deck as a DevOps page, in five designs, each in light and dark. Say the number and it becomes the site.</p>
+        <p className="text-sm text-muted mt-1">Palette only: these five change colours, radius and font, not the structure. Superseded by the graphics study, which comes first; structural proposals follow once it is discussed.</p>
       </div>
       {proposals.map((p, i) => (
         <DesignProposal key={p.name} p={p} index={i + 1} />

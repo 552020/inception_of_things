@@ -89,3 +89,4 @@ body {
 .doc hr { border: 0; border-top: 1px solid var(--line); margin: 1.5rem 0; }
 .doc pre code { background: none; padding: 0; }
 .doc * + p, .doc * + ul, .doc * + ol, .doc * + pre { margin-top: 0.75rem; }
+.doc img { max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; margin-top: 0.75rem; }
