@@ -1,6 +1,6 @@
 # Logo study
 
-Starting from the Kubernetes marks: what a mark in this family does, and six sketches for ours. The sketches are drawn by hand in this study with original geometry. None is chosen.
+Starting from the Kubernetes marks: what a mark in this family does, and nine sketches for ours. The sketches are drawn by hand in this study with original geometry. None is chosen.
 
 ## The family
 
@@ -74,15 +74,32 @@ Each sheet shows the mark large and at 64, 32, 16 and 20 pixels, on light and on
 </figure>
 
 <figure>
-<img src="img/sketch-F-pixel.svg" alt="F, pixel">
-<figcaption>F. Pixel. A wheel on a 16 by 16 grid, for the 98 skin: title bar, favicon, desktop icon.</figcaption>
+<img src="img/sketch-F-pixel-squares.svg" alt="F, pixel squares">
+<figcaption>F. Pixel squares. Three squares in squares on a 16 by 16 grid, the Inception idea in the 98 style: title bar, favicon, desktop icon.</figcaption>
+</figure>
+
+<figure>
+<img src="img/sketch-G-eye-wheel.svg" alt="G, eye with a wheel">
+<figcaption>G. Eye with a wheel. An eye whose pupil is a small wheel with eight handles: the cluster that watches, and the third eye of the setup. The k9s mascot already puts the Kubernetes wheel into the lenses of its glasses, so the joke is known in this family.</figcaption>
+</figure>
+
+<figure>
+<img src="img/sketch-H-eye-nested.svg" alt="H, eye with nested heptagons">
+<figcaption>H. Eye with nested heptagons. The same eye with the layers of A as the pupil: an eye that looks into a machine in a machine.</figcaption>
+</figure>
+
+<figure>
+<img src="img/sketch-I-eye-pixel.svg" alt="I, pixel eye">
+<figcaption>I. Pixel eye. The eye on a 16 by 16 grid, for the 98 style.</figcaption>
 </figure>
 
 </div>
 
 ## Per skin
 
-The logo lives in the title bar of the window and in the favicon. On the desktop skin it is the rounded colour mark, on the 98 skin the pixel one. F shows the pixel form; whichever mark is chosen needs both.
+The logo lives in the title bar of the window and in the favicon. On the desktop skin it is the rounded colour mark, on the 98 skin the pixel one. F and I are pixel forms; whichever mark is chosen needs both.
+
+Dropped: a pixel wheel with four spokes inside a ring. It reads as a sun cross or Celtic cross, a symbol used by neo-Nazis, and has no place on this site. Rule for the rest: no cross inside a circle, and no four-armed shape.
 
 ## Sources
 
