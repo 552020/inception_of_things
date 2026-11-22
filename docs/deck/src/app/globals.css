@@ -90,3 +90,10 @@ body {
 .doc pre code { background: none; padding: 0; }
 .doc * + p, .doc * + ul, .doc * + ol, .doc * + pre { margin-top: 0.75rem; }
 .doc img { max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; margin-top: 0.75rem; }
+
+/* Figures in a study page: two columns on wide screens */
+.doc .shots { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-top: 0.75rem; }
+@media (min-width: 900px) { .doc .shots { grid-template-columns: 1fr 1fr; } }
+.doc figure { margin: 0; }
+.doc figure img { margin-top: 0; width: 100%; }
+.doc figcaption { font-size: 0.9rem; color: var(--muted); margin-top: 0.4rem; }
