@@ -1,4 +1,4 @@
-.PHONY: help up down status ssh-server clean show-nodes show-ip-server
+.PHONY: help up provision down status ssh-server clean show-nodes show-ip-server
 
 SHELL := /bin/bash
 
