@@ -162,7 +162,14 @@ fi
 
 # 12. Test both nodes are in the cluster
 test_info "Testing cluster nodes..."
-NODES=$(vagrant ssh rpodackS -c "kubectl get nodes --no-headers --kubeconfig=/etc/rancher/k3s/k3s.yaml 2>/dev/null || k3s kubectl get nodes --no-headers 2>/dev/null" 2>/dev/null | wc -l | tr -d ' \r\n')
+# The playbook starts the agent install in the background and does not wait for it,
+# so right after "make up" the worker may not have joined yet: ask up to 24 times, 5 s apart.
+NODES=0
+for _ in $(seq 1 24); do
+    NODES=$(vagrant ssh rpodackS -c "kubectl get nodes --no-headers --kubeconfig=/etc/rancher/k3s/k3s.yaml 2>/dev/null || k3s kubectl get nodes --no-headers 2>/dev/null" 2>/dev/null | wc -l | tr -d ' \r\n')
+    [ "${NODES:-0}" -ge 2 ] && break
+    sleep 5
+done
 if [ "$NODES" -ge 2 ]; then
     test_pass "Cluster has at least 2 nodes (found $NODES)"
 else
@@ -172,7 +179,7 @@ fi
 # 13. Test node names match hostnames
 test_info "Testing node names match hostnames..."
 NODE_NAMES=$(vagrant ssh rpodackS -c "kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name --kubeconfig=/etc/rancher/k3s/k3s.yaml 2>/dev/null || k3s kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name 2>/dev/null" 2>/dev/null | tr '\r\n' ' ')
-if echo "$NODE_NAMES" | grep -q "rpodacks" && echo "$NODE_NAMES" | grep -q "rpodacksw"; then
+if echo "$NODE_NAMES" | grep -qw "rpodacks" && echo "$NODE_NAMES" | grep -qw "rpodacksw"; then
     test_pass "Both nodes (rpodackS and rpodackSW) are in the cluster"
 else
     test_fail "Node names don't match expected hostnames. Found: $NODE_NAMES"
@@ -180,7 +187,7 @@ fi
 
 # 14. Test nodes are Ready
 test_info "Testing nodes status..."
-READY_NODES=$(vagrant ssh rpodackS -c "kubectl get nodes --no-headers --kubeconfig=/etc/rancher/k3s/k3s.yaml 2>/dev/null | grep -c Ready || k3s kubectl get nodes --no-headers 2>/dev/null | grep -c Ready" 2>/dev/null | tr -d ' \r\n')
+READY_NODES=$(vagrant ssh rpodackS -c "kubectl get nodes --no-headers --kubeconfig=/etc/rancher/k3s/k3s.yaml 2>/dev/null | grep -cw Ready || k3s kubectl get nodes --no-headers 2>/dev/null | grep -cw Ready" 2>/dev/null | tr -d ' \r\n')
 if [ "$READY_NODES" -ge 2 ]; then
     test_pass "At least 2 nodes are in Ready state (found $READY_NODES)"
 else
