@@ -65,6 +65,14 @@ export default async function PartPage({ params }: { params: Promise<{ n: string
         <figcaption className="mt-2 text-sm text-muted">The target state of Part {n}. A dot marks who opens a connection; dashed lines are written but not run yet.</figcaption>
       </figure>
 
+      <figure className="ui-panel p-3">
+        <div className="sketch is-matryoshka">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/diagrams/matryoshka-p${n}.png`} alt={`Part ${n} as nested dolls`} width={3064} height={1984} />
+        </div>
+        <figcaption className="mt-2 text-sm text-muted">The same part as nested dolls, read from the outside in. The small doors are ports; the dashed boxes are Services.</figcaption>
+      </figure>
+
       <section>
         <h2 className="text-lg font-medium">Reading the sketch</h2>
         <ul className="mt-2 list-disc pl-5 leading-relaxed">

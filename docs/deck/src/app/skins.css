@@ -104,5 +104,6 @@ html[data-skin="desktop"] body { background: var(--wallpaper) fixed; }
 
 /* Part pages: the sketch without the notes under its legend */
 .sketch { overflow: hidden; aspect-ratio: 3064 / 1740; }
+.sketch.is-matryoshka { aspect-ratio: 3064 / 1780; }
 .sketch img { display: block; width: 100%; height: auto; }
 .part-card:hover { border-color: var(--foreground); }

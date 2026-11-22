@@ -116,5 +116,14 @@ if (existsSync(sketches)) {
   }
 }
 
+// The Matryoshka pictures are shown on the public pages as well (cropped above their notes).
+const matryoshka = path.join(docs, "lab/matryoshka/img");
+if (existsSync(matryoshka)) {
+  mkdirSync(path.join(here, "../public/diagrams"), { recursive: true });
+  for (const file of readdirSync(matryoshka)) {
+    if (file.endsWith(".png")) copyFileSync(path.join(matryoshka, file), path.join(here, "../public/diagrams", file));
+  }
+}
+
 writeFileSync(path.join(target, "library.json"), JSON.stringify(library, null, 2) + "\n");
 console.log(`synced ${library.desk.length} desk documents and ${library.lab.length} lab pages`);

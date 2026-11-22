@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kubernetes as a Matryoshka: what sits inside what</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Patrick Hand","Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .svc   { stroke:var(--accent); stroke-width:2.2; }
+  .acc   { stroke:var(--accent); }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .door  { fill:var(--accent); stroke:var(--ink); stroke-width:1.6; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .xs    { font-size:16px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+  .monoa { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:16px; fill:var(--accent); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 960" role="img" aria-label="A Kubernetes cluster drawn as nested dolls: the cluster holds nodes, nodes hold pods, pods hold containers; ports are small doors">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <g filter="url(#hand)">
+    <rect x="20" y="245" width="150" height="100" rx="6" class="line fill"/>
+    <rect x="190" y="70" width="1290" height="760" rx="10" class="line fill"/>
+    <rect x="215" y="150" width="400" height="650" rx="6" class="line fill"/>
+    <rect x="235" y="222" width="360" height="160" rx="6" class="thin fill"/>
+    <rect x="250" y="260" width="160" height="48" rx="6" class="thin fill"/>
+    <rect x="425" y="260" width="160" height="48" rx="6" class="thin fill"/>
+    <rect x="250" y="318" width="160" height="48" rx="6" class="thin fill"/>
+    <rect x="425" y="318" width="160" height="48" rx="6" class="thin fill"/>
+    <rect x="235" y="396" width="360" height="44" rx="6" class="thin fill"/>
+    <rect x="635" y="150" width="400" height="650" rx="6" class="line fill"/>
+    <rect x="655" y="222" width="360" height="66" rx="6" class="thin fill"/>
+    <rect x="655" y="296" width="360" height="66" rx="6" class="thin fill"/>
+    <rect x="655" y="370" width="360" height="66" rx="6" class="thin fill"/>
+    <rect x="1055" y="150" width="400" height="650" rx="6" class="line fill"/>
+    <rect x="1075" y="222" width="360" height="66" rx="6" class="thin fill"/>
+    <rect x="1075" y="296" width="360" height="66" rx="6" class="thin fill"/>
+    <rect x="1075" y="370" width="360" height="66" rx="6" class="thin fill"/>
+    <rect x="235" y="460" width="170" height="140" rx="6" class="thin fill"/>
+    <rect x="247" y="524" width="146" height="64" rx="6" class="thin fill"/>
+    <rect x="655" y="460" width="170" height="140" rx="6" class="thin fill"/>
+    <rect x="667" y="524" width="146" height="64" rx="6" class="thin fill"/>
+    <rect x="1075" y="460" width="170" height="140" rx="6" class="thin fill"/>
+    <rect x="1087" y="524" width="146" height="64" rx="6" class="thin fill"/>
+    <rect x="425" y="460" width="170" height="140" rx="6" class="thin fill"/>
+    <rect x="437" y="524" width="146" height="64" rx="6" class="thin fill"/>
+    <rect x="845" y="460" width="170" height="140" rx="6" class="thin fill"/>
+    <rect x="857" y="524" width="67" height="64" rx="6" class="thin fill"/>
+    <rect x="936" y="524" width="67" height="64" rx="6" class="thin fill"/>
+    <rect x="655" y="675" width="170" height="110" rx="6" class="thin fill"/>
+    <rect x="667" y="739" width="146" height="34" rx="6" class="thin fill"/>
+    <rect x="1075" y="675" width="170" height="110" rx="6" class="thin fill"/>
+    <rect x="1087" y="739" width="146" height="34" rx="6" class="thin fill"/>
+    <path d="M320,606 L320,640 L1160,640 L1160,606" class="line acc plan"/>
+    <path d="M740,606 L740,640" class="line acc plan"/>
+    <path d="M172,285 L248,288" class="line" marker-end="url(#arrow)"/>
+  </g>
+  <rect x="305.0" y="593.0" width="30" height="14" rx="3" class="door"/>
+  <rect x="725.0" y="593.0" width="30" height="14" rx="3" class="door"/>
+  <rect x="1145.0" y="593.0" width="30" height="14" rx="3" class="door"/>
+  <circle cx="176" cy="285" r="7" class="dot"/>
+  <text x="750" y="46" class="h" text-anchor="middle">Kubernetes as a Matryoshka: what sits inside what</text>
+  <text x="38" y="278" class="t">kubectl</text>
+  <text x="38" y="304" class="s">you, from outside</text>
+  <text x="38" y="328" class="a">knocks at 6443</text>
+  <text x="835" y="108" class="col" text-anchor="middle">THE CLUSTER</text>
+  <text x="835" y="134" class="s" text-anchor="middle">one control plane and its nodes</text>
+  <text x="235" y="184" class="t">Node 1: the server</text>
+  <text x="235" y="208" class="s">control plane, and a worker too</text>
+  <text x="250" y="248" class="t">Control plane</text>
+  <text x="262" y="282" class="s">API server</text>
+  <text x="262" y="302" class="mono">:6443</text>
+  <text x="437" y="282" class="s">Scheduler</text>
+  <text x="437" y="302" class="xs">places pods</text>
+  <text x="262" y="340" class="s">Controllers</text>
+  <text x="262" y="360" class="xs">keep it as declared</text>
+  <text x="437" y="340" class="s">Datastore</text>
+  <text x="437" y="360" class="xs">SQLite or etcd</text>
+  <text x="251" y="424" class="s">kubelet · kube-proxy · containerd</text>
+  <text x="655" y="184" class="t">Node 2: a worker</text>
+  <text x="655" y="208" class="s">runs pods</text>
+  <text x="669" y="248" class="t">kubelet</text>
+  <text x="669" y="274" class="s">starts the pods the API server gives it</text>
+  <text x="669" y="322" class="t">kube-proxy</text>
+  <text x="669" y="348" class="s">makes the Service ports work</text>
+  <text x="669" y="396" class="t">containerd</text>
+  <text x="669" y="422" class="s">runs the containers</text>
+  <text x="1075" y="184" class="t">Node 3: a worker</text>
+  <text x="1075" y="208" class="s">runs pods</text>
+  <text x="1089" y="248" class="t">kubelet</text>
+  <text x="1089" y="274" class="s">starts the pods the API server gives it</text>
+  <text x="1089" y="322" class="t">kube-proxy</text>
+  <text x="1089" y="348" class="s">makes the Service ports work</text>
+  <text x="1089" y="396" class="t">containerd</text>
+  <text x="1089" y="422" class="s">runs the containers</text>
+  <text x="247" y="486" class="t">Pod A-1</text>
+  <text x="247" y="508" class="a">replica 1 of 3</text>
+  <text x="257" y="556" class="s">container</text>
+  <text x="257" y="576" class="mono">:8080</text>
+  <text x="667" y="486" class="t">Pod A-2</text>
+  <text x="667" y="508" class="a">replica 2 of 3</text>
+  <text x="677" y="556" class="s">container</text>
+  <text x="677" y="576" class="mono">:8080</text>
+  <text x="1087" y="486" class="t">Pod A-3</text>
+  <text x="1087" y="508" class="a">replica 3 of 3</text>
+  <text x="1097" y="556" class="s">container</text>
+  <text x="1097" y="576" class="mono">:8080</text>
+  <text x="437" y="486" class="t">Pod coredns</text>
+  <text x="437" y="508" class="xs">an add-on of K3s</text>
+  <text x="447" y="556" class="s">container</text>
+  <text x="447" y="576" class="mono">:53</text>
+  <text x="857" y="486" class="t">Pod with two</text>
+  <text x="857" y="508" class="xs">containers share the pod</text>
+  <text x="890" y="562" class="s" text-anchor="middle">app</text>
+  <text x="969" y="562" class="s" text-anchor="middle">helper</text>
+  <text x="667" y="701" class="t">Pod B-1</text>
+  <text x="667" y="723" class="a">replica 1 of 2</text>
+  <text x="677" y="762" class="s">container</text>
+  <text x="1087" y="701" class="t">Pod B-2</text>
+  <text x="1087" y="723" class="a">replica 2 of 2</text>
+  <text x="1097" y="762" class="s">container</text>
+  <text x="240" y="668" class="a">Service A: port 80</text>
+  <text x="240" y="692" class="s">one address for the three A pods</text>
+  <text x="240" y="716" class="s">it hands each request to one of them</text>
+  <text x="60" y="898" class="s">Read it from the outside in: cluster, node, pod, container. The small doors are ports: kubectl knocks at 6443, a Service at 80, a pod at 8080.</text>
+  <text x="60" y="926" class="s">Replicas are pods of one Deployment: the scheduler spreads them over the nodes, and the Service in front of them is the only address a client needs.</text>
+  <text x="1480" y="926" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>

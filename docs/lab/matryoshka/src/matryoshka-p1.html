@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 1 as a Matryoshka: two VMs, two nodes, one cluster</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Patrick Hand","Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .svc   { stroke:var(--accent); stroke-width:2.2; }
+  .acc   { stroke:var(--accent); }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .door  { fill:var(--accent); stroke:var(--ink); stroke-width:1.6; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .xs    { font-size:16px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+  .monoa { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:16px; fill:var(--accent); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 960" role="img" aria-label="Part 1 drawn as nested dolls: the computer holds the host VM, which holds two VMs; each VM holds a K3s node with its pods">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="790" rx="10" class="line fill"/>
+    <rect x="40" y="118" width="1420" height="700" rx="8" class="line fill"/>
+    <rect x="60" y="200" width="190" height="100" rx="6" class="line fill"/>
+    <rect x="60" y="320" width="190" height="100" rx="6" class="line fill"/>
+    <rect x="270" y="190" width="540" height="620" rx="6" class="line fill"/>
+    <rect x="580" y="258" width="205" height="46" rx="6" class="thin fill"/>
+    <rect x="290" y="330" width="500" height="460" rx="6" class="line fill"/>
+    <rect x="305" y="372" width="470" height="70" rx="6" class="thin fill"/>
+    <rect x="560" y="384" width="205" height="44" rx="6" class="thin fill"/>
+    <rect x="305" y="452" width="470" height="36" rx="6" class="thin fill"/>
+    <rect x="316" y="536" width="100" height="110" rx="6" class="thin fill"/>
+    <rect x="328" y="600" width="76" height="34" rx="6" class="thin fill"/>
+    <rect x="430" y="536" width="100" height="110" rx="6" class="thin fill"/>
+    <rect x="442" y="600" width="76" height="34" rx="6" class="thin fill"/>
+    <rect x="544" y="536" width="100" height="110" rx="6" class="thin fill"/>
+    <rect x="556" y="600" width="76" height="34" rx="6" class="thin fill"/>
+    <rect x="658" y="536" width="100" height="110" rx="6" class="thin fill"/>
+    <rect x="670" y="600" width="76" height="34" rx="6" class="thin fill"/>
+    <path d="M682,306 L682,382" class="line" marker-end="url(#arrow)"/>
+    <rect x="890" y="190" width="540" height="620" rx="6" class="line fill"/>
+    <rect x="910" y="330" width="500" height="460" rx="6" class="line fill"/>
+    <rect x="925" y="372" width="470" height="70" rx="6" class="thin fill"/>
+    <rect x="925" y="452" width="470" height="36" rx="6" class="thin fill"/>
+    <rect x="940" y="536" width="100" height="110" rx="6" class="thin fill plan"/>
+    <rect x="952" y="600" width="76" height="34" rx="6" class="thin fill plan"/>
+    <rect x="1054" y="536" width="100" height="110" rx="6" class="thin fill plan"/>
+    <rect x="1066" y="600" width="76" height="34" rx="6" class="thin fill plan"/>
+    <path d="M908,560 L792,560" class="line" marker-end="url(#arrow)"/>
+    <path d="M300,318 L1400,318" class="line acc plan"/>
+    <path d="M300,318 L300,330" class="line acc"/>
+    <path d="M1400,318 L1400,330" class="line acc"/>
+    <path d="M540,812 L540,830 L1160,830 L1160,812" class="line"/>
+  </g>
+  <circle cx="682" cy="312" r="7" class="dot"/>
+  <circle cx="902" cy="560" r="7" class="dot"/>
+  <rect x="782.0" y="545.0" width="16" height="30" rx="3" class="door"/>
+  <text x="750" y="46" class="h" text-anchor="middle">Part 1 as a Matryoshka: two VMs, two nodes, one cluster</text>
+  <text x="40" y="100" class="t">The computer at 42</text>
+  <text x="1460" y="100" class="s" text-anchor="end">the outermost doll</text>
+  <text x="60" y="150" class="t">Host VM</text>
+  <text x="60" y="172" class="s">Ubuntu under QEMU/KVM, 6 CPUs, 8 GB</text>
+  <text x="78" y="232" class="t">Vagrant</text>
+  <text x="78" y="258" class="s">creates the two VMs</text>
+  <text x="78" y="282" class="a">make up</text>
+  <text x="78" y="352" class="t">Ansible</text>
+  <text x="78" y="378" class="s">installs K3s in each VM</text>
+  <text x="78" y="402" class="a">runs on the host VM</text>
+  <text x="290" y="222" class="t">VM rpodackS</text>
+  <text x="290" y="246" class="s">192.168.56.110 on eth1, 1 CPU, 1024 MB</text>
+  <text x="592" y="280" class="t">kubectl</text>
+  <text x="592" y="298" class="xs">on this VM</text>
+  <text x="305" y="358" class="t">K3s server: node 1</text>
+  <text x="320" y="398" class="t">Control plane</text>
+  <text x="320" y="424" class="s">scheduler, controllers, SQLite</text>
+  <text x="572" y="404" class="s">API server</text>
+  <text x="572" y="422" class="mono">:6443</text>
+  <text x="320" y="476" class="s">kubelet · kube-proxy · containerd</text>
+  <text x="305" y="520" class="s">Pods on this node: the K3s add-ons</text>
+  <text x="328" y="562" class="t">coredns</text>
+  <text x="328" y="584" class="xs">DNS</text>
+  <text x="338" y="623" class="s">container</text>
+  <text x="442" y="562" class="t">traefik</text>
+  <text x="442" y="584" class="xs">Ingress</text>
+  <text x="452" y="623" class="s">container</text>
+  <text x="556" y="562" class="t">metrics</text>
+  <text x="556" y="584" class="xs">numbers</text>
+  <text x="566" y="623" class="s">container</text>
+  <text x="670" y="562" class="t">local-path</text>
+  <text x="670" y="584" class="xs">storage</text>
+  <text x="680" y="623" class="s">container</text>
+  <text x="305" y="690" class="a">no apps of ours in Part 1</text>
+  <text x="910" y="222" class="t">VM rpodackSW</text>
+  <text x="910" y="246" class="s">192.168.56.111 on eth1, 1 CPU, 512 MB</text>
+  <text x="925" y="358" class="t">K3s agent: node 2</text>
+  <text x="940" y="398" class="t">Agent</text>
+  <text x="940" y="424" class="s">no control plane of its own</text>
+  <text x="940" y="476" class="s">kubelet · kube-proxy · containerd</text>
+  <text x="925" y="520" class="s">Pods on this node: placed by the scheduler</text>
+  <text x="952" y="562" class="t">a pod</text>
+  <text x="952" y="584" class="xs">expected</text>
+  <text x="962" y="623" class="s">container</text>
+  <text x="1066" y="562" class="t">a pod</text>
+  <text x="1066" y="584" class="xs">expected</text>
+  <text x="1076" y="623" class="s">container</text>
+  <text x="850" y="546" class="a" text-anchor="middle">joins</text>
+  <text x="850" y="588" class="mono" text-anchor="middle">:6443</text>
+  <text x="910" y="306" class="a">THE CLUSTER: both nodes together, in two VMs</text>
+  <text x="850" y="848" class="s" text-anchor="middle">private network eth1, 192.168.56.0/24</text>
+  <text x="60" y="898" class="s">Read it from the outside in: computer, host VM, VM, node, pod, container. The cluster is not one doll: it is the two nodes together, joined at port 6443.</text>
+  <text x="60" y="926" class="s">eth0 of both VMs is NAT and only reaches the internet, for image pulls; everything between the VMs goes over eth1.</text>
+  <text x="60" y="954" class="a">Status: Part 1 was run; the pods on the worker are expected, to be checked with kubectl get pods -A -o wide.</text>
+  <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>

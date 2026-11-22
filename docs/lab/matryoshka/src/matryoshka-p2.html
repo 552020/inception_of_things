@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 2 as a Matryoshka: one node, three Services, five app pods</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Patrick Hand","Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .svc   { stroke:var(--accent); stroke-width:2.2; }
+  .acc   { stroke:var(--accent); }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .door  { fill:var(--accent); stroke:var(--ink); stroke-width:1.6; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .xs    { font-size:16px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+  .monoa { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:16px; fill:var(--accent); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 960" role="img" aria-label="Part 2 drawn as nested dolls: one VM with one K3s node; Traefik at port 80 and three Services in front of the app pods">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="790" rx="10" class="line fill"/>
+    <rect x="40" y="118" width="1420" height="700" rx="8" class="line fill"/>
+    <rect x="60" y="400" width="190" height="140" rx="6" class="line fill"/>
+    <rect x="270" y="190" width="1170" height="620" rx="6" class="line fill"/>
+    <rect x="290" y="262" width="1130" height="534" rx="6" class="line fill"/>
+    <rect x="305" y="330" width="250" height="440" rx="6" class="thin fill"/>
+    <rect x="320" y="398" width="220" height="56" rx="6" class="thin fill"/>
+    <path d="M252,426 L296,426" class="line" marker-end="url(#arrow)"/>
+    <rect x="585" y="330" width="820" height="120" rx="6" class="thin fill plan svc"/>
+    <path d="M558,390 L575,390" class="line" marker-end="url(#arrow)"/>
+    <rect x="585" y="465" width="820" height="160" rx="6" class="thin fill plan svc"/>
+    <path d="M558,545 L575,545" class="line" marker-end="url(#arrow)"/>
+    <rect x="585" y="640" width="820" height="120" rx="6" class="thin fill plan svc"/>
+    <path d="M558,700 L575,700" class="line" marker-end="url(#arrow)"/>
+    <rect x="850" y="340" width="220" height="100" rx="6" class="thin fill"/>
+    <rect x="862" y="396" width="196" height="32" rx="6" class="thin fill"/>
+    <rect x="790" y="475" width="190" height="140" rx="6" class="thin fill"/>
+    <rect x="802" y="531" width="166" height="72" rx="6" class="thin fill"/>
+    <rect x="995" y="475" width="190" height="140" rx="6" class="thin fill"/>
+    <rect x="1007" y="531" width="166" height="72" rx="6" class="thin fill"/>
+    <rect x="1200" y="475" width="190" height="140" rx="6" class="thin fill"/>
+    <rect x="1212" y="531" width="166" height="72" rx="6" class="thin fill"/>
+    <rect x="850" y="650" width="220" height="100" rx="6" class="thin fill"/>
+    <rect x="862" y="706" width="196" height="32" rx="6" class="thin fill"/>
+  </g>
+  <rect x="297.0" y="411.0" width="16" height="30" rx="3" class="door"/>
+  <circle cx="256" cy="426" r="7" class="dot"/>
+  <rect x="577.0" y="375.0" width="16" height="30" rx="3" class="door"/>
+  <rect x="577.0" y="530.0" width="16" height="30" rx="3" class="door"/>
+  <rect x="577.0" y="685.0" width="16" height="30" rx="3" class="door"/>
+  <rect x="842.0" y="385.0" width="16" height="30" rx="3" class="door"/>
+  <rect x="782.0" y="545.0" width="16" height="30" rx="3" class="door"/>
+  <rect x="987.0" y="545.0" width="16" height="30" rx="3" class="door"/>
+  <rect x="1192.0" y="545.0" width="16" height="30" rx="3" class="door"/>
+  <rect x="842.0" y="695.0" width="16" height="30" rx="3" class="door"/>
+  <text x="750" y="46" class="h" text-anchor="middle">Part 2 as a Matryoshka: one node, three Services, five app pods</text>
+  <text x="40" y="100" class="t">The computer at 42</text>
+  <text x="60" y="150" class="t">Host VM</text>
+  <text x="60" y="172" class="s">Ubuntu under QEMU/KVM</text>
+  <text x="78" y="428" class="t">curl</text>
+  <text x="78" y="454" class="mono">Host: app1.com</text>
+  <text x="78" y="476" class="mono">Host: app2.com</text>
+  <text x="78" y="498" class="s">any other Host</text>
+  <text x="78" y="522" class="xs">to 192.168.56.110</text>
+  <text x="290" y="222" class="t">VM rpodackS</text>
+  <text x="290" y="246" class="s">192.168.56.110, 1 CPU, 1024 MB</text>
+  <text x="305" y="290" class="t">K3s server: the only node</text>
+  <text x="520" y="290" class="xs">control plane (API server :6443, scheduler, controllers, SQLite) and kubelet, kube-proxy, containerd</text>
+  <text x="320" y="358" class="t">Pod traefik</text>
+  <text x="320" y="382" class="s">the Ingress controller</text>
+  <text x="332" y="422" class="s">container</text>
+  <text x="332" y="444" class="mono">listens on :80</text>
+  <text x="320" y="490" class="a">three Ingress rules:</text>
+  <text x="320" y="524" class="mono">app1.com: app1</text>
+  <text x="320" y="552" class="mono">app2.com: app2</text>
+  <text x="320" y="580" class="mono">anything else: app3</text>
+  <text x="320" y="630" class="xs">it reads the Host</text>
+  <text x="320" y="650" class="xs">header and picks</text>
+  <text x="320" y="670" class="xs">the Service</text>
+  <text x="258" y="408" class="mono">:80</text>
+  <text x="600" y="358" class="a">Service app1</text>
+  <text x="600" y="382" class="s">port 80 to 80</text>
+  <text x="600" y="493" class="a">Service app2</text>
+  <text x="600" y="517" class="s">port 80 to 5678</text>
+  <text x="600" y="541" class="a">spreads over 3 pods</text>
+  <text x="600" y="668" class="a">Service app3</text>
+  <text x="600" y="692" class="s">port 80 to 5678</text>
+  <text x="600" y="716" class="a">the default</text>
+  <text x="862" y="366" class="t">Pod app1</text>
+  <text x="872" y="418" class="s">nginx</text>
+  <text x="1048" y="418" class="mono" text-anchor="end">:80</text>
+  <text x="802" y="501" class="t">Pod app2-1</text>
+  <text x="812" y="567" class="s">http-echo</text>
+  <text x="812" y="587" class="mono">:5678</text>
+  <text x="1007" y="501" class="t">Pod app2-2</text>
+  <text x="1017" y="567" class="s">http-echo</text>
+  <text x="1017" y="587" class="mono">:5678</text>
+  <text x="1212" y="501" class="t">Pod app2-3</text>
+  <text x="1222" y="567" class="s">http-echo</text>
+  <text x="1222" y="587" class="mono">:5678</text>
+  <text x="862" y="676" class="t">Pod app3</text>
+  <text x="872" y="728" class="s">http-echo</text>
+  <text x="1048" y="728" class="mono" text-anchor="end">:5678</text>
+  <text x="60" y="898" class="s">Read it from the outside in: computer, host VM, VM, node, pods. A Service is not a doll: it is the dashed address in front of its pods. Doors are ports.</text>
+  <text x="60" y="926" class="s">A request travels: curl, port 80 of the node, Traefik, the Service named by the Host header, one of its pods. app2 has three replicas; with one node, all three sit on the same node.</text>
+  <text x="60" y="954" class="a">Status: written and reviewed, not run yet. Do not start it while the Part 1 VMs run: both use 192.168.56.110.</text>
+  <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>
