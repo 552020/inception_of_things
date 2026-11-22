@@ -9,6 +9,11 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 up: ## Create and provision the VMs (vagrant up runs the playbook itself)
+	@# Part 1 and Part 2 both define rpodackS at 192.168.56.110: only one may run.
+	@if virsh -c qemu:///system list --name 2>/dev/null | grep -q '^p1_'; then \
+		echo "The Part 1 VMs are running and use the same address. Stop them first: make -C ../p1 down"; \
+		exit 1; \
+	fi
 	@echo "Starting VMs..."
 	vagrant up --provider=libvirt --no-parallel
 
