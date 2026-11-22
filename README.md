@@ -15,6 +15,17 @@
 
 Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folders at the root. Each has a `Makefile`; `make help` in `p1` and `p2` lists the targets, `make setup` in `p3` builds everything.
 
+## Active branch: `host-vm-kvm`
+
+Work from 2026-11-22, open as [PR #6](https://github.com/552020/inception_of_things/pull/6), to be discussed before merging:
+
+- the host VM moved from VirtualBox to QEMU/KVM after two nested-virtualization freezes (README host-VM section, `docs/host-vm/`, launch script);
+- fix for `p1` and `p2`: the Debian 13 box names its interfaces `ens5`/`ens6`, the subject wants `eth1` (`confs/ansible/eth-names.yml`);
+- `make up` no longer provisions twice; the server VM of `p1` needs 1024 MB, not 512;
+- the bonus (GitLab CE and Argo CD on k3d) in progress under `bonus/`.
+
+Start from that branch for anything touching the host VM, `p1` or `p2`. The host-VM section below still describes the VirtualBox setup until the branch is merged.
+
 ## Host VM
 
 The subject requires the whole project to run inside a virtual machine. On the 42 cluster that means one VirtualBox VM (the host VM) in which Vagrant, libvirt, K3s, Docker and K3d all run. Nested virtualization is enabled on it.
