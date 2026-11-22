@@ -10,7 +10,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 class Sketch:
     def __init__(self, title, label):
         self.title, self.label = title, label
-        self.shapes, self.texts, self.marks = [], [], []
+        self.shapes, self.texts, self.marks, self.defs = [], [], [], []
     # shapes (inside the hand-drawn filter)
     def box(self, x, y, w, h, kind="thin", plan=False, svc=False, fill=True, rx=6):
         cls = [kind] + (["fill"] if fill else []) + (["plan"] if plan else []) + (["svc"] if svc else [])
@@ -50,6 +50,17 @@ class Sketch:
   .fill  {{ fill:var(--paper); }}
   .dot   {{ fill:var(--accent); stroke:none; }}
   .door  {{ fill:var(--accent); stroke:var(--ink); stroke-width:1.6; }}
+  .ca {{ fill:var(--accent); stroke:var(--ink); stroke-width:1; }}
+  .cb {{ fill:var(--ink); stroke:var(--ink); stroke-width:1; }}
+  .cc {{ fill:#c9c6bd; stroke:var(--ink); stroke-width:1; }}
+  .cs {{ fill:url(#hatch); stroke:var(--ink); stroke-width:1; }}
+  .ce {{ fill:none; stroke:#cfcdc6; stroke-width:1; }}
+  .pw {{ fill:#f3d9c6; stroke:var(--accent); stroke-width:2; }}
+  .pa {{ fill:#ffffff; stroke:var(--ink); stroke-width:2.2; }}
+  .pk {{ fill:#dedbd2; stroke:var(--ink); stroke-width:1.4; }}
+  .ps {{ fill:url(#hatch); stroke:var(--ink); stroke-width:1.4; }}
+  .cn {{ fill:#fbfaf6; stroke:var(--ink); stroke-width:1.3; }}
+  .cz {{ fill:none; stroke:var(--accent); stroke-width:3; }}
   .t     {{ font-size:22px; fill:var(--ink); }}
   .h     {{ font-size:30px; fill:var(--ink); }}
   .col   {{ font-size:24px; fill:var(--soft); letter-spacing:1px; }}
@@ -70,6 +81,7 @@ class Sketch:
     <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
       <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
+    {"".join(self.defs)}
   </defs>
   <g filter="url(#hand)">
     {chr(10).join("    " + s for s in self.shapes).strip()}
@@ -298,8 +310,104 @@ def part3():
            "Status: written and reviewed, not run yet. Which node each pod lands on is to be read from kubectl get pods -A -o wide after a run.")
     return sk
 
+# ---------------------------------------------------------------- at scale
+def scale():
+    sk = Sketch("Kubernetes as a Matryoshka, at scale: up to 110 pods on a node", "Kubernetes at scale as nested dolls: a cluster of many nodes, a node with up to 110 small squares for pods, replicas as squares of one colour spread over the nodes")
+    sk.defs.append('<pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#fbfaf6"/><line x1="0" y1="0" x2="0" y2="6" stroke="#1d1d1b" stroke-width="2"/></pattern>')
+    sk.t(750, 46, "Kubernetes as a Matryoshka, at scale: up to 110 pods on a node", "h", "middle")
+    sk.box(20, 70, 1460, 740, "line", rx=10)
+    sk.t(40, 104, "THE CLUSTER", "col"); sk.t(250, 104, "one control plane and many nodes: up to 5,000, with up to 150,000 pods together", "s")
+    nodes = [(45, "Node 1: the server", "also runs the control plane (API server :6443)", [("s", 6), ("a", 14), ("b", 8), ("c", 4)], 40),
+             (465, "Node 2: a worker", "", [("s", 3), ("a", 40), ("b", 20), ("c", 6)], 88),
+             (885, "Node 3: a worker", "", [("s", 3), ("a", 70), ("b", 25), ("c", 9)], 140)]
+    zoom_cell = None
+    for (x0, name, sub, mix, containers) in nodes:
+        y0 = 130
+        sk.box(x0, y0, 400, 570, "line")
+        total = sum(n for _, n in mix)
+        sk.t(x0 + 20, y0 + 30, name, "t")
+        sk.t(x0 + 20, y0 + 54, sub or "a machine with its own kubelet, kube-proxy and containerd", "s" if sub else "xs")
+        near = total >= 100
+        sk.t(x0 + 20, y0 + 78, f"{total} of 110 pods, {containers} containers" + ("  (nearly full)" if near else ""), "a")
+        gx, gy = x0 + 24, y0 + 96
+        seq = []
+        for kind, n in mix: seq += [kind] * n
+        for i in range(110):
+            col, row = i % 11, i // 11
+            cx, cy = gx + col * 32, gy + row * 28
+            kind = seq[i] if i < len(seq) else "e"
+            sk.marks.append(f'<rect x="{cx}" y="{cy}" width="28" height="24" rx="3" class="c{kind}"/>')
+            if x0 == 465 and i == 60: zoom_cell = (cx, cy)
+    # the zoom into one pod of node 2
+    x0, y0 = 465, 130
+    zx, zy = zoom_cell
+    sk.marks.append(f'<rect x="{zx-2}" y="{zy-2}" width="32" height="28" rx="3" class="cz"/>')
+    sk.line(f"M{zx+14},{zy+26} L{zx+14},{y0+404}", True, True)
+    sk.box(x0 + 20, y0 + 406, 360, 150, "thin")
+    sk.t(x0 + 34, y0 + 432, "one pod, zoomed in: three containers", "a")
+    sk.box(x0 + 34, y0 + 446, 332, 94, "thin")
+    for j, nm in enumerate(("app", "sidecar proxy", "log shipper")):
+        sk.box(x0 + 46 + j * 108, y0 + 466, 100, 62, "thin")
+        sk.t(x0 + 96 + j * 108, y0 + 502, nm, "xs", "middle")
+    # the other two lower areas
+    sk.t(45 + 20, 130 + 420, "each small square is a pod:", "s"); sk.t(45 + 20, 130 + 444, "the unit Kubernetes places", "s"); sk.t(45 + 20, 130 + 468, "and counts, not the container", "s")
+    sk.t(885 + 20, 130 + 420, "at 110 the node is full:", "s"); sk.t(885 + 20, 130 + 444, "the scheduler puts the next", "s"); sk.t(885 + 20, 130 + 468, "pod on another node", "s")
+    # more nodes, drawn behind
+    for k, off in enumerate((0, 14)):
+        sk.box(1305 + off, 130 + off, 150, 570 - off, "thin", plan=True)
+    sk.t(1380, 360, "more nodes", "t", "middle"); sk.t(1380, 390, "up to 5,000", "a", "middle"); sk.t(1380, 414, "in one cluster", "s", "middle")
+    # legend
+    ly = 745
+    sk.marks.append(f'<rect x="45" y="{ly}" width="28" height="24" rx="3" class="ca"/>'); sk.t(82, ly + 18, "web: one Deployment, replicas on every node", "s")
+    sk.marks.append(f'<rect x="470" y="{ly}" width="28" height="24" rx="3" class="cb"/>'); sk.t(507, ly + 18, "api: another Deployment", "s")
+    sk.marks.append(f'<rect x="760" y="{ly}" width="28" height="24" rx="3" class="cc"/>'); sk.t(797, ly + 18, "worker", "s")
+    sk.marks.append(f'<rect x="880" y="{ly}" width="28" height="24" rx="3" class="cs"/>'); sk.t(917, ly + 18, "system pod", "s")
+    sk.marks.append(f'<rect x="1040" y="{ly}" width="28" height="24" rx="3" class="ce"/>'); sk.t(1077, ly + 18, "a free slot", "s")
+    footer(sk, ["Read it from the outside in: cluster, node, pod, container. Squares of one colour are the replicas of one Deployment, spread over the nodes by the scheduler.",
+                "The limits are the documented ones for large clusters: 110 pods per node, 5,000 nodes, 150,000 pods, at about two containers per pod or fewer."],
+           "The numbers of pods and containers in this picture are made up, to show the scale. Source of the limits: kubernetes.io, Considerations for large clusters.")
+    return sk
+
+# ---------------------------------------------------------------- one node at its limit
+def node110():
+    sk = Sketch("One node at its limit: 110 pods and the containers inside them", "One Kubernetes node holding 110 pods, each drawn as a small box with its containers inside")
+    sk.defs.append('<pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#fbfaf6"/><line x1="0" y1="0" x2="0" y2="6" stroke="#1d1d1b" stroke-width="2"/></pattern>')
+    sk.t(750, 46, "One node at its limit: 110 pods, and the containers inside them", "h", "middle")
+    sk.box(20, 70, 1460, 804, "line", rx=10)
+    sk.t(44, 108, "Node 2: a worker, full", "t")
+    sk.t(44, 134, "a machine; kubelet, kube-proxy and containerd run on the node itself", "s")
+    sk.t(44, 160, "110 of 110 pods, 160 containers", "a")
+    # legend
+    lx, ly = 700, 96
+    for i, (cls, name) in enumerate((("pw", "web"), ("pa", "api"), ("pk", "worker"), ("ps", "system pod"))):
+        x = lx + i * 190
+        sk.marks.append(f'<rect x="{x}" y="{ly}" width="44" height="28" rx="5" class="{cls}"/>')
+        sk.marks.append(f'<rect x="{x+9}" y="{ly+6}" width="12" height="16" rx="2" class="cn"/>')
+        sk.t(x + 54, ly + 22, name, "s")
+    sk.t(lx, 152, "each square is a pod, the unit Kubernetes places; the boxes inside are its containers", "s")
+    # the 110 pods
+    kinds = ["ps"] * 5 + ["pw"] * 60 + ["pa"] * 30 + ["pk"] * 15
+    gx, gy = 48, 182
+    wcount = 0
+    for i, k in enumerate(kinds):
+        col, row = i % 11, i // 11
+        x, y = gx + col * 128, gy + row * 66
+        sk.marks.append(f'<rect x="{x}" y="{y}" width="122" height="58" rx="7" class="{k}"/>')
+        if k == "pa": n = 2
+        elif k == "pw":
+            wcount += 1; n = 2 if wcount % 3 == 0 else 1
+        else: n = 1
+        total_w = n * 34 + (n - 1) * 8
+        sx = x + (122 - total_w) / 2
+        for j in range(n):
+            sk.marks.append(f'<rect x="{sx + j*42}" y="{y + 17}" width="34" height="24" rx="4" class="cn"/>')
+    footer(sk, ["Read it from the outside in: node, pods, containers. Most pods hold one container; some hold a second one, for example a proxy next to the app.",
+                "110 pods per node is the documented limit for large clusters (the kubelet setting maxPods, default 110). The 111th pod goes to another node, or waits as Pending if no node has room."],
+           "The mix of pods and containers is made up, to show a full node.")
+    return sk
+
 if __name__ == "__main__":
     out = os.path.join(HERE, "..", "src")
-    for name, fn in (("matryoshka-general", general), ("matryoshka-p1", part1), ("matryoshka-p2", part2), ("matryoshka-p3", part3)):
+    for name, fn in (("matryoshka-node110", node110), ("matryoshka-scale", scale), ("matryoshka-general", general), ("matryoshka-p1", part1), ("matryoshka-p2", part2), ("matryoshka-p3", part3)):
         open(os.path.join(out, name + ".html"), "w").write(fn().html())
         print("wrote", name)

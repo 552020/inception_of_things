@@ -2,7 +2,27 @@
 
 Kubernetes drawn as nested dolls: what sits inside what, with the ports as small doors and a Service as the dashed address in front of its pods. Read each picture from the outside in. In the general picture the cluster holds three nodes, a node holds pods, a pod holds containers, and the replicas of one Deployment sit on different nodes behind one Service. The control plane, with the API server on port 6443, lives in the server node.
 
-The pictures for the parts use the real names and ports of the project. Part 1 was run; Part 2 and 3 are drawn from the files and the subject. The pods that K3s and Argo CD start by themselves, and the node each pod lands on, are expected, not counted: they are to be read from `kubectl get pods -A -o wide` after a run.
+The limits in the scale pictures are the documented ones for large clusters (kubernetes.io, Considerations for large clusters): 110 pods per node, 5,000 nodes, 150,000 pods in a cluster, at about two containers per pod or fewer. The numbers of pods in the pictures are made up. The pictures for the parts use the real names and ports of the project. Part 1 was run; Part 2 and 3 are drawn from the files and the subject. The pods that K3s and Argo CD start by themselves, and the node each pod lands on, are expected, not counted: they are to be read from `kubectl get pods -A -o wide` after a run.
+
+## To understand Kubernetes
+
+These two do not belong to a part of the project. They show what Kubernetes is when it runs a real app.
+
+<div class="shots">
+
+<figure>
+<img src="/lab-img/matryoshka/matryoshka-node110.png" alt="One node with 110 pods">
+<figcaption>One node at its limit: 110 pods, and the containers inside them. A pod is the unit Kubernetes places; most hold one container, some two. The 111th pod goes to another node, or waits as Pending if no node has room.</figcaption>
+</figure>
+
+<figure>
+<img src="/lab-img/matryoshka/matryoshka-scale.png" alt="Kubernetes at scale">
+<figcaption>Kubernetes at scale: many nodes, each with up to 110 pods, and the replicas of one Deployment, the squares of one colour, spread over the nodes. One pod is zoomed in to show its containers.</figcaption>
+</figure>
+
+</div>
+
+## The cluster and the three parts
 
 <div class="shots">
 
