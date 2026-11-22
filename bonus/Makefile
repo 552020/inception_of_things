@@ -1,6 +1,7 @@
 # Bonus: the lab of Part 3 (K3d, Argo CD, application in dev) with a local GitLab
 # in the namespace gitlab as the repository Argo CD follows.
-# Needs what Part 3 needs (../p3/scripts/installationhost.sh) plus git.
+# Needs what Part 3 needs (Docker, kubectl, k3d) plus git.
+# Delete the cluster of Part 3 first (make -C ../p3 delete): the two do not fit in memory.
 
 CLUSTER_NAME := bonus
 ARGO_NAMESPACE := argocd
@@ -11,10 +12,15 @@ ARGO_PORT := 8080
 GITLAB_URL := http://localhost:8929
 REPO := rpodackIoT
 K3D := k3d
-KUBECTL := kubectl
+# Every kubectl call names the cluster of the bonus: a run after Part 3 cannot
+# land in another cluster by accident.
+KUBECTL := kubectl --context k3d-$(CLUSTER_NAME)
+# The password of the GitLab user root, read from its Secret
+GITLAB_PASS = $$($(KUBECTL) -n $(GITLAB_NAMESPACE) get secret gitlab-root -o jsonpath='{.data.password}' | base64 -d)
+REPO_URL_IN_CLUSTER := http://gitlab.gitlab.svc.cluster.local:8929/root/$(REPO).git
 
 .PHONY: all setup check create create-namespaces install-argo install-gitlab wait-gitlab \
-	repo deploy-app sync info port-forward argo-password gitlab-password delete
+	repo deploy-app sync v1 v2 info port-forward argo-password gitlab-password delete
 
 all: setup
 
@@ -26,8 +32,8 @@ setup: check create create-namespaces install-argo install-gitlab wait-gitlab re
 	@echo "App:     curl http://localhost:8888"
 
 check:
-	@for tool in docker $(K3D) $(KUBECTL) git curl openssl; do \
-		command -v $$tool >/dev/null 2>&1 || { echo "$$tool not found, see ../p3/scripts/installationhost.sh"; exit 1; }; \
+	@for tool in docker kubectl $(K3D) git openssl; do \
+		command -v $$tool >/dev/null 2>&1 || { echo "$$tool not found: ../p3/scripts/installationhost.sh installs Docker and kubectl, make -C ../p3 check-k3d installs k3d"; exit 1; }; \
 	done
 
 # One server node. Two ports of the node are published on the host:
@@ -61,13 +67,28 @@ wait-gitlab:
 	@echo "Waiting for GitLab: image download, then a first start of several minutes..."
 	$(KUBECTL) -n $(GITLAB_NAMESPACE) rollout status deployment/gitlab --timeout=30m
 
-# Creates the public project root/$(REPO) on GitLab and pushes confs/app into it
+# Creates the project root/$(REPO) on GitLab by pushing confs/app into it
 repo:
-	./scripts/gitlab-repo.sh $(GITLAB_URL) $(REPO) confs/app
+	@GITLAB_PASS=$(GITLAB_PASS) ./scripts/gitlab-repo.sh seed $(GITLAB_URL) $(REPO) confs/app
 
-# Tells Argo CD to follow the GitLab repository
+# Tells Argo CD to follow the GitLab repository. The project is private, so Argo CD
+# first gets a login for it: a Secret with the label Argo CD looks for.
 deploy-app:
+	@$(KUBECTL) -n $(ARGO_NAMESPACE) create secret generic gitlab-repo \
+		--from-literal=type=git \
+		--from-literal=url=$(REPO_URL_IN_CLUSTER) \
+		--from-literal=username=root \
+		--from-literal=password=$(GITLAB_PASS) \
+		--dry-run=client -o yaml \
+		| $(KUBECTL) label --local -f - argocd.argoproj.io/secret-type=repository -o yaml \
+		| $(KUBECTL) apply -f -
 	$(KUBECTL) apply -f confs/argocd-app.yaml
+
+# The change of version as one command: edits the image tag in the GitLab
+# repository, pushes, and asks Argo CD to look. By hand: see README.md.
+v1 v2:
+	@GITLAB_PASS=$(GITLAB_PASS) ./scripts/gitlab-repo.sh tag $(GITLAB_URL) $(REPO) $@
+	@$(MAKE) --no-print-directory sync
 
 # Argo CD looks at the repository every 3 minutes. This asks it to look now.
 sync:

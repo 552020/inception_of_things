@@ -1,4 +1,4 @@
-# First content of the GitLab repository rpodackIoT, pushed by scripts/gitlab-repo.sh.
+# First content of the GitLab repository rpodackIoT, pushed by make repo.
 # After that push the repository is the source of truth, this file is only the seed.
 apiVersion: apps/v1
 kind: Deployment

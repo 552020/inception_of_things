@@ -1,43 +1,66 @@
 #!/bin/bash
-# Creates a public project owned by root on the local GitLab and pushes a first commit.
-# Usage: gitlab-repo.sh <gitlab url> <project name> <directory to push>
-# Does nothing when the project already exists.
+# Talks to the repository root/<name> on the local GitLab, with git only.
+#   gitlab-repo.sh seed <gitlab url> <name> <directory>   first commit, from a directory
+#   gitlab-repo.sh tag  <gitlab url> <name> <v1|v2>       change the image tag and push
+# The password of root comes in the variable GITLAB_PASS (the Makefile sets it).
 set -euo pipefail
 
-URL=$1
-REPO=$2
-SRC=$3
+ACTION=$1
+URL=$2
+REPO=$3
+ARG=$4
+REMOTE="$URL/root/$REPO.git"
 
-PASS=$(kubectl -n gitlab get secret gitlab-root -o jsonpath='{.data.password}' | base64 -d)
+: "${GITLAB_PASS:?GITLAB_PASS is not set, run this through make}"
+export GITLAB_PASS
+# Never stop to ask for a password: a wrong one must fail, not hang
+export GIT_TERMINAL_PROMPT=0
 
-# Public projects are readable without login: that is how Argo CD will read this one.
-if curl -sf -o /dev/null "$URL/api/v4/projects/root%2F$REPO"; then
-    echo "Project root/$REPO already exists"
-    exit 0
-fi
+# git with the login of root. The password is handed over by a helper that reads
+# the variable, so it is neither in the URL nor in the list of processes.
+git_root() {
+    git -c credential.helper= \
+        -c credential.helper='!f() { echo username=root; echo "password=$GITLAB_PASS"; }; f' \
+        -c user.name=root -c user.email=root@localhost "$@"
+}
 
-# The API wants a token, not the password. GitLab's own console, inside the pod,
-# gives root an access token valid for one day (documented way to script a token).
-TOKEN=$(openssl rand -hex 20)
-echo "Creating an access token for root (the GitLab console takes about a minute)..."
-kubectl -n gitlab exec deployment/gitlab -- gitlab-rails runner "
-  t = User.find_by_username('root').personal_access_tokens.create(
-        scopes: ['api'], name: 'bonus-setup', expires_at: 1.day.from_now)
-  t.set_token('$TOKEN')
-  t.save!"
-
-curl -sSf -o /dev/null -X POST "$URL/api/v4/projects" \
-    -H "PRIVATE-TOKEN: $TOKEN" \
-    -d "name=$REPO" -d visibility=public
-echo "Project root/$REPO created"
-
-# First commit: the manifests of the application
+# Work in a fresh temporary directory, removed when the script ends
 TMP=$(mktemp -d)
-trap 'rm -rf "$TMP"' EXIT
-cp -r "$SRC"/. "$TMP"/
-cd "$TMP"
-git init -q -b main
-git add .
-git -c user.name=root -c user.email=root@localhost commit -q -m "wil-playground v1"
-git push -q "http://root:$PASS@${URL#http://}/root/$REPO.git" main
-echo "Pushed $SRC to $URL/root/$REPO"
+trap '[ -d "$TMP" ] && rm -rf -- "$TMP"' EXIT
+
+case $ACTION in
+seed)
+    # Done already when the branch main is there. A project without a branch
+    # (a run that stopped halfway) is not done: it gets the push below.
+    if git_root ls-remote --heads "$REMOTE" main 2>/dev/null | grep -q refs/heads/main; then
+        echo "root/$REPO already has a branch main"
+        exit 0
+    fi
+    cp -r "$ARG"/. "$TMP"/
+    cd "$TMP"
+    git init -q -b main
+    git add .
+    git_root commit -q -m "wil-playground v1"
+    # No project yet: GitLab creates it on this first push (push to create).
+    # It is created private, so Argo CD reads it with a login (make deploy-app).
+    # A wrong root password shows here as "Authentication failed".
+    git_root push -q "$REMOTE" main
+    echo "Pushed $ARG to $REMOTE"
+    ;;
+tag)
+    git_root clone -q "$REMOTE" "$TMP/repo"
+    cd "$TMP/repo"
+    sed -i "s|wil42/playground:v[0-9]*|wil42/playground:$ARG|" deployment.yaml
+    if git diff --quiet; then
+        echo "root/$REPO is already on $ARG"
+        exit 0
+    fi
+    git_root commit -q -am "wil-playground $ARG"
+    git_root push -q origin main
+    echo "root/$REPO now asks for wil42/playground:$ARG"
+    ;;
+*)
+    echo "Usage: $0 seed|tag <gitlab url> <name> <directory|tag>"
+    exit 1
+    ;;
+esac
