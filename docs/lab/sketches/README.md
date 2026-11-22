@@ -1,6 +1,6 @@
 # Sketches
 
-All sketches of the project on one page, one per screen, in the order Part 1, Part 2, Part 3, the bonus, Kubernetes in general. Click a picture to see it full screen; there the arrows (or the arrow keys) go to the next and the previous one, and Escape closes it. For each part: the hand-drawn final state, then the same part as nested boxes (what sits inside what), then the hand-drawn overview of its steps.
+All sketches of the project on one page, one per screen, in the order Part 1, Part 2, Part 3, the bonus, the whole project, and last Kubernetes in general. Click a picture to see it full screen; there the arrows (or the arrow keys) go to the next and the previous one, and Escape closes it. For each part: the hand-drawn final state, then the same part as nested boxes (what sits inside what), then the hand-drawn overview of its steps.
 
 A dot marks who opens a connection or starts a step; dashed means written but not run yet. Only Part 1 has been run. The hand-drawn sketches are in `docs/diagrams` on the branch `host-vm-kvm` (pull request 6); the nested boxes are drawn from `docs/lab/nesting`. Numbers of pods in the Kubernetes pictures are made up where they say so.
 
@@ -83,6 +83,17 @@ A dot marks who opens a connection or starts a step; dashed means written but no
 
 </div>
 
+## The whole project
+
+<div class="shots stack">
+
+<figure>
+<img src="img/final-architecture-sketch.png" alt="The finished setup">
+<figcaption>The finished setup: the four folders that are turned in, where each runs inside the host VM, and what you see once it is up.</figcaption>
+</figure>
+
+</div>
+
 ## Kubernetes in general
 
 The nesting reads from the outside in. The limits in the scale pictures are the documented ones for large clusters (kubernetes.io, Considerations for large clusters): 110 pods per node, 5,000 nodes, 150,000 pods in a cluster, at about two containers per pod or fewer.
@@ -112,17 +123,6 @@ The nesting reads from the outside in. The limits in the scale pictures are the 
 <figure>
 <img src="img/k8s-replicas-sketch.png" alt="Replicas">
 <figcaption>Replicas: a manifest becomes a Deployment, a ReplicaSet and pods; the scheduler spreads the pods over the nodes; replicas are pods, not containers.</figcaption>
-</figure>
-
-</div>
-
-## The whole project
-
-<div class="shots stack">
-
-<figure>
-<img src="img/final-architecture-sketch.png" alt="The finished setup">
-<figcaption>The finished setup: the four folders that are turned in, where each runs inside the host VM, and what you see once it is up.</figcaption>
 </figure>
 
 </div>
