@@ -12,8 +12,8 @@ The host VM runs under QEMU/KVM on the 42 host since 2026-11-22. The VirtualBox 
 
 The running disk sits in goinfre: it is the only place that is both big enough and fast enough. Sgoinfre holds a compressed copy, which is what you restore from at another seat or after a wipe.
 
-Current VM location: `~/goinfre/VMs/IoT.qcow2`
-Backup: `~/sgoinfre/IoT/IoT.qcow2` (compressed, see below)
+Current VM location: `~/goinfre/VMs/IoT.qcow2` (31 GB file, 22 GB used inside, 60 GB virtual)
+Backup: `~/sgoinfre/IoT/IoT.qcow2` (compressed, 16.8 GB, made 2026-11-22 01:44, checked and byte-identical to the local compressed copy) next to `iot-kvm.sh`; sgoinfre then holds 16 GB of its 30 GB
 Symlinks on the host: `~/goinfre -> /goinfre/slombard`, `~/sgoinfre -> /sgoinfre/goinfre/Perso/slombard`
 
 ## Start, stop, reach
@@ -47,7 +47,7 @@ qemu-img convert -p -c -O qcow2 ~/goinfre/VMs/IoT.qcow2 ~/sgoinfre/IoT/IoT.qcow2
 du -sh ~/sgoinfre
 ```
 
-Do this after real work inside the VM (tool installs, configuration), not after every session; the Vagrant VMs, the K3s clusters and the k3d cluster are rebuilt from the repo and are not worth backing up.
+Compression takes about 6 minutes on the local disk and the copy to sgoinfre about 3 minutes (measured 2026-11-22; 85% of clusters compressed, 16.8 GB out of 31 GB). Do this after real work inside the VM (tool installs, configuration), not after every session; the Vagrant VMs, the K3s clusters and the k3d cluster are rebuilt from the repo and are not worth backing up.
 
 ## Restore from sgoinfre
 
