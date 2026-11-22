@@ -37,6 +37,12 @@ echo 'quit' | nc -U ~/goinfre/VMs/IoT.monitor        # hard power off
 
 VirtualBox and KVM cannot both hold VT-x. A running VirtualBox VM stops QEMU from starting with KVM, and the other way round.
 
+**Start the VM while the screen is unlocked.** On the 42 host, access to `/dev/kvm` is a seat permission: the login manager grants it to whoever holds the seat and takes it back when the screen locks (the device's access list then names `lightdm`, not you). A start attempt while locked fails with `Could not access KVM kernel module: Permission denied`. Once QEMU has the device open it keeps it, so lock the screen as you like afterwards. Check before starting:
+
+```bash
+test -w /dev/kvm && echo ok || echo "unlock the screen first"
+```
+
 ## Backup to sgoinfre
 
 Shut the VM down first. A compressed qcow2 copies only the used blocks and shrinks them:
