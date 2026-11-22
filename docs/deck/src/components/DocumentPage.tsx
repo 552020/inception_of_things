@@ -47,7 +47,15 @@ export function DocumentPage({ title, slug, markdown, html }: { title: string; s
           )}
         </button>
       </div>
-      <div className="prose doc mt-4 leading-relaxed" dangerouslySetInnerHTML={{ __html: html }} />
+      <div
+        className="prose doc mt-4 leading-relaxed"
+        onClick={(e) => {
+          // a click on a picture opens it at full size in a new tab
+          const t = e.target as HTMLElement;
+          if (t.tagName === "IMG") window.open((t as HTMLImageElement).src, "_blank", "noopener");
+        }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
     </article>
   );
 }

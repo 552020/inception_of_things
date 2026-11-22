@@ -84,6 +84,10 @@
     {
       "slug": "minimal_qemu",
       "title": "minimal qemu"
+    },
+    {
+      "slug": "sketches",
+      "title": "Sketches"
     }
   ]
 }

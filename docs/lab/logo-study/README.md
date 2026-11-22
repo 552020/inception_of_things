@@ -100,6 +100,29 @@ Each sheet shows the mark large and at 64, 32, 16 and 20 pixels, on light and on
 
 </div>
 
+## Experiment: the wheel as the whole pupil
+
+G has a ring around the wheel. These three drop it, so the wheel is bigger and shows more.
+
+<div class="shots">
+
+<figure>
+<img src="img/sketch-J1-wheel.svg" alt="J1, wheel with handles">
+<figcaption>J1. The wheel without the inner ring: a rim, eight handles and a hub. The simplest, and it holds up at 16 pixels.</figcaption>
+</figure>
+
+<figure>
+<img src="img/sketch-J2-spokes.svg" alt="J2, wheel with spokes">
+<figcaption>J2. The same with eight thin spokes, so it reads as a ship's wheel and not a gear.</figcaption>
+</figure>
+
+<figure>
+<img src="img/sketch-J3-seven.svg" alt="J3, wheel with seven spokes">
+<figcaption>J3. Seven spokes, as on the Kubernetes helm. The closest to it; shown to compare, and the one to avoid if the mark must not be mistaken for Kubernetes.</figcaption>
+</figure>
+
+</div>
+
 ## Per skin
 
 The logo lives in the title bar of the window and in the favicon. On the desktop skin it is the rounded colour mark, on the 98 skin the pixel one. F and I are pixel forms; whichever mark is chosen needs both.

@@ -97,3 +97,5 @@ body {
 .doc figure { margin: 0; }
 .doc figure img { margin-top: 0; width: 100%; }
 .doc figcaption { font-size: 0.9rem; color: var(--muted); margin-top: 0.4rem; }
+
+.doc img { cursor: zoom-in; }
