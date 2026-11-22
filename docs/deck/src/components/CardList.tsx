@@ -9,7 +9,16 @@ export function CardList({ cards, tags }: { cards: Card[]; tags: string[] }) {
   return (
     <div className="flex flex-col gap-4">
       <TagFilter tags={tags} selected={tag} onChange={setTag} />
-      <p className="text-sm text-muted">{shown.length} cards</p>
+      <p className="text-sm text-muted">
+        {shown.length} cards ·{" "}
+        <a className="underline" href={`/cards/download?format=anki${tag ? `&tag=${encodeURIComponent(tag)}` : ""}`}>
+          download for Anki
+        </a>{" "}
+        ·{" "}
+        <a className="underline" href="/cards/download?format=md">
+          download as Markdown
+        </a>
+      </p>
       <ul className="flex flex-col gap-2">
         {shown.map((card) => (
           <li key={card.id} id={card.id}>
