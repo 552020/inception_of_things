@@ -22,7 +22,7 @@ export function CardList({ cards, tags }: { cards: Card[]; tags: string[] }) {
       <ul className="flex flex-col gap-2">
         {shown.map((card) => (
           <li key={card.id} id={card.id}>
-            <details className="rounded-lg border border-line bg-surface">
+            <details className="ui-panel">
               <summary className="cursor-pointer list-none px-4 py-3 font-medium leading-snug">
                 {card.front}
                 <span className="block mt-1 text-xs font-normal text-muted">{card.tags.join(" · ")}</span>

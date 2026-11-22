@@ -79,7 +79,7 @@ function ReviewInner({ cards, tags }: Props) {
 
       {store && current && (
         <section
-          className="flex-1 flex flex-col rounded-lg border border-line bg-surface"
+          className="flex-1 flex flex-col ui-panel"
           onClick={() => !revealed && setRevealed(true)}
         >
           <div className="p-5">
@@ -91,7 +91,7 @@ function ReviewInner({ cards, tags }: Props) {
           ) : (
             <button
               type="button"
-              className="mt-auto m-5 py-4 rounded-md bg-foreground text-background text-base font-medium"
+              className="mt-auto m-5 py-4 ui-btn-primary text-base"
               onClick={() => setRevealed(true)}
             >
               Show answer
@@ -107,7 +107,7 @@ function ReviewInner({ cards, tags }: Props) {
               key={r.label}
               type="button"
               onClick={() => answer(r.rating)}
-              className="py-4 rounded-md border border-line bg-surface text-base font-medium active:bg-foreground active:text-background"
+              className="py-4 ui-btn text-base"
             >
               {r.label}
             </button>

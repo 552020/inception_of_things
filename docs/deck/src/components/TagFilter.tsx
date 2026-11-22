@@ -3,13 +3,13 @@
 type Props = { tags: string[]; selected: string | null; onChange: (tag: string | null) => void };
 
 export function TagFilter({ tags, selected, onChange }: Props) {
-  const base = "px-3 py-1.5 rounded-full text-sm border";
+  const base = "ui-chip";
   return (
     <div className="flex flex-wrap gap-2">
       <button
         type="button"
         onClick={() => onChange(null)}
-        className={`${base} ${selected === null ? "bg-foreground text-background border-foreground" : "border-line"}`}
+        className={`${base} ${selected === null ? "ui-chip-on" : ""}`}
       >
         all
       </button>
@@ -18,7 +18,7 @@ export function TagFilter({ tags, selected, onChange }: Props) {
           key={tag}
           type="button"
           onClick={() => onChange(tag === selected ? null : tag)}
-          className={`${base} ${selected === tag ? "bg-foreground text-background border-foreground" : "border-line"}`}
+          className={`${base} ${selected === tag ? "ui-chip-on" : ""}`}
         >
           {tag}
         </button>

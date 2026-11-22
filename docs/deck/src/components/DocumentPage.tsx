@@ -24,7 +24,7 @@ export function DocumentPage({ title, slug, markdown, html }: { title: string; s
     }
   }
 
-  const icon = "p-2 rounded-md text-muted hover:text-foreground hover:bg-surface";
+  const icon = "ui-icon-btn";
   return (
     <article>
       <div className="flex items-start gap-2">

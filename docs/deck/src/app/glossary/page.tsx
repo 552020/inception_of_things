@@ -6,7 +6,7 @@ export default function GlossaryPage() {
     <div className="flex flex-col gap-8">
       <nav className="flex flex-wrap gap-2 text-sm">
         {groups.map((g) => (
-          <a key={g.title} href={`#${slugOf(g.title)}`} className="px-3 py-1.5 rounded-full border border-line">
+          <a key={g.title} href={`#${slugOf(g.title)}`} className="ui-chip">
             {g.title}
           </a>
         ))}

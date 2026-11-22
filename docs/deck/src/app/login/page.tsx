@@ -13,7 +13,7 @@ export default async function LoginPage({ searchParams }: Props) {
           autoComplete="username"
           autoCapitalize="none"
           required
-          className="rounded-md border border-line bg-surface px-3 py-2 text-base"
+          className="ui-input"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
@@ -23,11 +23,11 @@ export default async function LoginPage({ searchParams }: Props) {
           name="password"
           autoComplete="current-password"
           required
-          className="rounded-md border border-line bg-surface px-3 py-2 text-base"
+          className="ui-input"
         />
       </label>
       {error && <p className="text-sm text-red-600">Wrong name or password.</p>}
-      <button type="submit" className="py-3 rounded-md bg-foreground text-background text-base font-medium">
+      <button type="submit" className="py-3 ui-btn-primary text-base">
         Log in
       </button>
     </form>

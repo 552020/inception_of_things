@@ -33,7 +33,7 @@ export default async function HomePage() {
 
       <section className="grid gap-4 md:grid-cols-3">
         {parts.map((part) => (
-          <div key={part.title} className="rounded-lg border border-line bg-surface p-5 flex flex-col gap-3">
+          <div key={part.title} className="ui-panel p-5 flex flex-col gap-3">
             <h2 className="text-lg font-medium leading-snug">{part.title}</h2>
             <p className="leading-relaxed">{part.text}</p>
             <p className="mt-auto text-sm text-muted">{part.tools}</p>

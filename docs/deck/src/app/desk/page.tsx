@@ -10,7 +10,7 @@ export default function DeskPage() {
           <ul className="flex flex-col gap-2">
             {g.entries.map((e) => (
               <li key={e.slug}>
-                <Link href={`/desk/${e.slug}`} className="block rounded-lg border border-line bg-surface px-4 py-3 font-medium leading-snug">
+                <Link href={`/desk/${e.slug}`} className="ui-row">
                   {e.title}
                 </Link>
               </li>
