@@ -1,3 +1,6 @@
+# Documented copy of the manifest that Argo CD deploys. The live one is in the
+# GitHub repository named in application.yaml; nothing in this folder applies this file.
+# It starts at v1: the defense changes the tag to v2 in the repository and pushes.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,7 +18,7 @@ spec:
     spec:
       containers:
         - name: wil-playground
-          image: wil42/playground:v2
+          image: wil42/playground:v1
           ports:
             - containerPort: 8888
 ---

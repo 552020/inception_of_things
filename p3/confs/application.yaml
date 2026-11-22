@@ -1,0 +1,21 @@
+# The Argo CD Application of Part 3: Argo CD watches the public GitHub repository
+# and keeps the namespace dev equal to what is in it. Changing the image tag in the
+# repository (v1 -> v2) and pushing is all it takes to roll out the new version.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Robin-Lenz/rpodackIoT.git
+    targetRevision: HEAD
+    path: .
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
