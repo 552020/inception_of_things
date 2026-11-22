@@ -6,8 +6,8 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "IoT cards",
     start_url: "/review",
     display: "standalone",
-    background_color: "#f7f6f2",
-    theme_color: "#f7f6f2",
+    background_color: "#ffffff",
+    theme_color: "#ffffff",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
   };
 }
