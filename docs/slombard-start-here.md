@@ -32,12 +32,14 @@ cp ~/sgoinfre/IoT/iot-kvm.sh ~/goinfre/VMs/
 ssh -p 2222 slombard@localhost
 ```
 
+Start the VM **while the screen is unlocked**: `/dev/kvm` is a seat permission on the 42 host and disappears when the screen locks (`test -w /dev/kvm` says). A running VM keeps it, so lock afterwards as you like.
+
 Inside the VM the repo is at `~/42/inception_of_things`. Never start the old VirtualBox VM; it is unregistered and gone from sgoinfre.
 
 ## Tests to do, in order
 
 1. **p1**: `make up` in `p1`, then `make test`. Expect both nodes Ready, 192.168.56.110 on `eth1`. Last measured: `make up` 102 s.
-2. **Open problem**: right after `make up`, `vagrant ssh rpodackS` and watch `free -m`, `iostat 5` and `journalctl -u k3s -f` for five minutes. A second playbook run (`make provision`) stalled the server twice; cause unknown. Find out whether the server dies on its own or only under the re-provision.
+2. **Open problem**: right after `make up`, run `make watch` in `p1` (five minutes, writes `watch_rpodackS.log`). A second playbook run (`make provision`) stalled the server twice; cause unknown. The log shows whether the server degrades on its own or only under the re-provision.
 3. **p2**: `make up` in `p2`, then from the host VM `curl -H "Host: app1.com" 192.168.56.110`, same for `app2.com`, and a plain `curl 192.168.56.110` for app3. Time it for the README table.
 4. **p3**: `make setup` in `p3`, Argo CD UI on port 8080, app on 30007, then the v1 to v2 change by pushing to `rpodackIoT`. Time it.
 5. **bonus**: see `bonus/` and its commit message; the repository step is untested.
