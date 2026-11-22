@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Logo, LogoPixel } from "@/components/chrome/Logo";
 import { currentUser } from "@/lib/session";
+import { currentSkin } from "@/lib/skin";
 
 const parts = [
   {
@@ -20,11 +22,14 @@ const parts = [
 ];
 
 export default async function HomePage() {
-  const user = await currentUser();
+  const [user, skin] = await Promise.all([currentUser(), currentSkin()]);
   return (
     <div className="flex flex-col gap-8">
       <section>
-        <h1 className="text-3xl font-semibold leading-tight">Inception-of-Things</h1>
+        <div className="hero-title">
+          {skin === "win98" ? <LogoPixel className="logo hero-logo" /> : <Logo className="logo hero-logo" />}
+          <h1 className="text-4xl font-semibold leading-tight">Inception of Things</h1>
+        </div>
         <p className="mt-3 text-lg leading-relaxed">
           A system administration project of the 42 school: build small Kubernetes clusters three different ways, put applications on them, and then let a Git
           repository decide what runs. It is a minimal introduction to Kubernetes, done entirely inside a virtual machine.

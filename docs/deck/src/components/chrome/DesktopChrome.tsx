@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Glyph } from "./Glyph";
+import { Logo } from "./Logo";
 import { SkinSwitch } from "./SkinSwitch";
 import { REPO, deskNav, windowTitle } from "./nav";
 
@@ -13,7 +14,8 @@ export function DesktopChrome({ user, children }: { user: string | null; childre
     <div className="dk">
       <header className="dk-bar">
         <Link href="/" className="dk-brand">
-          Inception-of-Things
+          <Logo className="logo dk-logo" />
+          Inception of Things
         </Link>
         <nav className="dk-bar-nav" aria-label="Desk">
           {user && deskNav.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}

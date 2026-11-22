@@ -1,4 +1,4 @@
-# Inception-of-Things cards
+# Inception of Things
 
 Flashcards and glossary for the oral evaluation, as a web page. Live at https://iot42.vercel.app (open it in Safari on the phone, "Add to Home Screen" for a full-screen app).
 

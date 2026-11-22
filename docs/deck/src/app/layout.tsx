@@ -11,10 +11,11 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Inception-of-Things",
+  title: "Inception of Things",
   description: "Kubernetes with K3s, K3d and Argo CD: a 42 school project built inside a virtual machine",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "IoT cards" },
+  icons: { icon: "/icon.svg" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Inception of Things" },
 };
 
 export const viewport: Viewport = {

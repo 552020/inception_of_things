@@ -1,0 +1,201 @@
+import type { GlyphName } from "./nav";
+
+// 16 by 16 pixel icons in the 16-colour palette of the time, drawn at twice the size.
+const PALETTE: Record<string, string> = {
+  K: "#000000",
+  W: "#ffffff",
+  D: "#808080",
+  Y: "#ffff00",
+  O: "#808000",
+  B: "#000080",
+  b: "#0000ff",
+  R: "#ff0000",
+  N: "#008000",
+};
+
+const ICONS: Partial<Record<GlyphName, string[]>> = {
+  review: [
+    "................",
+    "....KKKKKKKKKK..",
+    "....KYYYYYYYYK..",
+    "....KYYYYYYYYK..",
+    "..KKKKKKKKKKYK..",
+    "..KWWWWWWWWKYK..",
+    "..KWKKKKKKWKYK..",
+    "..KWWWWWWWWKYK..",
+    "..KWKKKKKKWKYK..",
+    "..KWWWWWWWWKYK..",
+    "..KWKKKKWWWKYK..",
+    "..KWWWWWWWWKKK..",
+    "..KWWWWWWWWK....",
+    "..KWWWWWWWWK....",
+    "..KKKKKKKKKK....",
+    "................",
+  ],
+  cards: [
+    "................",
+    "..KKKKKKKK......",
+    "..KWWWWWWKK.....",
+    "..KWWWWWWKWK....",
+    "..KWWWWWWKWWK...",
+    "..KWWWWWWKKKKK..",
+    "..KWWWWWWWWWWK..",
+    "..KWWWWWWWWWWK..",
+    "..KWKKKKKKKKWK..",
+    "..KWWWWWWWWWWK..",
+    "..KWKKKKKKKKWK..",
+    "..KWWWWWWWWWWK..",
+    "..KWKKKKKWWWWK..",
+    "..KWWWWWWWWWWK..",
+    "..KKKKKKKKKKKK..",
+    "................",
+  ],
+  glossary: [
+    "................",
+    "..KKKKKKKKKKKK..",
+    "..KbbBBBBBBBBK..",
+    "..KbbBBBBBBBBK..",
+    "..KbbBWWWWWWBK..",
+    "..KbbBWDDDDWBK..",
+    "..KbbBWWWWWWBK..",
+    "..KbbBBBBBBBBK..",
+    "..KbbBBBBBBBBK..",
+    "..KbbBBBBBBBBK..",
+    "..KbbBBBBBBBBK..",
+    "..KbbBBBBBBBBK..",
+    "..KbbBBBBBBBBK..",
+    "..KWWWWWWWWWWK..",
+    "..KKKKKKKKKKKK..",
+    "................",
+  ],
+  progress: [
+    "................",
+    ".KKKKKKKKKKKKKK.",
+    ".KWWWWWWWWWWWWK.",
+    ".KWWWWWWWWWRRWK.",
+    ".KWWWWWWWWWRRWK.",
+    ".KWWWWWWWWWRRWK.",
+    ".KWWWWWbbbWRRWK.",
+    ".KWWWWWbbbWRRWK.",
+    ".KWWWWWbbbWRRWK.",
+    ".KWNNNWbbbWRRWK.",
+    ".KWNNNWbbbWRRWK.",
+    ".KWNNNWbbbWRRWK.",
+    ".KWNNNWbbbWRRWK.",
+    ".KDDDDDDDDDDDDK.",
+    ".KKKKKKKKKKKKKK.",
+    "................",
+  ],
+  desk: [
+    "................",
+    "................",
+    ".KKKKKK.........",
+    "KYYYYYYK........",
+    "KYYYYYYYKKKKKKK.",
+    "KYWWWWWWWWWWWYYK",
+    "KYWYYYYYYYYYYYOK",
+    "KYWYYYYYYYYYYYOK",
+    "KYWYYYYYYYYYYYOK",
+    "KYWYYYYYYYYYYYOK",
+    "KYWYYYYYYYYYYYOK",
+    "KYWYYYYYYYYYYYOK",
+    "KYYYYYYYYYYYYYOK",
+    "KOOOOOOOOOOOOOOK",
+    ".KKKKKKKKKKKKKK.",
+    "................",
+  ],
+  home: [
+    "................",
+    ".......KK.......",
+    "......KRRK......",
+    ".....KRRRRK.....",
+    "....KRRRRRRK....",
+    "...KRRRRRRRRK...",
+    "..KRRRRRRRRRRK..",
+    ".KKKKKKKKKKKKKK.",
+    "...KWWWWWWWWK...",
+    "...KWWWWWWWWK...",
+    "...KWWWWWWWWK...",
+    "...KWWWKKWWWK...",
+    "...KWWWKYWWWK...",
+    "...KWWWKKWWWK...",
+    "...KKKKKKKKKK...",
+    "................",
+  ],
+  repo: [
+    "................",
+    ".KKKKKKKKKKKKKK.",
+    ".KBBBBBBBBBBBBK.",
+    ".KKKKKKKKKKKKKK.",
+    ".KWWWWWWWWWWWWK.",
+    ".KWWWKWWWWKWWWK.",
+    ".KWWKWWWWWWKWWK.",
+    ".KWKWWWWWWWWKWK.",
+    ".KWWKWWWWWWKWWK.",
+    ".KWWWKWWWWKWWWK.",
+    ".KWWWWWWWWWWWWK.",
+    ".KWWWWWWWWWWWWK.",
+    ".KWWWWWWWWWWWWK.",
+    ".KWWWWWWWWWWWWK.",
+    ".KKKKKKKKKKKKKK.",
+    "................",
+  ],
+  login: [
+    "................",
+    "................",
+    "....KKKKKK......",
+    "...KDDDDDDK.....",
+    "...KD....DK.....",
+    "...KD....DK.....",
+    "...KD....DK.....",
+    "..KKKKKKKKKK....",
+    "..KYYYYYYYYK....",
+    "..KYYYYYYYYK....",
+    "..KYYYKKYYYK....",
+    "..KYYYKKYYYK....",
+    "..KYYYYYYYYK....",
+    "..KOOOOOOOOK....",
+    "..KKKKKKKKKK....",
+    "................",
+  ],
+  lab: [
+    "................",
+    "....KKKKKKKK....",
+    ".....KWWWWK.....",
+    ".....KWWWWK.....",
+    ".....KWWWWK.....",
+    "....KWWWWWWK....",
+    "...KWWWWWWWWK...",
+    "..KWWWWWWWWWWK..",
+    ".KWWWWWWWWWWWWK.",
+    ".KWWNNNNNNNNWWK.",
+    ".KNNNNNNNNNNNNK.",
+    ".KNNNNNNNNNNNNK.",
+    ".KNNNNNNNNNNNNK.",
+    ".KKKKKKKKKKKKKK.",
+    "................",
+    "................",
+  ],
+};
+
+export function PixelIcon({ name }: { name: GlyphName }) {
+  const rows = ICONS[name] ?? [];
+  const rects: { x: number; y: number; w: number; c: string }[] = [];
+  rows.forEach((row, y) => {
+    let x = 0;
+    while (x < row.length) {
+      const ch = row[x];
+      let w = 1;
+      while (x + w < row.length && row[x + w] === ch) w++;
+      if (ch !== "." && PALETTE[ch]) rects.push({ x, y, w, c: PALETTE[ch] });
+      x += w;
+    }
+  });
+  return (
+    <svg className="pixel-icon" viewBox="0 0 16 16" width="32" height="32" shapeRendering="crispEdges" aria-hidden="true">
+      {rects.map((r, i) => (
+        <rect key={i} x={r.x} y={r.y} width={r.w} height="1" fill={r.c} />
+      ))}
+    </svg>
+  );
+}

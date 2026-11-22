@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Inception-of-Things cards",
-    short_name: "IoT cards",
+    name: "Inception of Things",
+    short_name: "Inception of Things",
     start_url: "/review",
     display: "standalone",
     background_color: "#ffffff",

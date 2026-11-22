@@ -1,6 +1,6 @@
 # Logo study
 
-Starting from the Kubernetes marks: what a mark in this family does, and nine sketches for ours. The sketches are drawn by hand in this study with original geometry. None is chosen.
+Starting from the Kubernetes marks: what a mark in this family does, and nine sketches for ours. The sketches are drawn by hand in this study with original geometry. **Chosen: G** (2026-11-22), the eye with the wheel. It is in the header of both styles, as the favicon and large beside the title of the public page.
 
 ## The family
 
@@ -81,6 +81,11 @@ Each sheet shows the mark large and at 64, 32, 16 and 20 pixels, on light and on
 <figure>
 <img src="/lab-img/logo-study/sketch-G-eye-wheel.svg" alt="G, eye with a wheel">
 <figcaption>G. Eye with a wheel. An eye whose pupil is a small wheel with eight handles: the cluster that watches, and the third eye of the setup. The k9s mascot already puts the Kubernetes wheel into the lenses of its glasses, so the joke is known in this family.</figcaption>
+</figure>
+
+<figure>
+<img src="/lab-img/logo-study/sketch-G-pixel32.svg" alt="G, pixel form">
+<figcaption>G in the 98 style. On a 32 by 32 grid the pupil keeps its ring and eight single-pixel handles. At 16 pixels the wheel is too fine and G collapses to the eye with a plain pupil, as in I.</figcaption>
 </figure>
 
 <figure>
