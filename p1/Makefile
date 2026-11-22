@@ -1,4 +1,4 @@
-.PHONY: help test verify up provision down status ssh-server ssh-worker clean
+.PHONY: help test verify up provision watch down status ssh-server ssh-worker clean
 
 SHELL := /bin/bash
 
@@ -14,6 +14,9 @@ up: ## Create and provision the VMs (vagrant up runs the playbook itself)
 
 provision: ## Re-run the playbook on VMs that already exist
 	vagrant provision
+
+watch: ## Record memory, pressure, disk and K3s journal of rpodackS for 5 min (scripts/watch_server.sh)
+	@bash scripts/watch_server.sh
 
 down: ## Stop the VMs
 	@echo "Stopping VMs..."
