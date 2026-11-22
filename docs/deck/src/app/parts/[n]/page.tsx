@@ -60,7 +60,7 @@ export default async function PartPage({ params }: { params: Promise<{ n: string
       <figure className="ui-panel p-3">
         <div className="sketch">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/diagrams/p${n}-final-state-sketch.png`} alt={`Sketch of Part ${n} when it runs`} width={3064} height={1884} />
+          <img src={n === "1" ? "/diagrams/p1-running-sketch.png" : `/diagrams/p${n}-final-state-sketch.png`} alt={`Sketch of Part ${n} when it runs`} width={3064} height={n === "1" ? 1984 : 1884} />
         </div>
         <figcaption className="mt-2 text-sm text-muted">The target state of Part {n}. A dot marks who opens a connection; dashed lines are written but not run yet.</figcaption>
       </figure>

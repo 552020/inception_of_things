@@ -9,8 +9,8 @@ A dot marks who opens a connection or starts a step; dashed means written but no
 <div class="shots stack">
 
 <figure>
-<img src="/diagrams/p1-final-state-sketch.png" alt="Part 1 running">
-<figcaption>Part 1 final state: the K3s server and the K3s agent in their two VMs, kubectl as the client, the join over port 6443, the pod network on eth1.</figcaption>
+<img src="/diagrams/p1-running-sketch.png" alt="Part 1 running">
+<figcaption>Part 1 running: the physical computer at 42, the host VM on it, the two VMs as qemu processes in the host VM, K3s server and agent inside them, kubectl as a client in the server VM, Vagrant and Ansible not running.</figcaption>
 </figure>
 
 <figure>

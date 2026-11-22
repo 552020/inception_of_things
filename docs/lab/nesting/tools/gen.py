@@ -547,8 +547,44 @@ def architecture():
            "Which pods sit on which node is shown as an example: the scheduler decides, to be read from kubectl get pods -A -o wide.")
     return sk
 
+# ---------------------------------------------------------------- part 1 running, with the computer and the processes
+def part1_running():
+    sk = Sketch("Part 1 running: two VMs on the host VM, on the computer at 42", "Part 1 when it runs: the computer at 42 holds the host VM, which runs two VMs as qemu processes; in them run the K3s server and the K3s agent, with kubectl as a client inside the server VM")
+    sk.t(750, 46, "Part 1 running: two VMs on the host VM, on the computer at 42", "h", "middle")
+    sk.box(20, 70, 1460, 800, "line", rx=10); sk.t(40, 102, "The computer at 42", "t"); sk.t(300, 102, "the physical machine you sit at", "s")
+    sk.box(40, 118, 1420, 732, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 174, "Ubuntu under QEMU/KVM, 6 CPUs, 8 GB", "s")
+    sk.t(1440, 150, "running here: libvirt and one qemu process per VM", "a", "end")
+    # what is not running
+    sk.box(60, 215, 190, 230, "line", plan=True, rx=6)
+    sk.t(78, 245, "Not running now", "t"); sk.t(78, 273, "Vagrant and Ansible", "s")
+    sk.t(78, 299, "clients that built the", "xs"); sk.t(78, 319, "VMs and installed K3s;", "xs"); sk.t(78, 339, "they act again only", "xs"); sk.t(78, 359, "when you call them", "xs")
+    sk.t(78, 395, "vagrant up, halt, ssh,", "xs"); sk.t(78, 415, "destroy", "xs")
+    # VM 1
+    sk.box(270, 190, 540, 600, "line"); sk.t(290, 222, "VM rpodackS", "t"); sk.t(290, 246, "192.168.56.110 on eth1, 1 CPU, 1024 MB", "s"); sk.t(290, 270, "process on the host VM: qemu", "a")
+    sk.box(290, 290, 250, 80, "thin"); sk.t(304, 318, "kubectl", "t"); sk.t(304, 342, "a client: runs only while", "xs"); sk.t(304, 360, "you type it, after vagrant ssh", "xs")
+    sk.box(290, 400, 500, 170, "line"); sk.t(305, 430, "K3s server", "t"); sk.t(470, 430, "process in the VM: k3s server", "a")
+    sk.t(305, 458, "API server on port 6443, scheduler, controllers, SQLite", "s"); sk.t(305, 484, "the control plane; kubelet and containerd run here too", "s")
+    sk.box(290, 590, 500, 180, "thin"); sk.t(305, 620, "Pods on this node", "t"); sk.t(305, 648, "coredns, traefik, metrics-server, local-path", "s")
+    sk.t(305, 674, "the K3s add-ons; containerd starts their containers", "s"); sk.t(305, 700, "as processes of this VM", "s"); sk.t(305, 736, "no apps of ours in Part 1", "a")
+    sk.arrow(415, 372, 415, 398); sk.dot(415, 378); sk.t(430, 392, "asks, :6443", "mono")
+    # VM 2
+    sk.box(890, 190, 540, 600, "line"); sk.t(910, 222, "VM rpodackSW", "t"); sk.t(910, 246, "192.168.56.111 on eth1, 1 CPU, 512 MB", "s"); sk.t(910, 270, "process on the host VM: qemu", "a")
+    sk.box(910, 400, 500, 170, "line"); sk.t(925, 430, "K3s agent", "t"); sk.t(1090, 430, "process in the VM: k3s agent", "a")
+    sk.t(925, 458, "kubelet, container runtime", "s"); sk.t(925, 484, "joined the server with the node token", "s"); sk.t(925, 510, "the client of the API server", "a")
+    sk.box(910, 590, 500, 180, "thin", plan=True); sk.t(925, 620, "Pods on this node", "t"); sk.t(925, 648, "the scheduler places them here and on the server", "s")
+    sk.t(925, 674, "expected: add-on pods, none of ours", "s")
+    # the join
+    sk.arrow(908, 480, 792, 480); sk.dot(902, 480); sk.t(850, 464, "joins", "a", "middle"); sk.t(850, 506, ":6443", "mono", "middle"); sk.door(790, 480)
+    # the private network
+    sk.line("M540,792 L540,812 L1160,812 L1160,792", False, False)
+    sk.t(850, 830, "private network eth1, 192.168.56.0/24: the join and the pod traffic (flannel) use it", "s", "middle")
+    footer(sk, ["A VM is a qemu process on the host VM, which is itself a VM on the computer at 42. K3s runs in each VM as one process; the pods are processes that containerd starts.",
+                "kubectl is a client: it runs only while you type a command, here inside rpodackS. eth0 of both VMs is NAT and only reaches the internet, for image pulls."],
+           "Status: run on 2026-11-22. The server node was Ready; the worker joining has not been checked yet.")
+    return sk
+
 if __name__ == "__main__":
     out = os.path.join(HERE, "..", "src")
-    for name, fn in (("bonus-final-state-sketch", bonus_final), ("nesting-bonus", bonus_nested), ("nesting-architecture", architecture), ("nesting-node110", node110), ("nesting-scale", scale), ("nesting-general", general), ("nesting-p1", part1), ("nesting-p2", part2), ("nesting-p3", part3)):
+    for name, fn in (("p1-running-sketch", part1_running), ("bonus-final-state-sketch", bonus_final), ("nesting-bonus", bonus_nested), ("nesting-architecture", architecture), ("nesting-node110", node110), ("nesting-scale", scale), ("nesting-general", general), ("nesting-p1", part1), ("nesting-p2", part2), ("nesting-p3", part3)):
         open(os.path.join(out, name + ".html"), "w").write(fn().html())
         print("wrote", name)
