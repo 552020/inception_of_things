@@ -35,7 +35,7 @@ const DESK = [
   { group: "Study", dir: "evaluation", files: ["oral-evaluation.md"] },
   { group: "Subject", dir: "subject", files: ["inception-of-things.md"] },
   { group: "Host VM", dir: "host-vm", files: ["vm-setup.md", "vagrant.md", "qemu.md", "qemu_essential.md", "hostname.md"] },
-  { group: "Issues", dir: "issues", files: ["part1-todo.md", "implement-ansible.md"] },
+  { group: "Issues", dir: "issues", files: ["part1-todo.md", "implement-ansible.md", "yli-branch-ideas.md"] },
   { group: "Working notes", dir: ".", files: ["slombard-start-here.md"] },
 ];
 

@@ -46,6 +46,11 @@
       "title": "Issue: Implement Ansible Provisioning for Part 1"
     },
     {
+      "group": "Issues",
+      "slug": "yli-branch-ideas",
+      "title": "Ideas from the yli branch"
+    },
+    {
       "group": "Working notes",
       "slug": "slombard-start-here",
       "title": "slombard: start here"

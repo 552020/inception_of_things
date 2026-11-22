@@ -261,6 +261,14 @@ tags: networking part2
 No. Part 1 has no application, so no Ingress; Traefik is installed anyway, because K3s brings it, and sits idle. Part 2 is the Ingress part: one IP, three applications, routing by Host header, and the evaluator asks to see the Ingress. Part 3 does not need one: the application is reached through a NodePort or kubectl port-forward on 8888, the Argo CD interface through port-forward; K3d clusters carry Traefik too, unused here. The bonus usually brings it back, to reach GitLab by name.
 tags: networking part1 part2 part3
 
+### One Ingress with several rules, or one Ingress per app?
+Both work. An Ingress is a list of rules, and Traefik reads every Ingress object in the cluster and merges their rules into one routing table. One object holds all the rules, so the whole table is in one file, with the last rule without a host acting as the default. One object per app lets each app be applied, changed and deleted alone, and each app owns its own route. Our p2 has three files, one per app, and only the third has no host. The third branch of the project (yli) had one file with three rules. The subject asks for neither; what it asks is that app1.com shows app1, app2.com shows app2 and anything else shows app3.
+tags: kubernetes networking part2
+
+### How can a web app ship its own page without building an image?
+Put the HTML in a ConfigMap and mount it as a volume into the container, for example into /usr/share/nginx/html of an nginx container. Kubernetes writes each key of the ConfigMap as a file in that directory, so nginx serves the page from the ConfigMap and the image stays the stock nginx. Changing the page means changing the ConfigMap, not rebuilding an image. The yli branch did this for all three apps; ours uses the nginx default page for app1 and http-echo, which prints a text given as an argument, for app2 and app3.
+tags: kubernetes resources part2
+
 ### What comes after Ingress?
 The Gateway API. The Ingress API is frozen: it stays and keeps working, but new features go to the Gateway API, which splits the one object into several (GatewayClass, Gateway, HTTPRoute) so that the cluster operator and the application team each own their part, and which also covers TCP and gRPC. Traefik supports both. For the project only Ingress matters.
 tags: kubernetes networking context
