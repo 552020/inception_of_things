@@ -598,15 +598,15 @@ def part1_running():
     sk.box(290, 268, 500, 88, "thin"); sk.t(304, 296, "kubectl", "t"); sk.t(470, 296, "process in the VM: kubectl, a short one", "a"); sk.t(304, 322, "a client: it starts when you type it after vagrant ssh and ends with the command;", "xs"); sk.t(304, 342, "K3s installs it as a link to the k3s program", "xs")
     sk.box(290, 400, 500, 170, "line"); sk.t(305, 430, "K3s server", "t"); sk.t(470, 430, "process in the VM: k3s server", "a")
     sk.t(305, 458, "API server on port 6443, scheduler, controllers, SQLite", "s"); sk.t(305, 484, "the control plane; kubelet and containerd run here too", "s")
-    sk.box(290, 590, 500, 180, "thin"); sk.t(305, 620, "Pods on this node", "t"); sk.t(305, 648, "coredns, traefik, metrics-server, local-path", "s")
-    sk.t(305, 674, "the K3s add-ons; containerd starts their containers", "s"); sk.t(305, 700, "as processes of this VM", "s"); sk.t(305, 736, "no apps of ours in Part 1", "a")
+    sk.box(290, 590, 500, 180, "thin"); sk.t(305, 620, "Pods we started: none", "t"); sk.t(305, 646, "Part 1 has no apps of ours", "a")
+    sk.line("M305,666 L775,666", False, False); sk.t(305, 692, "Pods K3s started by itself, in the namespace kube-system:", "xs"); sk.t(305, 714, "coredns, traefik, metrics-server, local-path-provisioner", "s"); sk.t(305, 740, "containerd starts their containers as processes of this VM", "xs")
     sk.arrow(415, 358, 415, 398); sk.dot(415, 363); sk.t(430, 380, "asks, :6443", "mono")
     # VM 2
     sk.box(890, 190, 540, 600, "line"); sk.t(910, 222, "VM rpodackSW", "t"); sk.t(910, 246, "192.168.56.111 on eth1, 1 CPU, 512 MB", "s"); sk.t(1410, 222, "process on the host VM: qemu", "a", "end")
     sk.box(910, 400, 500, 170, "line"); sk.t(925, 430, "K3s agent", "t"); sk.t(1090, 430, "process in the VM: k3s agent", "a")
     sk.t(925, 458, "kubelet, container runtime", "s"); sk.t(925, 484, "joined the server with the node token", "s"); sk.t(925, 510, "the client of the API server", "a")
-    sk.box(910, 590, 500, 180, "thin", plan=True); sk.t(925, 620, "Pods on this node", "t"); sk.t(925, 648, "the scheduler places them here and on the server", "s")
-    sk.t(925, 674, "expected: add-on pods, none of ours", "s")
+    sk.box(910, 590, 500, 180, "thin", plan=True); sk.t(925, 620, "Pods we started: none", "t"); sk.t(925, 646, "Part 1 has no apps of ours", "a")
+    sk.t(925, 692, "K3s's own pods may land here too:", "xs"); sk.t(925, 714, "the scheduler decides which node", "s")
     # the join
     sk.arrow(908, 480, 792, 480); sk.dot(902, 480); sk.t(850, 464, "joins", "a", "middle"); sk.t(850, 506, ":6443", "mono", "middle"); sk.door(790, 480)
     # the private network

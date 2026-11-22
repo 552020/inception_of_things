@@ -59,6 +59,7 @@
     <rect x="290" y="268" width="500" height="88" rx="6" class="thin fill"/>
     <rect x="290" y="400" width="500" height="170" rx="6" class="line fill"/>
     <rect x="290" y="590" width="500" height="180" rx="6" class="thin fill"/>
+    <path d="M305,666 L775,666" class="line"/>
     <path d="M415,358 L415,398" class="line" marker-end="url(#arrow)"/>
     <rect x="890" y="190" width="540" height="600" rx="6" class="line fill"/>
     <rect x="910" y="400" width="500" height="170" rx="6" class="line fill"/>
@@ -103,11 +104,11 @@
   <text x="470" y="430" class="a">process in the VM: k3s server</text>
   <text x="305" y="458" class="s">API server on port 6443, scheduler, controllers, SQLite</text>
   <text x="305" y="484" class="s">the control plane; kubelet and containerd run here too</text>
-  <text x="305" y="620" class="t">Pods on this node</text>
-  <text x="305" y="648" class="s">coredns, traefik, metrics-server, local-path</text>
-  <text x="305" y="674" class="s">the K3s add-ons; containerd starts their containers</text>
-  <text x="305" y="700" class="s">as processes of this VM</text>
-  <text x="305" y="736" class="a">no apps of ours in Part 1</text>
+  <text x="305" y="620" class="t">Pods we started: none</text>
+  <text x="305" y="646" class="a">Part 1 has no apps of ours</text>
+  <text x="305" y="692" class="xs">Pods K3s started by itself, in the namespace kube-system:</text>
+  <text x="305" y="714" class="s">coredns, traefik, metrics-server, local-path-provisioner</text>
+  <text x="305" y="740" class="xs">containerd starts their containers as processes of this VM</text>
   <text x="430" y="380" class="mono">asks, :6443</text>
   <text x="910" y="222" class="t">VM rpodackSW</text>
   <text x="910" y="246" class="s">192.168.56.111 on eth1, 1 CPU, 512 MB</text>
@@ -117,9 +118,10 @@
   <text x="925" y="458" class="s">kubelet, container runtime</text>
   <text x="925" y="484" class="s">joined the server with the node token</text>
   <text x="925" y="510" class="a">the client of the API server</text>
-  <text x="925" y="620" class="t">Pods on this node</text>
-  <text x="925" y="648" class="s">the scheduler places them here and on the server</text>
-  <text x="925" y="674" class="s">expected: add-on pods, none of ours</text>
+  <text x="925" y="620" class="t">Pods we started: none</text>
+  <text x="925" y="646" class="a">Part 1 has no apps of ours</text>
+  <text x="925" y="692" class="xs">K3s&#x27;s own pods may land here too:</text>
+  <text x="925" y="714" class="s">the scheduler decides which node</text>
   <text x="850" y="464" class="a" text-anchor="middle">joins</text>
   <text x="850" y="506" class="mono" text-anchor="middle">:6443</text>
   <text x="850" y="830" class="s" text-anchor="middle">private network eth1, 192.168.56.0/24: the join and the pod traffic (flannel) use it</text>
