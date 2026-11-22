@@ -1,6 +1,44 @@
 # Sketches
 
-The hand-drawn sketches of the project, as they are in the repository (`docs/diagrams` on the branch `host-vm-kvm`, pull request 6). The three final-state sketches are also on the public pages of the parts. State of the drawings: 22 November 2026. A dot marks who opens a connection or starts a step; dashed means written but not run yet. Only Part 1 has been run.
+All sketches of the project on one page. The first group are nested boxes: what sits inside what, drawn by us (sources in `docs/lab/nesting`). The other groups are the hand-drawn sketches in `docs/diagrams` on the branch `host-vm-kvm` (pull request 6). State of the drawings: 22 November 2026. A dot marks who opens a connection or starts a step; dashed means written but not run yet. Only Part 1 has been run. Click a picture to open it at full size.
+
+## What sits inside what
+
+Read each picture from the outside in. The small doors are ports; a Service is the dashed address in front of its pods. The limits in the first two are the documented ones for large clusters (kubernetes.io, Considerations for large clusters): 110 pods per node, 5,000 nodes, 150,000 pods in a cluster, at about two containers per pod or fewer. The numbers of pods in the first two are made up.
+
+<div class="shots">
+
+<figure>
+<img src="/diagrams/nesting-node110.png" alt="One node with 110 pods">
+<figcaption>One node at its limit: 110 pods, and the containers inside them. A pod is the unit Kubernetes places; most hold one container, some two. The 111th pod goes to another node, or waits as Pending if no node has room.</figcaption>
+</figure>
+
+<figure>
+<img src="/diagrams/nesting-scale.png" alt="Kubernetes at scale">
+<figcaption>Kubernetes at scale: many nodes, each with up to 110 pods; the squares of one colour are the replicas of one Deployment, spread over the nodes. One pod is zoomed in to show its containers.</figcaption>
+</figure>
+
+<figure>
+<img src="/diagrams/nesting-general.png" alt="Kubernetes: what sits inside what">
+<figcaption>The cluster: three nodes, the control plane with the API server in the server node, replicas spread over the nodes with the Service in front of them.</figcaption>
+</figure>
+
+<figure>
+<img src="/diagrams/nesting-p1.png" alt="Part 1, what sits inside what">
+<figcaption>Part 1: the computer, the host VM, two VMs, one K3s node in each; the cluster is both nodes together, joined at port 6443.</figcaption>
+</figure>
+
+<figure>
+<img src="/diagrams/nesting-p2.png" alt="Part 2, what sits inside what">
+<figcaption>Part 2: one VM with one node; port 80 reaches Traefik, which picks one of three Services; app2 has three replica pods.</figcaption>
+</figure>
+
+<figure>
+<img src="/diagrams/nesting-p3.png" alt="Part 3, what sits inside what">
+<figcaption>Part 3: Docker, the k3d cluster, two node containers, the pods of Argo CD and of the app; GitHub outside.</figcaption>
+</figure>
+
+</div>
 
 ## Final state of each part
 
@@ -47,20 +85,9 @@ The hand-drawn sketches of the project, as they are in the repository (`docs/dia
 <figcaption>Part 3: the GitHub repository, Argo CD, the k3d cluster, the push from v1 to v2.</figcaption>
 </figure>
 
-</div>
-
-## Kubernetes in this project
-
-<div class="shots">
-
-<figure>
-<img src="img/k8s-layers-sketch.png" alt="Layers">
-<figcaption>The stack from the host VM to the containers: who creates each layer, what is inside Kubernetes and what is outside it (Vagrant, the playbook, the manifests).</figcaption>
-</figure>
-
 <figure>
 <img src="img/k8s-replicas-sketch.png" alt="Replicas">
-<figcaption>A manifest becomes a Deployment, a ReplicaSet and pods; the scheduler spreads the pods over the nodes; replicas are pods, not containers; more workers join with the same token.</figcaption>
+<figcaption>Replicas: a manifest becomes a Deployment, a ReplicaSet and pods; the scheduler spreads the pods over the nodes; replicas are pods, not containers; more workers join with the same token.</figcaption>
 </figure>
 
 </div>

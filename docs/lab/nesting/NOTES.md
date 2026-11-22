@@ -1,5 +1,7 @@
 # Nesting sketches: how they are made
 
+The pictures are shown on the lab page Sketches (`docs/lab/sketches/README.md`), from `/diagrams/nesting-*.png`; the sync script copies the PNGs from `img/` to `docs/deck/public/diagrams`.
+
 `tools/gen.py` writes the four HTML sources in `src/` (one inline SVG each, in the hand-drawn style of the other sketches). The PNGs in `img/` are screenshots of them at 2x with the font Patrick Hand:
 
 ```
