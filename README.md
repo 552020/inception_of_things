@@ -49,6 +49,19 @@ Inside the QEMU window, `Ctrl+Alt+G` releases the mouse and keyboard back to the
 
 The full rebuild procedure, disk resizing, backup and recovery steps are in [docs/host-vm/vm-setup.md](docs/host-vm/vm-setup.md).
 
+## Setup times
+
+Measured on 2026-11-22 in the host VM under QEMU/KVM (6 vCPUs, 8 GB), boxes and images already cached, one run each. A first run adds the downloads (the Debian box, the K3s binary per node, the k3d and Argo CD images).
+
+| Part | Command | Time | Notes |
+|------|---------|------|-------|
+| 1 | `make up` | 102 s | both VMs created, provisioned, one reboot each for the interface names, node Ready; measured while a k3d cluster was also running in the guest, so a quiet guest should be a little faster |
+| 2 | `make up` | not measured yet | |
+| 3 | `make setup` | not measured yet | |
+| bonus | `make setup` | about 10 min to all pods Running | GitLab CE plus Argo CD, 2.5 to 3 GB in the guest; unconfirmed, see `bonus/` |
+
+Known problem, not solved: running the playbook a second time on the existing `p1` VMs (`make provision`) stalls on the server a few minutes after K3s came up, with the server VM hammering its disk and unreachable over SSH. It happened with 512 MB and with 1024 MB. `make up` itself is not affected since it no longer provisions twice. First thing to check: log into `rpodackS` right after `make up` and watch `free -m`, `iostat` and `journalctl -u k3s` for a few minutes.
+
 ## Three repositories
 
 | Repository | Holds | Read by |
