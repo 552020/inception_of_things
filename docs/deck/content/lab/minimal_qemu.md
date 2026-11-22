@@ -1,0 +1,10 @@
+# minimal qemu
+
+```ruby
+Vagrant.configure("2") do |c|
+  c.vm.box = "alvistack/alpine-3.19"
+  c.vm.provider :libvirt do |lv|
+    lv.driver = "qemu"
+  end
+end
+```
