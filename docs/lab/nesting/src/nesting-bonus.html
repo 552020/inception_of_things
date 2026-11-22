@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bonus, what sits inside what: GitLab and Argo CD in one k3d node</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Patrick Hand","Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .svc   { stroke:var(--accent); stroke-width:2.2; }
+  .acc   { stroke:var(--accent); }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .door  { fill:var(--accent); stroke:var(--ink); stroke-width:1.6; }
+  .ca { fill:var(--accent); stroke:var(--ink); stroke-width:1; }
+  .cb { fill:var(--ink); stroke:var(--ink); stroke-width:1; }
+  .cc { fill:#c9c6bd; stroke:var(--ink); stroke-width:1; }
+  .cs { fill:url(#hatch); stroke:var(--ink); stroke-width:1; }
+  .ce { fill:none; stroke:#cfcdc6; stroke-width:1; }
+  .pw { fill:#f3d9c6; stroke:var(--accent); stroke-width:2; }
+  .pa { fill:#ffffff; stroke:var(--ink); stroke-width:2.2; }
+  .pk { fill:#dedbd2; stroke:var(--ink); stroke-width:1.4; }
+  .ps { fill:url(#hatch); stroke:var(--ink); stroke-width:1.4; }
+  .cn { fill:#fbfaf6; stroke:var(--ink); stroke-width:1.3; }
+  .cz { fill:none; stroke:var(--accent); stroke-width:3; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .xs    { font-size:16px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+  .monoa { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:16px; fill:var(--accent); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 960" role="img" aria-label="The bonus as nested boxes: the host VM holds Docker, Docker holds the k3d cluster, the cluster holds one server node, the node holds the pods of GitLab, Argo CD and the app">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    
+  </defs>
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="790" rx="10" class="line fill"/>
+    <rect x="40" y="118" width="1420" height="700" rx="8" class="line fill"/>
+    <rect x="60" y="420" width="170" height="130" rx="6" class="line fill"/>
+    <rect x="60" y="600" width="170" height="130" rx="6" class="line fill"/>
+    <rect x="250" y="190" width="1190" height="610" rx="6" class="line fill"/>
+    <rect x="270" y="262" width="1150" height="520" rx="6" class="line fill"/>
+    <rect x="290" y="305" width="1110" height="465" rx="6" class="line fill"/>
+    <rect x="305" y="400" width="270" height="190" rx="6" class="thin fill"/>
+    <rect x="317" y="486" width="246" height="92" rx="6" class="thin fill"/>
+    <rect x="305" y="602" width="270" height="38" rx="6" class="thin fill"/>
+    <rect x="631" y="400" width="150" height="190" rx="6" class="thin fill"/>
+    <rect x="643" y="486" width="126" height="92" rx="6" class="thin fill"/>
+    <rect x="821" y="400" width="150" height="190" rx="6" class="thin fill"/>
+    <rect x="833" y="486" width="126" height="92" rx="6" class="thin fill"/>
+    <rect x="1011" y="400" width="150" height="190" rx="6" class="thin fill"/>
+    <rect x="1023" y="486" width="126" height="92" rx="6" class="thin fill"/>
+    <rect x="1217" y="400" width="150" height="190" rx="6" class="thin fill plan"/>
+    <rect x="1229" y="486" width="126" height="92" rx="6" class="thin fill plan"/>
+    <path d="M629,495 L577,495" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M1163,495 L1215,495" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M232,500 L296,500" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M232,665 L1292,665 L1292,598" class="line plan" marker-end="url(#arrow)"/>
+  </g>
+  <rect x="297.0" y="485.0" width="16" height="30" rx="3" class="door"/>
+  <rect x="1277.0" y="583.0" width="30" height="14" rx="3" class="door"/>
+  <circle cx="625" cy="495" r="7" class="dot"/>
+  <circle cx="236" cy="500" r="7" class="dot"/>
+  <circle cx="236" cy="665" r="7" class="dot"/>
+  <text x="750" y="46" class="h" text-anchor="middle">Bonus, what sits inside what: GitLab and Argo CD in one k3d node</text>
+  <text x="40" y="100" class="t">The computer at 42</text>
+  <text x="60" y="150" class="t">Host VM</text>
+  <text x="60" y="172" class="s">Ubuntu under QEMU/KVM</text>
+  <text x="76" y="450" class="t">You</text>
+  <text x="76" y="476" class="s">browser or git</text>
+  <text x="76" y="502" class="mono">localhost:8929</text>
+  <text x="76" y="528" class="a">push v2 here</text>
+  <text x="76" y="630" class="t">curl</text>
+  <text x="76" y="656" class="mono">localhost:8888</text>
+  <text x="76" y="682" class="xs">&quot;message&quot;: &quot;v1&quot;</text>
+  <text x="76" y="706" class="a">v2 after the push</text>
+  <text x="268" y="220" class="t">Docker</text>
+  <text x="268" y="244" class="s">k3d starts the node as a container</text>
+  <text x="288" y="290" class="t">k3d cluster bonus</text>
+  <text x="470" y="290" class="a">one server node, no agent node</text>
+  <text x="305" y="333" class="t">Server node</text>
+  <text x="430" y="333" class="xs">a container running K3s: control plane, kubelet, kube-proxy, containerd</text>
+  <text x="317" y="426" class="t">GitLab</text>
+  <text x="317" y="448" class="xs">gitlab-ce, one container</text>
+  <text x="317" y="470" class="a">ns: gitlab</text>
+  <text x="327" y="532" class="s">container</text>
+  <text x="327" y="552" class="mono">:8929</text>
+  <text x="317" y="627" class="xs">its disk: a volume of the cluster</text>
+  <text x="643" y="426" class="t">Git reader</text>
+  <text x="643" y="448" class="xs">repo-server</text>
+  <text x="643" y="470" class="a">ns: argocd</text>
+  <text x="653" y="538" class="s">container</text>
+  <text x="833" y="426" class="t">UI and API</text>
+  <text x="833" y="448" class="xs">argocd-server</text>
+  <text x="833" y="470" class="a">ns: argocd</text>
+  <text x="843" y="532" class="s">container</text>
+  <text x="843" y="552" class="mono">:443</text>
+  <text x="1023" y="426" class="t">Sync engine</text>
+  <text x="1023" y="448" class="xs">app-controller</text>
+  <text x="1023" y="470" class="a">ns: argocd</text>
+  <text x="1033" y="538" class="s">container</text>
+  <text x="1229" y="426" class="t">The app</text>
+  <text x="1229" y="448" class="xs">wil-playground</text>
+  <text x="1229" y="470" class="a">ns: dev</text>
+  <text x="1239" y="532" class="s">container</text>
+  <text x="1239" y="552" class="mono">:8888</text>
+  <text x="603" y="478" class="xs" text-anchor="middle">polls</text>
+  <text x="1189" y="478" class="xs" text-anchor="middle">applies</text>
+  <text x="244" y="484" class="mono">8929</text>
+  <text x="760" y="690" class="s" text-anchor="middle">8888 to NodePort 30007: through the Service of the app into the pod</text>
+  <text x="305" y="722" class="s">Argo CD finds the project at gitlab.gitlab.svc.cluster.local:8929/root/rpodackIoT.git,</text>
+  <text x="305" y="746" class="s">the Service name inside the cluster; 8929 on the host is NodePort 30929 of the node.</text>
+  <text x="60" y="898" class="s">Read it from the outside in: computer, host VM, Docker, cluster, node, pods, container. ns = namespace, a tag on the pod here. The Argo CD interface: make port-forward, then https://localhost:8080.</text>
+  <text x="60" y="926" class="s">GitLab is the official image gitlab-ce as one Deployment, not the Helm chart; it fits in the memory of the host VM, the Helm chart would not.</text>
+  <text x="60" y="954" class="a">Status: GitLab and Argo CD came up once; the push, Argo CD following the GitLab project and the change to v2 have not been run.</text>
+  <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>

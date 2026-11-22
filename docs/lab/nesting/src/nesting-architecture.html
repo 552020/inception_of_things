@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kubernetes architecture, with the technologies we use</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Patrick Hand","Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .svc   { stroke:var(--accent); stroke-width:2.2; }
+  .acc   { stroke:var(--accent); }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .door  { fill:var(--accent); stroke:var(--ink); stroke-width:1.6; }
+  .ca { fill:var(--accent); stroke:var(--ink); stroke-width:1; }
+  .cb { fill:var(--ink); stroke:var(--ink); stroke-width:1; }
+  .cc { fill:#c9c6bd; stroke:var(--ink); stroke-width:1; }
+  .cs { fill:url(#hatch); stroke:var(--ink); stroke-width:1; }
+  .ce { fill:none; stroke:#cfcdc6; stroke-width:1; }
+  .pw { fill:#f3d9c6; stroke:var(--accent); stroke-width:2; }
+  .pa { fill:#ffffff; stroke:var(--ink); stroke-width:2.2; }
+  .pk { fill:#dedbd2; stroke:var(--ink); stroke-width:1.4; }
+  .ps { fill:url(#hatch); stroke:var(--ink); stroke-width:1.4; }
+  .cn { fill:#fbfaf6; stroke:var(--ink); stroke-width:1.3; }
+  .cz { fill:none; stroke:var(--accent); stroke-width:3; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .xs    { font-size:16px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+  .monoa { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:16px; fill:var(--accent); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 960" role="img" aria-label="A full Kubernetes architecture as nested boxes: the cluster, the control plane, the objects, the nodes with their components and the add-on pods, with the tool that fills each part in our project">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    
+  </defs>
+  <g filter="url(#hand)">
+    <rect x="20" y="110" width="160" height="124" rx="6" class="line fill"/>
+    <rect x="20" y="252" width="160" height="124" rx="6" class="line fill"/>
+    <rect x="20" y="394" width="160" height="124" rx="6" class="line fill"/>
+    <rect x="20" y="536" width="160" height="124" rx="6" class="line fill"/>
+    <rect x="20" y="678" width="160" height="124" rx="6" class="line fill"/>
+    <rect x="200" y="70" width="1280" height="790" rx="10" class="line fill"/>
+    <rect x="220" y="118" width="1240" height="160" rx="6" class="thin fill"/>
+    <rect x="236" y="164" width="288" height="96" rx="6" class="thin fill"/>
+    <rect x="539" y="164" width="288" height="96" rx="6" class="thin fill"/>
+    <rect x="842" y="164" width="288" height="96" rx="6" class="thin fill"/>
+    <rect x="1145" y="164" width="288" height="96" rx="6" class="thin fill"/>
+    <rect x="220" y="292" width="1240" height="64" rx="6" class="thin fill"/>
+    <rect x="220" y="372" width="610" height="470" rx="6" class="line fill"/>
+    <rect x="238" y="442" width="138" height="70" rx="6" class="thin fill"/>
+    <rect x="385" y="442" width="138" height="70" rx="6" class="thin fill"/>
+    <rect x="532" y="442" width="138" height="70" rx="6" class="thin fill"/>
+    <rect x="679" y="442" width="138" height="70" rx="6" class="thin fill"/>
+    <rect x="850" y="372" width="610" height="470" rx="6" class="line fill"/>
+    <rect x="868" y="442" width="138" height="70" rx="6" class="thin fill"/>
+    <rect x="1015" y="442" width="138" height="70" rx="6" class="thin fill"/>
+    <rect x="1162" y="442" width="138" height="70" rx="6" class="thin fill"/>
+    <rect x="1309" y="442" width="138" height="70" rx="6" class="thin fill"/>
+    <rect x="238" y="556" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="250" y="622" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="433" y="556" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="445" y="622" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="628" y="556" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="640" y="622" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="238" y="696" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="250" y="762" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="433" y="696" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="445" y="762" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="628" y="696" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="640" y="762" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="868" y="556" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="880" y="622" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="1063" y="556" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="1075" y="622" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="1258" y="556" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="1270" y="622" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="868" y="696" width="185" height="124" rx="6" class="thin fill plan"/>
+    <rect x="880" y="762" width="161" height="44" rx="6" class="thin fill plan"/>
+    <rect x="1063" y="696" width="185" height="124" rx="6" class="thin fill"/>
+    <rect x="1075" y="762" width="161" height="44" rx="6" class="thin fill"/>
+    <rect x="1258" y="696" width="185" height="124" rx="6" class="thin fill plan"/>
+    <rect x="1270" y="762" width="161" height="44" rx="6" class="thin fill plan"/>
+    <path d="M182,160 L214,205" class="line" marker-end="url(#arrow)"/>
+  </g>
+  <rect x="228.0" y="197.0" width="16" height="30" rx="3" class="door"/>
+  <circle cx="186" cy="162" r="7" class="dot"/>
+  <text x="750" y="46" class="h" text-anchor="middle">Kubernetes architecture, with the technologies we use</text>
+  <text x="32" y="138" class="t">kubectl</text>
+  <text x="32" y="164" class="xs">you, from outside</text>
+  <text x="32" y="186" class="xs">asks the API server</text>
+  <text x="32" y="280" class="t">Vagrant</text>
+  <text x="32" y="306" class="xs">with libvirt, QEMU/KVM</text>
+  <text x="32" y="328" class="xs">builds VMs (Parts 1, 2)</text>
+  <text x="32" y="422" class="t">Ansible</text>
+  <text x="32" y="448" class="xs">from the host VM</text>
+  <text x="32" y="470" class="xs">installs K3s (Parts 1, 2)</text>
+  <text x="32" y="564" class="t">k3d, Docker</text>
+  <text x="32" y="590" class="xs">nodes as containers</text>
+  <text x="32" y="612" class="xs">Part 3 and the bonus</text>
+  <text x="32" y="706" class="t">GitHub, GitLab</text>
+  <text x="32" y="732" class="xs">outside, or inside</text>
+  <text x="32" y="754" class="xs">Argo CD follows it</text>
+  <text x="840" y="104" class="col" text-anchor="middle">THE CLUSTER</text>
+  <text x="236" y="146" class="t">Control plane</text>
+  <text x="420" y="146" class="a">K3s runs all of it as one process, k3s server</text>
+  <text x="250" y="196" class="t">kube-apiserver</text>
+  <text x="250" y="224" class="s">:6443, the only door in</text>
+  <text x="553" y="196" class="t">kube-scheduler</text>
+  <text x="553" y="224" class="s">picks a node for each pod</text>
+  <text x="856" y="196" class="t">controller manager</text>
+  <text x="856" y="224" class="s">keeps what the manifests say</text>
+  <text x="1159" y="196" class="t">datastore</text>
+  <text x="1159" y="224" class="s">SQLite in K3s, etcd elsewhere</text>
+  <text x="236" y="320" class="s">What the API server stores: Namespace, Deployment, ReplicaSet, Pod, Service, Ingress, ConfigMap, Secret, Node</text>
+  <text x="236" y="344" class="xs">Argo CD and kubectl work on these objects</text>
+  <text x="238" y="404" class="t">Node 1: the server</text>
+  <text x="238" y="428" class="s">a node that also runs the control plane</text>
+  <text x="248" y="470" class="s">kubelet</text>
+  <text x="248" y="494" class="xs">starts the pods</text>
+  <text x="395" y="470" class="s">kube-proxy</text>
+  <text x="395" y="494" class="xs">Service ports</text>
+  <text x="542" y="470" class="s">containerd</text>
+  <text x="542" y="494" class="xs">runs containers</text>
+  <text x="689" y="470" class="s">Flannel</text>
+  <text x="689" y="494" class="xs">pod network, eth1</text>
+  <text x="238" y="540" class="xs">Pods on this node (the placement is the scheduler&#x27;s choice, an example here):</text>
+  <text x="868" y="404" class="t">Node 2: a worker, the agent</text>
+  <text x="868" y="428" class="s">joins with the server address and a token</text>
+  <text x="878" y="470" class="s">kubelet</text>
+  <text x="878" y="494" class="xs">starts the pods</text>
+  <text x="1025" y="470" class="s">kube-proxy</text>
+  <text x="1025" y="494" class="xs">Service ports</text>
+  <text x="1172" y="470" class="s">containerd</text>
+  <text x="1172" y="494" class="xs">runs containers</text>
+  <text x="1319" y="470" class="s">Flannel</text>
+  <text x="1319" y="494" class="xs">pod network, eth1</text>
+  <text x="868" y="540" class="xs">Pods on this node (the placement is the scheduler&#x27;s choice, an example here):</text>
+  <text x="250" y="584" class="t">Pod CoreDNS</text>
+  <text x="250" y="610" class="xs">cluster DNS</text>
+  <text x="262" y="650" class="xs">container</text>
+  <text x="445" y="584" class="t">Pod Traefik</text>
+  <text x="445" y="610" class="xs">Ingress controller :80</text>
+  <text x="457" y="650" class="xs">container</text>
+  <text x="640" y="584" class="s">Pod ServiceLB</text>
+  <text x="640" y="610" class="xs">svclb: node ports</text>
+  <text x="652" y="650" class="xs">container</text>
+  <text x="250" y="724" class="s">Pod metrics-server</text>
+  <text x="250" y="750" class="xs">node and pod numbers</text>
+  <text x="262" y="790" class="xs">container</text>
+  <text x="445" y="724" class="s">Pod local-path</text>
+  <text x="445" y="750" class="xs">volumes on the node disk</text>
+  <text x="457" y="790" class="xs">container</text>
+  <text x="640" y="724" class="t">Pod our apps</text>
+  <text x="640" y="750" class="xs">app1, app2 x3, app3</text>
+  <text x="652" y="790" class="xs">container</text>
+  <text x="880" y="584" class="s">Pod ServiceLB</text>
+  <text x="880" y="610" class="xs">svclb: node ports</text>
+  <text x="892" y="650" class="xs">container</text>
+  <text x="1075" y="584" class="t">Pod our apps</text>
+  <text x="1075" y="610" class="xs">app1, app2 x3, app3</text>
+  <text x="1087" y="650" class="xs">container</text>
+  <text x="1270" y="584" class="t">Pod Argo CD</text>
+  <text x="1270" y="610" class="xs">UI, sync, repo-server</text>
+  <text x="1282" y="650" class="xs">container</text>
+  <text x="880" y="724" class="t">Pod GitLab</text>
+  <text x="880" y="750" class="xs">bonus: one pod, gitlab-ce</text>
+  <text x="892" y="790" class="xs">container</text>
+  <text x="1075" y="724" class="t">Pod the app</text>
+  <text x="1075" y="750" class="xs">Part 3: wil-playground</text>
+  <text x="1087" y="790" class="xs">container</text>
+  <text x="1270" y="724" class="s">Pod more pods</text>
+  <text x="1270" y="750" class="xs">up to 110 on a node</text>
+  <text x="1282" y="790" class="xs">container</text>
+  <text x="60" y="898" class="s">Read it from the outside in: cluster, control plane and objects, node, components and pods, container. Outside the cluster are the tools that build it and ask it.</text>
+  <text x="60" y="926" class="s">K3s bundles containerd, Flannel, CoreDNS, Traefik, ServiceLB, metrics-server and local-path in one binary; full Kubernetes installs each of them on its own. Argo CD v2.7.12 runs inside the cluster as pods.</text>
+  <text x="60" y="954" class="a">Which pods sit on which node is shown as an example: the scheduler decides, to be read from kubectl get pods -A -o wide.</text>
+  <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>

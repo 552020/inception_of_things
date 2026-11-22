@@ -1,9 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Lightbox, type LightboxItem } from "./Lightbox";
 
 // A desk or lab document: the title and the text. Top right two small icons, download (.md) and copy.
 export function DocumentPage({ title, slug, markdown, html }: { title: string; slug: string; markdown: string; html: string }) {
   const [copied, setCopied] = useState(false);
+  const [box, setBox] = useState<{ items: LightboxItem[]; i: number } | null>(null);
+  const docRef = useRef<HTMLDivElement>(null);
+
+  // a click on a picture opens it full screen; the arrows there go through all pictures of the page
+  function openPicture(img: HTMLImageElement) {
+    const all = Array.from(docRef.current?.querySelectorAll("img") ?? []);
+    const items = all.map((el) => ({ src: el.src, alt: el.alt, caption: el.closest("figure")?.querySelector("figcaption")?.textContent ?? el.alt }));
+    setBox({ items, i: Math.max(0, all.indexOf(img)) });
+  }
 
   function download() {
     const url = URL.createObjectURL(new Blob([markdown], { type: "text/markdown" }));
@@ -48,14 +58,15 @@ export function DocumentPage({ title, slug, markdown, html }: { title: string; s
         </button>
       </div>
       <div
+        ref={docRef}
         className="prose doc mt-4 leading-relaxed"
         onClick={(e) => {
-          // a click on a picture opens it at full size in a new tab
           const t = e.target as HTMLElement;
-          if (t.tagName === "IMG") window.open((t as HTMLImageElement).src, "_blank", "noopener");
+          if (t.tagName === "IMG") openPicture(t as HTMLImageElement);
         }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
+      {box && <Lightbox items={box.items} index={box.i} onIndex={(i) => setBox({ ...box, i })} onClose={() => setBox(null)} />}
     </article>
   );
 }

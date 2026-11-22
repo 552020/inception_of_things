@@ -406,8 +406,147 @@ def node110():
            "The mix of pods and containers is made up, to show a full node.")
     return sk
 
+# ---------------------------------------------------------------- bonus, final state
+def bonus_final():
+    sk = Sketch("Bonus running: Argo CD follows a GitLab that runs inside the cluster", "The bonus when it runs: you push to a GitLab inside the k3d cluster, Argo CD polls it and applies the application to the namespace dev, curl reaches the application")
+    sk.t(750, 46, "Bonus running: Argo CD follows a GitLab that runs inside the cluster", "h", "middle")
+    sk.box(20, 70, 1460, 740, "line", rx=10)
+    sk.t(175, 122, "YOU", "col", "middle"); sk.t(175, 150, "on the host VM", "s", "middle")
+    sk.t(808, 122, "THE CLUSTER", "col", "middle"); sk.t(808, 150, "k3d cluster bonus, one server node, in Docker, on the host VM", "s", "middle")
+    sk.t(1390, 122, "CLIENT", "col", "middle"); sk.t(1390, 150, "on the host VM", "s", "middle")
+    sk.box(340, 170, 935, 570, "line")
+    # namespaces
+    sk.box(360, 215, 270, 500, "thin"); sk.t(375, 245, "namespace gitlab", "t")
+    sk.box(640, 215, 340, 500, "thin"); sk.t(655, 245, "namespace argocd", "t")
+    sk.box(990, 215, 270, 500, "thin"); sk.t(1005, 245, "namespace dev", "t")
+    # GitLab
+    sk.box(375, 270, 240, 260, "thin"); sk.t(390, 300, "GitLab", "t"); sk.t(390, 324, "official image gitlab-ce", "s")
+    sk.t(390, 348, "every GitLab service in one", "s"); sk.t(390, 370, "container, one Deployment", "s")
+    sk.t(390, 404, "the project root/rpodackIoT", "a"); sk.t(390, 428, "lives here, private", "s")
+    sk.box(390, 450, 210, 60, "thin"); sk.t(402, 475, "its disk", "s"); sk.t(402, 497, "a volume of the cluster", "xs")
+    sk.box(375, 545, 240, 150, "thin"); sk.t(390, 573, "Secret gitlab-root", "t"); sk.t(390, 597, "the root password, made", "s"); sk.t(390, 619, "once at setup, never", "s"); sk.t(390, 641, "written in the repository", "s")
+    # Argo CD
+    sk.box(660, 270, 300, 100, "thin"); sk.t(675, 298, "UI and API", "t"); sk.t(675, 322, "argocd-server", "s"); sk.t(675, 346, "make port-forward, :8080", "a")
+    sk.box(660, 385, 300, 100, "thin"); sk.t(675, 413, "Sync engine", "t"); sk.t(675, 437, "application-controller", "s"); sk.t(675, 461, "keeps dev equal to Git", "a")
+    sk.box(660, 500, 300, 100, "thin"); sk.t(675, 528, "Git reader", "t"); sk.t(675, 552, "repo-server", "s"); sk.t(675, 576, "polls the GitLab project", "a")
+    sk.box(660, 615, 300, 85, "thin"); sk.t(675, 641, "Secret gitlab-repo", "t"); sk.t(675, 665, "the login for the private project,", "xs"); sk.t(675, 683, "with the label Argo CD looks for", "xs")
+    # dev
+    sk.box(1010, 270, 230, 100, "thin", plan=True); sk.t(1025, 298, "Service", "t"); sk.t(1025, 322, "NodePort 30007", "mono"); sk.t(1025, 346, "port 8888", "s")
+    sk.box(1010, 410, 230, 130, "thin", plan=True); sk.t(1025, 438, "wil-playground", "t"); sk.t(1025, 462, "image wil42/playground", "s"); sk.t(1025, 486, "tag v1, then v2", "a"); sk.t(1025, 520, ":8888", "mono")
+    sk.t(1010, 575, "the app is only a pod in dev:", "s"); sk.t(1010, 599, "Argo CD creates and replaces it", "s")
+    # clients
+    sk.box(40, 335, 272, 160, "line", plan=True, rx=6); sk.t(58, 366, "You", "t"); sk.t(58, 392, "browser or git, localhost", "s"); sk.t(58, 420, ":8929", "mono"); sk.t(58, 450, "push v2 to the GitLab project", "a")
+    sk.box(1310, 260, 160, 130, "line", plan=True, rx=6); sk.t(1324, 292, "curl", "t"); sk.t(1324, 318, "localhost:8888", "mono"); sk.t(1324, 344, '"message": "v1"', "xs"); sk.t(1324, 366, "v2 after the push", "a")
+    # arrows
+    sk.door(375, 400); sk.arrow(314, 400, 365, 400, plan=True); sk.dot(318, 400); sk.t(322, 384, "8929", "mono")
+    sk.arrow(658, 550, 617, 550, plan=True); sk.dot(654, 550); sk.t(636, 535, "polls", "a", "middle")
+    sk.arrow(962, 435, 1008, 435, plan=True); sk.t(985, 420, "applies", "xs", "middle")
+    sk.door(1240, 320); sk.arrow(1308, 320, 1246, 320, plan=True); sk.dot(1304, 320); sk.t(1276, 304, "8888", "mono", "middle")
+    sk.arrow(1125, 372, 1125, 408)
+    # legend and notes
+    sk.dot(60, 842); sk.t(78, 848, "who opens the connection", "s")
+    sk.line("M330,842 L400,842", False, True); sk.t(414, 848, "written, not run yet", "s")
+    sk.t(60, 876, "Part 3 with one change: the repository Argo CD follows is a GitLab in the cluster, not GitHub. One server node, no agent. k3d publishes 8929 to NodePort 30929 and 8888 to NodePort 30007.", "s")
+    sk.t(60, 904, "Argo CD reaches the project as gitlab.gitlab.svc.cluster.local:8929, the Service name inside the cluster.", "s")
+    sk.t(60, 932, "Status: GitLab and Argo CD came up on 22 November 2026 (about 10 minutes); the push to GitLab, Argo CD following it and the change to v2 have not been run. Not together with Part 3: the memory does not fit.", "a")
+    sk.t(1480, 876, "As of: 22 November 2026", "s", "end")
+    return sk
+
+# ---------------------------------------------------------------- bonus, nested
+def bonus_nested():
+    sk = Sketch("Bonus, what sits inside what: GitLab and Argo CD in one k3d node", "The bonus as nested boxes: the host VM holds Docker, Docker holds the k3d cluster, the cluster holds one server node, the node holds the pods of GitLab, Argo CD and the app")
+    sk.t(750, 46, "Bonus, what sits inside what: GitLab and Argo CD in one k3d node", "h", "middle")
+    sk.box(20, 70, 1460, 790, "line", rx=10); sk.t(40, 100, "The computer at 42", "t")
+    sk.box(40, 118, 1420, 700, "line", rx=8); sk.t(60, 150, "Host VM", "t"); sk.t(60, 172, "Ubuntu under QEMU/KVM", "s")
+    sk.box(60, 420, 170, 130, "line", rx=6); sk.t(76, 450, "You", "t"); sk.t(76, 476, "browser or git", "s"); sk.t(76, 502, "localhost:8929", "mono"); sk.t(76, 528, "push v2 here", "a")
+    sk.box(60, 600, 170, 130, "line", rx=6); sk.t(76, 630, "curl", "t"); sk.t(76, 656, "localhost:8888", "mono"); sk.t(76, 682, '"message": "v1"', "xs"); sk.t(76, 706, "v2 after the push", "a")
+    sk.box(250, 190, 1190, 610, "line"); sk.t(268, 220, "Docker", "t"); sk.t(268, 244, "k3d starts the node as a container", "s")
+    sk.box(270, 262, 1150, 520, "line"); sk.t(288, 290, "k3d cluster bonus", "t"); sk.t(470, 290, "one server node, no agent node", "a")
+    sk.box(290, 305, 1110, 465, "line"); sk.t(305, 333, "Server node", "t"); sk.t(430, 333, "a container running K3s: control plane, kubelet, kube-proxy, containerd", "xs")
+    # pods, left to right: GitLab | Git reader | UI | Sync | app
+    pod(sk, 305, 400, 270, 190, "GitLab", sub="gitlab-ce, one container", tag="ns: gitlab", container="container", port=":8929", plan=False)
+    sk.door(305, 500)
+    sk.box(305, 602, 270, 38, "thin"); sk.t(317, 627, "its disk: a volume of the cluster", "xs")
+    pod(sk, 631, 400, 150, 190, "Git reader", sub="repo-server", tag="ns: argocd", container="container")
+    pod(sk, 821, 400, 150, 190, "UI and API", sub="argocd-server", tag="ns: argocd", container="container", port=":443")
+    pod(sk, 1011, 400, 150, 190, "Sync engine", sub="app-controller", tag="ns: argocd", container="container")
+    pod(sk, 1217, 400, 150, 190, "The app", sub="wil-playground", tag="ns: dev", container="container", port=":8888", plan=True)
+    sk.doorh(1292, 590)
+    # in-cluster arrows
+    sk.arrow(629, 495, 577, 495, plan=True); sk.dot(625, 495)
+    sk.arrow(1163, 495, 1215, 495, plan=True)
+    sk.t(603, 478, "polls", "xs", "middle"); sk.t(1189, 478, "applies", "xs", "middle")
+    # client arrows
+    sk.arrow(232, 500, 296, 500, plan=True); sk.dot(236, 500); sk.t(244, 484, "8929", "mono")
+    sk.shapes.append('<path d="M232,665 L1292,665 L1292,598" class="line plan" marker-end="url(#arrow)"/>'); sk.dot(236, 665)
+    sk.t(760, 690, "8888 to NodePort 30007: through the Service of the app into the pod", "s", "middle")
+    sk.t(305, 722, "Argo CD finds the project at gitlab.gitlab.svc.cluster.local:8929/root/rpodackIoT.git,", "s")
+    sk.t(305, 746, "the Service name inside the cluster; 8929 on the host is NodePort 30929 of the node.", "s")
+    footer(sk, ["Read it from the outside in: computer, host VM, Docker, cluster, node, pods, container. ns = namespace, a tag on the pod here. The Argo CD interface: make port-forward, then https://localhost:8080.",
+                "GitLab is the official image gitlab-ce as one Deployment, not the Helm chart; it fits in the memory of the host VM, the Helm chart would not."],
+           "Status: GitLab and Argo CD came up once; the push, Argo CD following the GitLab project and the change to v2 have not been run.")
+    return sk
+
+# ---------------------------------------------------------------- the architecture with our technologies
+def architecture():
+    sk = Sketch("Kubernetes architecture, with the technologies we use", "A full Kubernetes architecture as nested boxes: the cluster, the control plane, the objects, the nodes with their components and the add-on pods, with the tool that fills each part in our project")
+    sk.t(750, 46, "Kubernetes architecture, with the technologies we use", "h", "middle")
+    # outside tools
+    tools = [("kubectl", "you, from outside", "asks the API server"),
+             ("Vagrant", "with libvirt, QEMU/KVM", "builds VMs (Parts 1, 2)"),
+             ("Ansible", "from the host VM", "installs K3s (Parts 1, 2)"),
+             ("k3d, Docker", "nodes as containers", "Part 3 and the bonus"),
+             ("GitHub, GitLab", "outside, or inside", "Argo CD follows it")]
+    for i, (a, b, c) in enumerate(tools):
+        y = 110 + i * 142
+        sk.box(20, y, 160, 124, "line", rx=6)
+        sk.t(32, y + 28, a, "t"); sk.t(32, y + 54, b, "xs"); sk.t(32, y + 76, c, "xs")
+    # the cluster
+    sk.box(200, 70, 1280, 790, "line", rx=10)
+    sk.t(840, 104, "THE CLUSTER", "col", "middle")
+    # control plane
+    sk.box(220, 118, 1240, 160, "thin")
+    sk.t(236, 146, "Control plane", "t"); sk.t(420, 146, "K3s runs all of it as one process, k3s server", "a")
+    cp = [("kube-apiserver", ":6443, the only door in"), ("kube-scheduler", "picks a node for each pod"), ("controller manager", "keeps what the manifests say"), ("datastore", "SQLite in K3s, etcd elsewhere")]
+    for i, (a, b) in enumerate(cp):
+        x = 236 + i * 303
+        sk.box(x, 164, 288, 96, "thin"); sk.t(x + 14, 196, a, "t"); sk.t(x + 14, 224, b, "s")
+        if i == 0: sk.door(x, 212)
+    # the objects
+    sk.box(220, 292, 1240, 64, "thin")
+    sk.t(236, 320, "What the API server stores: Namespace, Deployment, ReplicaSet, Pod, Service, Ingress, ConfigMap, Secret, Node", "s")
+    sk.t(236, 344, "Argo CD and kubectl work on these objects", "xs")
+    # two nodes
+    for k, (x0, name, sub) in enumerate(((220, "Node 1: the server", "a node that also runs the control plane"), (850, "Node 2: a worker, the agent", "joins with the server address and a token"))):
+        sk.box(x0, 372, 610, 470, "line")
+        sk.t(x0 + 18, 404, name, "t"); sk.t(x0 + 18, 428, sub, "s")
+        comps = [("kubelet", "starts the pods"), ("kube-proxy", "Service ports"), ("containerd", "runs containers"), ("Flannel", "pod network, eth1")]
+        for i, (a, b) in enumerate(comps):
+            cx = x0 + 18 + i * 147
+            sk.box(cx, 442, 138, 70, "thin"); sk.t(cx + 10, 470, a, "s"); sk.t(cx + 10, 494, b, "xs")
+        sk.t(x0 + 18, 540, "Pods on this node (the placement is the scheduler's choice, an example here):", "xs")
+    pods1 = [("CoreDNS", "cluster DNS"), ("Traefik", "Ingress controller :80"), ("ServiceLB", "svclb: node ports"),
+             ("metrics-server", "node and pod numbers"), ("local-path", "volumes on the node disk"), ("our apps", "app1, app2 x3, app3")]
+    pods2 = [("ServiceLB", "svclb: node ports"), ("our apps", "app1, app2 x3, app3"), ("Argo CD", "UI, sync, repo-server"),
+             ("GitLab", "bonus: one pod, gitlab-ce"), ("the app", "Part 3: wil-playground"), ("more pods", "up to 110 on a node")]
+    for x0, pods in ((220, pods1), (850, pods2)):
+        for i, (a, b) in enumerate(pods):
+            px = x0 + 18 + (i % 3) * 195
+            py = 556 + (i // 3) * 140
+            plan = (a in ("GitLab", "more pods"))
+            sk.box(px, py, 185, 124, "thin", plan=plan)
+            sk.t(px + 12, py + 28, "Pod " + a, "s" if len(a) > 8 else "t")
+            sk.t(px + 12, py + 54, b, "xs")
+            sk.box(px + 12, py + 66, 161, 44, "thin", plan=plan); sk.t(px + 24, py + 94, "container", "xs")
+    sk.arrow(182, 160, 214, 205)
+    sk.dot(186, 162)
+    footer(sk, ["Read it from the outside in: cluster, control plane and objects, node, components and pods, container. Outside the cluster are the tools that build it and ask it.",
+                "K3s bundles containerd, Flannel, CoreDNS, Traefik, ServiceLB, metrics-server and local-path in one binary; full Kubernetes installs each of them on its own. Argo CD v2.7.12 runs inside the cluster as pods."],
+           "Which pods sit on which node is shown as an example: the scheduler decides, to be read from kubectl get pods -A -o wide.")
+    return sk
+
 if __name__ == "__main__":
     out = os.path.join(HERE, "..", "src")
-    for name, fn in (("nesting-node110", node110), ("nesting-scale", scale), ("nesting-general", general), ("nesting-p1", part1), ("nesting-p2", part2), ("nesting-p3", part3)):
+    for name, fn in (("bonus-final-state-sketch", bonus_final), ("nesting-bonus", bonus_nested), ("nesting-architecture", architecture), ("nesting-node110", node110), ("nesting-scale", scale), ("nesting-general", general), ("nesting-p1", part1), ("nesting-p2", part2), ("nesting-p3", part3)):
         open(os.path.join(out, name + ".html"), "w").write(fn().html())
         print("wrote", name)
