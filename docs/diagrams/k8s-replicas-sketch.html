@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Replicas, pods and nodes: how one manifest ends up on the machines</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 910" role="img" aria-label="A manifest becomes a Deployment, which makes a ReplicaSet, whose pods the scheduler spreads over the nodes">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="720" rx="10" class="line"/>
+    <rect x="60" y="230" width="250" height="330" rx="6" class="line fill"/>
+    <rect x="410" y="230" width="260" height="110" rx="4" class="thin fill"/>
+    <rect x="410" y="390" width="260" height="110" rx="4" class="thin fill"/>
+    <rect x="410" y="550" width="260" height="110" rx="4" class="thin fill"/>
+    <rect x="760" y="200" width="670" height="160" rx="6" class="line fill"/>
+    <rect x="760" y="385" width="670" height="160" rx="6" class="line fill"/>
+    <rect x="760" y="570" width="670" height="130" rx="6" class="line fill plan"/>
+    <rect x="1010" y="230" width="130" height="110" rx="4" class="thin fill"/>
+    <rect x="1022" y="286" width="106" height="42" rx="4" class="thin fill"/>
+    <rect x="1010" y="415" width="130" height="110" rx="4" class="thin fill"/>
+    <rect x="1022" y="471" width="106" height="42" rx="4" class="thin fill"/>
+    <rect x="1160" y="415" width="130" height="110" rx="4" class="thin fill"/>
+    <rect x="1172" y="471" width="106" height="42" rx="4" class="thin fill"/>
+    <rect x="1010" y="595" width="125" height="80" rx="4" class="thin fill plan"/>
+    <rect x="1160" y="595" width="125" height="80" rx="4" class="thin fill plan"/>
+    <rect x="1295" y="595" width="125" height="80" rx="4" class="thin fill plan"/>
+
+    <path d="M312,285 L408,285" class="line" marker-end="url(#arrow)"/>
+    <path d="M540,342 L540,388" class="line" marker-end="url(#arrow)"/>
+    <path d="M540,502 L540,548" class="line" marker-end="url(#arrow)"/>
+    <path d="M672,605 C715,605 715,280 758,280" class="line" marker-end="url(#arrow)"/>
+    <path d="M672,605 C720,605 720,465 758,465" class="line" marker-end="url(#arrow)"/>
+    <path d="M672,605 L758,635" class="line plan" marker-end="url(#arrow)"/>
+  </g>
+
+  <circle cx="320" cy="285" r="7" class="dot"/>
+
+  <text x="750" y="46" class="h" text-anchor="middle">Replicas, pods and nodes: how one manifest ends up on the machines</text>
+  <text x="185" y="130" class="col" text-anchor="middle">THE MANIFEST</text>
+  <text x="185" y="158" class="s" text-anchor="middle">a file outside the cluster</text>
+  <text x="540" y="130" class="col" text-anchor="middle">THE OBJECTS</text>
+  <text x="540" y="158" class="s" text-anchor="middle">inside the API server</text>
+  <text x="1080" y="130" class="col" text-anchor="middle">THE NODES</text>
+  <text x="1080" y="158" class="s" text-anchor="middle">VMs that run the pods</text>
+  <text x="1022" y="258" class="s">pod 1</text>
+  <text x="1030" y="314" class="mono">http-echo</text>
+  <text x="1022" y="443" class="s">pod 2</text>
+  <text x="1030" y="499" class="mono">http-echo</text>
+  <text x="1172" y="443" class="s">pod 3</text>
+  <text x="1180" y="499" class="mono">http-echo</text>
+  <text x="78" y="262" class="t">Manifest</text>
+  <text x="78" y="288" class="s">a YAML file, outside</text>
+  <text x="78" y="330" class="mono">kind: Deployment</text>
+  <text x="78" y="356" class="mono">replicas: 3</text>
+  <text x="78" y="382" class="mono">image: http-echo</text>
+  <text x="78" y="408" class="mono">port: 5678</text>
+  <text x="78" y="460" class="a">kubectl sends it</text>
+  <text x="78" y="484" class="a">to the API server</text>
+  <text x="78" y="520" class="s">nothing runs yet</text>
+  <text x="360" y="268" class="a" text-anchor="middle">apply</text>
+  <text x="430" y="262" class="t">Deployment</text>
+  <text x="430" y="288" class="s">the plan: 3 replicas</text>
+  <text x="430" y="312" class="s">lives in the datastore</text>
+  <text x="560" y="370" class="a" text-anchor="start">creates</text>
+  <text x="430" y="422" class="t">ReplicaSet</text>
+  <text x="430" y="448" class="s">keeps 3 pods alive</text>
+  <text x="430" y="472" class="a">replaces a dead pod</text>
+  <text x="560" y="530" class="a" text-anchor="start">new pods</text>
+  <text x="430" y="582" class="t">Scheduler</text>
+  <text x="430" y="608" class="s">picks a node per pod</text>
+  <text x="430" y="632" class="a">the kubelet starts the pod</text>
+  <text x="780" y="232" class="t">Node 1: VM rpodackS</text>
+  <text x="780" y="258" class="s">the server node</text>
+  <text x="780" y="282" class="s">also runs pods</text>
+  <text x="780" y="306" class="a">kubelet starts them</text>
+  <text x="780" y="417" class="t">Node 2: VM rpodackSW</text>
+  <text x="780" y="443" class="s">a worker node</text>
+  <text x="780" y="467" class="s">runs the K3s agent</text>
+  <text x="780" y="491" class="a">kubelet starts them</text>
+  <text x="780" y="602" class="t">Node 3, 4, 5 ...</text>
+  <text x="780" y="628" class="s">more workers: one more VM</text>
+  <text x="780" y="652" class="a">agent plus the same token</text>
+
+  <circle cx="60" cy="832" r="7" class="dot"/>
+  <text x="78" y="838" class="s">who starts the step</text>
+  <path d="M330,832 L400,832" class="line plan"/>
+  <text x="414" y="838" class="s">possible, not built here</text>
+  <text x="60" y="868" class="s">replicas: 3 means three pods, not three containers. The ReplicaSet keeps the count; the scheduler picks the node. Kubernetes is tested up to 5000 nodes.</text>
+  <text x="60" y="896" class="a">Example. A pod holds one or more containers and has one IP. A node runs up to 110 pods by default. Part 2 has one node: all three pods run on it.</text>
+  <text x="1480" y="838" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>
