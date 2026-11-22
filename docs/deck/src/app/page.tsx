@@ -5,16 +5,19 @@ import { currentSkin } from "@/lib/skin";
 
 const parts = [
   {
+    href: "/parts/1",
     title: "Part 1: K3s and Vagrant",
     text: "Two virtual machines from one Vagrantfile, each with a fixed address on a private network. Ansible installs K3s on the first as the server and on the second as the agent that joins it. The result is a working two-node Kubernetes cluster built from nothing but text files.",
     tools: "Vagrant, libvirt, Ansible, K3s",
   },
   {
+    href: "/parts/2",
     title: "Part 2: K3s and three applications",
     text: "One virtual machine with a K3s server and three small web applications behind a single Ingress. The same IP address answers differently depending on the host name in the request: one name shows the first application, another shows the second, which runs as three replicas, and every other name falls through to the third.",
     tools: "K3s, Ingress, Traefik, Deployments and Services",
   },
   {
+    href: "/parts/3",
     title: "Part 3: K3d and Argo CD",
     text: "A cluster that lives in Docker containers instead of virtual machines. Argo CD watches a public GitHub repository and keeps the cluster equal to it: change the version of the application in Git, push, and the running application changes with no kubectl command. This is GitOps.",
     tools: "K3d, Docker, Argo CD, GitHub",
@@ -38,11 +41,12 @@ export default async function HomePage() {
 
       <section className="grid gap-4 md:grid-cols-3">
         {parts.map((part) => (
-          <div key={part.title} className="ui-panel p-5 flex flex-col gap-3">
+          <Link key={part.title} href={part.href} className="ui-panel part-card p-5 flex flex-col gap-3">
             <h2 className="text-lg font-medium leading-snug">{part.title}</h2>
             <p className="leading-relaxed">{part.text}</p>
             <p className="mt-auto text-sm text-muted">{part.tools}</p>
-          </div>
+            <p className="text-sm underline">See the target state</p>
+          </Link>
         ))}
       </section>
 

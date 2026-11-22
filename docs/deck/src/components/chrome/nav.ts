@@ -25,6 +25,8 @@ const titles: Record<string, string> = {
 };
 
 export function windowTitle(pathname: string): string {
+  const part = pathname.match(/^\/parts\/(\d)/);
+  if (part) return `Part ${part[1]}`;
   const first = pathname.split("/")[1] ?? "";
   return titles[first] ?? "Inception of Things";
 }

@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE, verifySession } from "@/lib/auth";
 
 export async function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname === "/") return NextResponse.next(); // the public page
+  const path = request.nextUrl.pathname;
+  if (path === "/" || path.startsWith("/parts/") || path.startsWith("/diagrams/")) return NextResponse.next(); // the public pages
   const user = await verifySession(request.cookies.get(COOKIE)?.value);
   if (user) return NextResponse.next();
   if (request.nextUrl.pathname.startsWith("/api/")) {

@@ -101,3 +101,8 @@ html[data-skin="desktop"] body { background: var(--wallpaper) fixed; }
 .dk-brand { font-size: 16px; }
 .hero-title { display: flex; align-items: center; gap: 20px; }
 .hero-logo { width: 96px; height: 96px; color: var(--accent); }
+
+/* Part pages: the sketch without the notes under its legend */
+.sketch { overflow: hidden; aspect-ratio: 3064 / 1740; }
+.sketch img { display: block; width: 100%; height: auto; }
+.part-card:hover { border-color: var(--foreground); }
