@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The finished setup: what we turn in and where it runs</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 910" role="img" aria-label="The four folders we turn in, the host VM they run in, and what each one serves once it is up">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="720" rx="10" class="line"/>
+    <rect x="500" y="170" width="500" height="615" rx="8" class="line fill"/>
+    <rect x="70" y="255" width="250" height="110" rx="6" class="line fill"/>
+    <rect x="525" y="255" width="450" height="110" rx="4" class="thin fill"/>
+    <rect x="1180" y="255" width="250" height="110" rx="6" class="line fill"/>
+    <rect x="70" y="385" width="250" height="110" rx="6" class="line fill plan"/>
+    <rect x="525" y="385" width="450" height="110" rx="4" class="thin fill plan"/>
+    <rect x="1180" y="385" width="250" height="110" rx="6" class="line fill plan"/>
+    <rect x="70" y="515" width="250" height="110" rx="6" class="line fill plan"/>
+    <rect x="525" y="515" width="450" height="110" rx="4" class="thin fill plan"/>
+    <rect x="1180" y="515" width="250" height="110" rx="6" class="line fill plan"/>
+    <rect x="70" y="645" width="250" height="110" rx="6" class="line fill plan"/>
+    <rect x="525" y="645" width="450" height="110" rx="4" class="thin fill plan"/>
+    <rect x="1180" y="645" width="250" height="110" rx="6" class="line fill plan"/>
+
+    <path d="M322,310 C400,310 450,310 521,310" class="line" marker-end="url(#arrow)"/>
+    <path d="M977,310 C1060,310 1110,310 1178,310" class="line" marker-end="url(#arrow)"/>
+    <path d="M322,440 C400,440 450,440 521,440" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M977,440 C1060,440 1110,440 1178,440" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M322,570 C400,570 450,570 521,570" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M977,570 C1060,570 1110,570 1178,570" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M322,700 C400,700 450,700 521,700" class="line plan" marker-end="url(#arrow)"/>
+    <path d="M977,700 C1060,700 1110,700 1178,700" class="line plan" marker-end="url(#arrow)"/>
+  </g>
+
+  <circle cx="330" cy="310" r="7" class="dot"/>
+  <circle cx="1170" cy="310" r="7" class="dot"/>
+  <circle cx="330" cy="440" r="7" class="dot"/>
+  <circle cx="1170" cy="440" r="7" class="dot"/>
+  <circle cx="330" cy="570" r="7" class="dot"/>
+  <circle cx="1170" cy="570" r="7" class="dot"/>
+  <circle cx="330" cy="700" r="7" class="dot"/>
+  <circle cx="1170" cy="700" r="7" class="dot"/>
+
+  <text x="750" y="46" class="h" text-anchor="middle">The finished setup: what we turn in and where it runs</text>
+  <text x="195" y="130" class="col" text-anchor="middle">WHAT WE TURN IN</text>
+  <text x="195" y="158" class="s" text-anchor="middle">the folders of the repo</text>
+  <text x="750" y="130" class="col" text-anchor="middle">WHERE IT RUNS</text>
+  <text x="750" y="158" class="s" text-anchor="middle">inside the host VM</text>
+  <text x="1305" y="130" class="col" text-anchor="middle">WHAT YOU SEE</text>
+  <text x="1305" y="158" class="s" text-anchor="middle">once it is up</text>
+  <text x="88" y="283" class="t">p1/</text>
+  <text x="88" y="308" class="s">Vagrantfile, Makefile</text>
+  <text x="88" y="330" class="s">confs/ansible, scripts/</text>
+  <text x="88" y="353" class="a">make up, make test</text>
+  <text x="88" y="413" class="t">p2/</text>
+  <text x="88" y="438" class="s">Vagrantfile, Makefile</text>
+  <text x="88" y="460" class="s">confs/: apps, ingress</text>
+  <text x="88" y="483" class="a">make up</text>
+  <text x="88" y="543" class="t">p3/</text>
+  <text x="88" y="568" class="s">Makefile, confs/</text>
+  <text x="88" y="590" class="s">scripts/: install script</text>
+  <text x="88" y="613" class="a">make setup</text>
+  <text x="88" y="673" class="t">bonus/</text>
+  <text x="88" y="698" class="s">Makefile, confs/</text>
+  <text x="88" y="720" class="s">scripts/: GitLab, v1, v2</text>
+  <text x="88" y="743" class="a">make setup</text>
+  <text x="525" y="208" class="t">Host VM on the 42 seat</text>
+  <text x="525" y="234" class="s">Ubuntu 26.04 under QEMU/KVM, 6 CPUs, 8 GB</text>
+  <text x="545" y="283" class="t">libvirt: two VMs</text>
+  <text x="545" y="308" class="s">rpodackS 192.168.56.110, 1024 MB</text>
+  <text x="545" y="330" class="s">rpodackSW 192.168.56.111, 512 MB</text>
+  <text x="545" y="353" class="a">K3s server and agent</text>
+  <text x="545" y="413" class="t">libvirt: one VM</text>
+  <text x="545" y="438" class="s">rpodackS 192.168.56.110, 1024 MB</text>
+  <text x="545" y="460" class="s">K3s server with Traefik</text>
+  <text x="545" y="483" class="a">same IP as p1: one at a time</text>
+  <text x="545" y="543" class="t">Docker: k3d dockercluster</text>
+  <text x="545" y="568" class="s">namespaces argocd and dev</text>
+  <text x="545" y="590" class="s">Argo CD pulls from GitHub</text>
+  <text x="545" y="613" class="a">k3d publishes 8888</text>
+  <text x="545" y="673" class="t">Docker: k3d cluster bonus</text>
+  <text x="545" y="698" class="s">GitLab CE and Argo CD</text>
+  <text x="545" y="720" class="s">Argo CD pulls from the local GitLab</text>
+  <text x="545" y="743" class="a">not together with p3: same ports</text>
+  <text x="1198" y="283" class="t">the cluster</text>
+  <text x="1198" y="308" class="s">kubectl get nodes</text>
+  <text x="1198" y="330" class="s">2 nodes Ready</text>
+  <text x="1198" y="353" class="a">make test</text>
+  <text x="1198" y="413" class="t">three apps</text>
+  <text x="1198" y="438" class="s">curl -H Host: app1.com</text>
+  <text x="1198" y="460" class="s">app2.com, anything else</text>
+  <text x="1198" y="483" class="a">app3 is the default</text>
+  <text x="1198" y="543" class="t">Argo CD and the app</text>
+  <text x="1198" y="568" class="s">UI https://localhost:8080</text>
+  <text x="1198" y="590" class="s">app on localhost:8888</text>
+  <text x="1198" y="613" class="a">v1, then v2 after the push</text>
+  <text x="1198" y="673" class="t">GitLab and the app</text>
+  <text x="1198" y="698" class="s">GitLab on localhost:8929</text>
+  <text x="1198" y="720" class="s">app on localhost:8888</text>
+  <text x="1198" y="743" class="a">v2 through the local GitLab</text>
+  <text x="410" y="277" class="a" text-anchor="middle">builds</text>
+  <text x="410" y="339" class="s" text-anchor="middle">(vagrant up)</text>
+  <text x="410" y="407" class="a" text-anchor="middle">builds</text>
+  <text x="410" y="469" class="s" text-anchor="middle">(vagrant up)</text>
+  <text x="410" y="537" class="a" text-anchor="middle">builds</text>
+  <text x="410" y="599" class="s" text-anchor="middle">(k3d, Argo CD)</text>
+  <text x="410" y="667" class="a" text-anchor="middle">builds</text>
+  <text x="410" y="729" class="s" text-anchor="middle">(k3d, GitLab)</text>
+  <text x="1088" y="277" class="a" text-anchor="middle">you check</text>
+  <text x="1088" y="339" class="s" text-anchor="middle">(make test)</text>
+  <text x="1088" y="407" class="a" text-anchor="middle">you check</text>
+  <text x="1088" y="469" class="s" text-anchor="middle">(curl)</text>
+  <text x="1088" y="537" class="a" text-anchor="middle">you open</text>
+  <text x="1088" y="599" class="s" text-anchor="middle">(browser, curl)</text>
+  <text x="1088" y="667" class="a" text-anchor="middle">you open</text>
+  <text x="1088" y="729" class="s" text-anchor="middle">(browser, curl)</text>
+
+  <circle cx="60" cy="832" r="7" class="dot"/>
+  <text x="78" y="838" class="s">who starts the step</text>
+  <path d="M330,832 L400,832" class="line plan"/>
+  <text x="414" y="838" class="s">written, not run yet</text>
+  <text x="60" y="868" class="s">The evaluator clones the repo, starts the VM and runs make in one folder at a time. p1 and p2 share 192.168.56.110, p3 and the bonus share the ports 8080 and 8888.</text>
+  <text x="60" y="896" class="a">Status: only Part 1 has been run; dashed means written, not run yet. The source of Part 3, Robin's rpodackIoT on GitHub, must say v1 before the defense.</text>
+  <text x="1480" y="838" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>

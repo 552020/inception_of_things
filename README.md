@@ -13,6 +13,8 @@
 | `docs/lab` | experiments that are not turned in: early Vagrantfiles, a Docker-provider setup, an Ansible helper |
 | `docs/deck` | the web deck's code |
 
+Hand-drawn overview of each part: [docs/diagrams](docs/diagrams/README.md).
+
 Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folders at the root. Each has a `Makefile`; `make help` in `p1` and `p2` lists the targets, `make setup` in `p3` builds everything.
 
 ## Active branches
@@ -33,38 +35,50 @@ Personal checklist for the next session: [docs/slombard-start-here.md](docs/slom
 
 ## Host VM
 
-The subject requires the whole project to run inside a virtual machine. On the 42 cluster that means one VirtualBox VM (the host VM) in which Vagrant, libvirt, K3s, Docker and K3d all run. Nested virtualization is enabled on it.
+The subject requires the whole project to run inside a virtual machine. On the 42 cluster that means one Ubuntu VM (the host VM) in which Vagrant, libvirt, K3s, Docker and K3d all run. Since 2026-11-22 it runs under QEMU/KVM, started by one script, with nested virtualization passed through. The VirtualBox setup it replaced, and why it had to go, are in the journal.
 
 | Item | Value |
 |------|-------|
 | Name | `IoT` |
-| OS | Ubuntu 24.04.5 LTS desktop |
-| Location | `~/sgoinfre/IoT/` (`IoT.vbox` config and `IoT.vdi` disk) |
-| ISO | `~/sgoinfre/iso/ubuntu-24.04.5.1-desktop-amd64.iso` |
-| Resources | 6 CPUs, 8 GB RAM, 60 GB dynamically allocated disk |
-| Network | NAT, host port 2222 forwarded to guest port 22 |
+| OS | Ubuntu 26.04.1 LTS desktop (upgraded from 24.04 on 2026-11-22) |
+| Runs under | QEMU/KVM on the 42 host, no root, no libvirt: [docs/host-vm/iot-kvm.sh](docs/host-vm/iot-kvm.sh) |
+| Disk | `~/goinfre/VMs/IoT.qcow2`, 60 GB virtual, grows as used; compressed backup in `~/sgoinfre/IoT/` |
+| Resources | 6 CPUs, 8 GB RAM, `-cpu host` so that KVM works inside |
+| Network | user-mode NAT; host ports 2222 (SSH), 8080, 8888 and 30007 forwarded to the guest |
 | Login | `slombard` |
+| Inside | git, Ansible, QEMU/KVM, libvirt, Vagrant 2.4.9 with vagrant-libvirt, Docker, kubectl, k3d, argocd, Chrome, Claude Code |
 
-Why sgoinfre: home is 5 GB and goinfre is local to one machine and wiped on user switch. Sgoinfre follows you across the cluster and keeps up to 30 GB, as long as it is used at least once every 6 months. Check its size now and then:
+Why two locations: goinfre is the machine's own disk, fast, but wiped when another user logs in. Sgoinfre follows you across the cluster and keeps up to 30 GB (purged after 6 months unused), but it is a network share, too slow to run a VM from. So the VM runs from goinfre, and a compressed copy in sgoinfre is what survives a seat change. Refresh that copy after real work; the commands are in [docs/host-vm/vm-setup.md](docs/host-vm/vm-setup.md). Check sgoinfre's size now and then:
 
 ```bash
 du -sh ~/sgoinfre
 ```
 
-Start and stop from the host:
+Start, reach and stop from the host:
 
 ```bash
-VBoxManage startvm IoT --type gui
-VBoxManage controlvm IoT acpipowerbutton
-```
-
-Reach it from the host once openssh-server is installed inside:
-
-```bash
+docs/host-vm/iot-kvm.sh            # window on the desktop
+docs/host-vm/iot-kvm.sh headless   # no window, SSH only
 ssh -p 2222 slombard@localhost
+ssh -p 2222 slombard@localhost sudo poweroff
 ```
 
-The full rebuild procedure, disk resizing and recovery steps are in [docs/host-vm/vm-setup.md](docs/host-vm/vm-setup.md).
+Inside the QEMU window, `Ctrl+Alt+G` releases the mouse and keyboard back to the host. VirtualBox and KVM cannot both hold VT-x, so no VirtualBox VM may run while the host VM is up.
+
+The full rebuild procedure, disk resizing, backup and recovery steps are in [docs/host-vm/vm-setup.md](docs/host-vm/vm-setup.md).
+
+## Setup times
+
+Measured on 2026-11-22 in the host VM under QEMU/KVM (6 vCPUs, 8 GB), boxes and images already cached, one run each. A first run adds the downloads (the Debian box, the K3s binary per node, the k3d and Argo CD images).
+
+| Part | Command | Time | Notes |
+|------|---------|------|-------|
+| 1 | `make up` | 102 s | both VMs created, provisioned, one reboot each for the interface names, node Ready; measured while a k3d cluster was also running in the guest, so a quiet guest should be a little faster |
+| 2 | `make up` | not measured yet | |
+| 3 | `make setup` | not measured yet | |
+| bonus | `make setup` | about 10 min to all pods Running | GitLab CE plus Argo CD, 2.5 to 3 GB in the guest; unconfirmed, see `bonus/` |
+
+Known problem, not solved: running the playbook a second time on the existing `p1` VMs (`make provision`) stalls on the server a few minutes after K3s came up, with the server VM hammering its disk and unreachable over SSH. It happened with 512 MB and with 1024 MB. `make up` itself is not affected since it no longer provisions twice. First thing to check: log into `rpodackS` right after `make up` and watch `free -m`, `iostat` and `journalctl -u k3s` for a few minutes.
 
 ## Three repositories
 
@@ -76,9 +90,9 @@ The full rebuild procedure, disk resizing and recovery steps are in [docs/host-v
 
 Argo CD does not read files on the machine. It fetches a Git repository over the network and keeps the cluster on what that repository says. So the application of Part 3 has to sit in a repository Argo CD can reach, and the subject fixes which kind: a public GitHub repository with the login of a group member in its name. The 42 server is not public, and `inception_of_things` carries no login. That is why `rpodackIoT` exists and must stay public.
 
-`make argocd-setup` in `p3` registers `rpodackIoT` and creates the application `dev-app` from it, with automatic sync. The change from v1 to v2 is shown by editing the image tag in `rpodackIoT` and pushing there: that push is the thing being demonstrated.
+`make setup` in `p3` builds the k3d cluster, the namespaces `argocd` and `dev`, installs Argo CD and applies `p3/confs/application.yaml`: the Argo CD Application `dev-app`, pointed at `rpodackIoT`, with automatic sync. Argo CD then creates the Deployment and the Service in `dev` itself; the app answers on `localhost:8888` (k3d publishes the NodePort). The change from v1 to v2 is shown by editing the image tag in `rpodackIoT` and pushing there: that push is the thing being demonstrated. `make argocd-setup` does the same registration with the CLI, for the demo.
 
-`p3/confs/deployment.yaml` is a copy of the file in `rpodackIoT`. `make deploy-app` applies it once by hand; after that Argo CD keeps the cluster on what `rpodackIoT` says. A change made only in the copy has no lasting effect.
+`p3/confs/deployment.yaml` is a copy of the file in `rpodackIoT`, kept for reading; nothing applies it. The cluster follows what `rpodackIoT` says, so a change made only in the copy has no effect. Before a defense, `rpodackIoT` must say `v1`.
 
 ## Technologies
 
@@ -120,7 +134,7 @@ Shortest useful path: Kubernetes Pods, Deployment, Service and Ingress pages, th
 
 ## Useful shortcuts while working in the Ubuntu VM
 
-GNOME screenshots (Ubuntu 24.04):
+GNOME screenshots (Ubuntu 26.04):
 
 | Shortcut | What it does |
 |----------|--------------|
@@ -130,7 +144,7 @@ GNOME screenshots (Ubuntu 24.04):
 
 GNOME 42+ dropped the old `Shift+Ctrl+Print` binding, so use `Print` for partial screenshots.
 
-Inside the VirtualBox window, click into the VM first so the `Print` key reaches the guest and not the host.
+Inside the QEMU window, click into the VM first so the `Print` key reaches the guest and not the host; `Ctrl+Alt+G` gives mouse and keyboard back.
 
 ## Journal
 
@@ -211,3 +225,23 @@ It was, in the first version. The original playbook dropped the K3s node token i
 Nothing crosses between the nodes except over the network, which is what would happen between two physical servers. The facilitator is Ansible, and a config management tool with SSH access to every machine is the normal way join secrets move around a fleet. Swap the two IPs for real ones and the playbook is unchanged.
 
 What production usually does differently: generate the token up front, keep it in a secrets store, and pass it to both server and worker as `K3S_TOKEN`. That removes the read-back step and lets you add workers later without touching the server. Possible small improvement to p1, not required by the subject.
+
+### 2026-11-22: VirtualBox froze under nested virtualization; the host VM moved to QEMU/KVM
+
+The first full run of `p1` froze the Ubuntu host VM twice. Same signature both times: the guest clock stopped, `VBox.log` said "Guest seems to be unresponsive", and most vCPU threads sat at 100% on the same instruction, the picture of a kernel waiting for a cross-CPU call that a vCPU in nested-guest mode never answers. The first freeze came while the second nested VM booted, the second with a single nested VM, two minutes in. The weak piece was VirtualBox's own nested VT-x.
+
+So route 2 from the 2026-10-20 entry was taken, with the existing disk rather than a cloud image: `qemu-img convert` turned the VDI into a qcow2 in three minutes, and `qemu-system-x86_64 -enable-kvm -cpu host` boots it. Same Ubuntu, same desktop, same user, same SSH port; `kvm-ok` passes inside, libvirt and Docker come up, the guest boots in about ten seconds. The launch script is `docs/host-vm/iot-kvm.sh`, so the host VM is once more something the repo can rebuild.
+
+What is different for whoever sits at the host: no VirtualBox manager and no guest additions, so the desktop does not follow the window size and there is no shared clipboard; copy over SSH instead. `Ctrl+Alt+G` releases the mouse from the QEMU window. The VirtualBox VM must stay off, since VirtualBox and KVM cannot share VT-x.
+
+Storage changed with it. The VDI had grown to 22 GB after the release upgrade and the tool installs, and sgoinfre stood at 29 of its 30 GB, so the qcow2 could only go to goinfre. That is also the faster place to run a VM from. Later the same night, once `make up` had passed under KVM, the old installer ISO (6 GB) and the VirtualBox disk (24 GB) were deleted from sgoinfre, and a compressed copy of the qcow2, checked with `qemu-img check` and compared against the source before the VDI went, took their place as the portable backup, next to the launch script. Rule from now on: the VM runs from goinfre, sgoinfre holds one compressed copy, refreshed after real changes inside the VM; the commands are in `docs/host-vm/vm-setup.md`. The VirtualBox VM is unregistered on the host; nothing of it remains.
+
+Two side notes from the same day. The guest was upgraded from Ubuntu 24.04 to 26.04 by Software Updater before any of this; the consequence that matters is that Ubuntu 26.04 ships no `vagrant` package any more (Debian dropped it after HashiCorp's licence change), so Vagrant comes from HashiCorp's own apt repository and `vagrant-libvirt` is installed as a plugin, and `qemu-kvm` is now called `qemu-system-x86`. Under VirtualBox the upgraded guest also could not draw its login screen (the VMware SVGA driver rejected every cursor and page flip under GNOME 50), which the VBoxSVGA controller fixed; moot now.
+
+### 2026-11-22: The Debian 13 box names its interfaces ens5 and ens6; the subject wants eth1
+
+The first `make up` in `p1` built both VMs and ran the playbook through, but K3s refused to start: `unable to find interface eth1`. The box `cloud-image/debian-13` uses predictable interface names, so the NAT interface is `ens5` and the private one with 192.168.56.110 is `ens6`. The playbook pins `--flannel-iface eth1`, the test script checks `eth1`, the oral notes explain `eth1`, and the subject itself says the IP must sit on `eth1`.
+
+Two ways out. Make the playbook interface-agnostic (look the interface up by its IP) and let the name be whatever the box gives: simpler, but then `ip a show eth1` fails at the defense and the subject's own wording is not met. Or give the guests classic names: a GRUB drop-in with `net.ifnames=0 biosdevname=0`, the netplan file (cloud-init, DHCP) and the systemd-networkd file (Vagrant, the private IP) rewritten to `eth0` and `eth1`, one reboot. The second was chosen and lives in `confs/ansible/eth-names.yml`, included once per play in `p1` and `p2`; after the first run the drop-in exists, so re-provisioning neither changes anything nor reboots. Cost: one reboot per VM on first provisioning, about 40 seconds each.
+
+Open for discussion: a box that already uses `eth0`/`eth1` would remove the step entirely.

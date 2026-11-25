@@ -1,0 +1,21 @@
+# The Argo CD application of Part 3, with one difference: the repository is on the
+# local GitLab, reached by its Service name from inside the cluster.
+# The login for that repository is the Secret gitlab-repo, made by make deploy-app.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dev-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: http://gitlab.gitlab.svc.cluster.local:8929/root/rpodackIoT.git
+    targetRevision: main
+    path: .
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

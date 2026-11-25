@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 1 running: one server, one worker</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 910" role="img" aria-label="Part 1 in its final state: the K3s server and the K3s agent in two VMs, joined over the private network eth1">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="720" rx="10" class="line"/>
+    <rect x="360" y="170" width="480" height="440" rx="8" class="line fill"/>
+    <rect x="1010" y="170" width="420" height="440" rx="8" class="line fill"/>
+    <rect x="60" y="255" width="220" height="150" rx="6" class="line fill"/>
+    <rect x="385" y="255" width="430" height="150" rx="4" class="thin fill"/>
+    <rect x="385" y="430" width="430" height="150" rx="4" class="thin fill"/>
+    <rect x="1035" y="255" width="370" height="150" rx="4" class="thin fill"/>
+    <rect x="1035" y="430" width="370" height="150" rx="4" class="thin fill"/>
+
+    <path d="M282,330 L381,330" class="line" marker-end="url(#arrow)"/>
+    <path d="M1033,330 L819,330" class="line" marker-end="url(#arrow)"/>
+    <path d="M817,505 L1033,505" class="line" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <path d="M600,612 L600,672 L1220,672 L1220,612" class="line"/>
+  </g>
+
+  <circle cx="290" cy="330" r="7" class="dot"/>
+  <circle cx="1041" cy="330" r="7" class="dot"/>
+
+  <text x="750" y="46" class="h" text-anchor="middle">Part 1 running: one server, one worker</text>
+  <text x="170" y="130" class="col" text-anchor="middle">CLIENT</text>
+  <text x="170" y="158" class="s" text-anchor="middle">who asks the cluster</text>
+  <text x="600" y="130" class="col" text-anchor="middle">THE SERVER</text>
+  <text x="600" y="158" class="s" text-anchor="middle">the control plane</text>
+  <text x="1220" y="130" class="col" text-anchor="middle">THE WORKER</text>
+  <text x="1220" y="158" class="s" text-anchor="middle">runs pods</text>
+  <text x="78" y="285" class="t">kubectl</text>
+  <text x="78" y="311" class="s">on rpodackS</text>
+  <text x="78" y="335" class="s">you, over SSH</text>
+  <text x="78" y="359" class="a">asks the API</text>
+  <text x="332" y="296" class="a" text-anchor="middle">asks</text>
+  <text x="332" y="358" class="s" text-anchor="middle">6443</text>
+  <text x="385" y="204" class="t">VM rpodackS</text>
+  <text x="385" y="228" class="s">192.168.56.110 on eth1, 1 CPU, 1024 MB</text>
+  <text x="405" y="285" class="t">K3s server</text>
+  <text x="405" y="311" class="s">API server on port 6443</text>
+  <text x="405" y="335" class="s">scheduler, controllers, SQLite</text>
+  <text x="405" y="359" class="a">the control plane</text>
+  <text x="405" y="460" class="t">Pods on this node</text>
+  <text x="405" y="486" class="s">coredns, traefik</text>
+  <text x="405" y="510" class="s">metrics-server, local-path</text>
+  <text x="405" y="534" class="a">the K3s add-ons</text>
+  <text x="1035" y="204" class="t">VM rpodackSW</text>
+  <text x="1035" y="228" class="s">192.168.56.111 on eth1, 1 CPU, 512 MB</text>
+  <text x="1055" y="285" class="t">K3s agent</text>
+  <text x="1055" y="311" class="s">kubelet, container runtime</text>
+  <text x="1055" y="335" class="s">joined with the node token</text>
+  <text x="1055" y="359" class="a">the client of the API</text>
+  <text x="1055" y="460" class="t">Pods on this node</text>
+  <text x="1055" y="486" class="s">the scheduler places them</text>
+  <text x="1055" y="510" class="s">here and on the server</text>
+  <text x="1055" y="534" class="a">no apps of ours in Part 1</text>
+  <text x="925" y="296" class="a" text-anchor="middle">joins and watches</text>
+  <text x="925" y="358" class="s" text-anchor="middle">https, port 6443</text>
+  <text x="925" y="470" class="a" text-anchor="middle">pod network</text>
+  <text x="925" y="536" class="s" text-anchor="middle">flannel, over eth1</text>
+  <text x="910" y="662" class="a" text-anchor="middle">private network eth1</text>
+  <text x="910" y="700" class="s" text-anchor="middle">192.168.56.0/24</text>
+
+  <circle cx="60" cy="832" r="7" class="dot"/>
+  <text x="78" y="838" class="s">who opens the connection</text>
+  <text x="60" y="868" class="s">eth0 on both VMs is NAT: it only reaches the internet, for image pulls. All traffic between the VMs uses eth1.</text>
+  <text x="60" y="896" class="a">Status: run on 2026-11-22. The server node was Ready; the worker joining has not been checked yet.</text>
+  <text x="1480" y="838" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>

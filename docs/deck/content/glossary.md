@@ -120,9 +120,9 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **Box** A packaged base image for Vagrant, named in the Vagrantfile. Here `cloud-image/debian-13`: Debian 13, package manager apt.
 
-**eth1** The second network interface of each VM, carrying the private IP 192.168.56.110 or .111 required by the subject.
+**eth1** The second network interface of each VM, carrying the private IP 192.168.56.110 or .111 required by the subject. The box `cloud-image/debian-13` calls it `ens6` (and eth0 `ens5`); the playbook includes `confs/ansible/eth-names.yml`, which sets `net.ifnames=0` through a GRUB drop-in, rewrites the netplan and systemd-networkd files to eth0 and eth1 and reboots once on first provisioning, so the name matches the subject.
 
-**Host VM** The virtual machine in which the whole project runs, as the subject requires. Vagrant and K3d run inside it; the Part 1 VMs are nested inside it.
+**Host VM** The virtual machine in which the whole project runs, as the subject requires. Ubuntu 26.04, run under QEMU/KVM on the 42 host (`docs/host-vm/iot-kvm.sh`), 6 vCPUs, 8 GB. Vagrant and K3d run inside it; the Part 1 VMs are nested inside it. It ran under VirtualBox before, which froze twice under nested virtualization.
 
 **Hostname** The name of a VM, set to a team member's login followed by `S` for the server and `SW` for the worker.
 
@@ -130,7 +130,7 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **libvirt** The management layer for VMs on Linux: one API and one daemon (libvirtd) through which programs create, start, stop and connect VMs on KVM, QEMU and others. Vagrant's libvirt provider talks to it; libvirt then runs the VM with QEMU on KVM. `virsh list` shows the VMs it manages.
 
-**Nested virtualization** Running a VM inside a VM. The processor has hardware support for virtualization (Intel VT-x, AMD-V); normally only the first hypervisor gets it, and a VM sees a processor without it, so a hypervisor inside the VM cannot start anything. Nested virtualization passes the feature into the VM. Here: VirtualBox on the school computer runs the host VM; inside it KVM runs the two Part 1 VMs. The host VM must have it switched on in its VirtualBox settings (`VBoxManage modifyvm IoT --nested-hw-virt on`); check inside with `grep -c vmx /proc/cpuinfo`, which must not print 0. The inner VMs are slower than the outer one, which is why Part 1 is kept at 512 MB and 1 CPU.
+**Nested virtualization** Running a VM inside a VM. The processor has hardware support for virtualization (Intel VT-x, AMD-V); normally only the first hypervisor gets it, and a VM sees a processor without it, so a hypervisor inside the VM cannot start anything. Nested virtualization passes the feature into the VM. Here: QEMU/KVM on the school computer runs the host VM with `-cpu host`, which passes the feature through; inside it KVM runs the two Part 1 VMs. VirtualBox could do the same (`VBoxManage modifyvm IoT --nested-hw-virt on`), but its own nested VT-x froze the host VM twice, so it was replaced. Check inside with `kvm-ok` or `grep -c vmx /proc/cpuinfo`, which must not print 0. The inner VMs are slower than the outer one, which is why Part 1 is kept small: 1 CPU each, 1024 MB for the server, 512 MB for the worker.
 
 **Private network** The Vagrant network type giving a VM an IP reachable from the host but not from outside; it becomes eth1.
 

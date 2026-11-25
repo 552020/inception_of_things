@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 2: one VM, three apps, one Ingress</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 910" role="img" aria-label="Part 2: requests with a Host header reach Traefik in one K3s VM, which routes them to three apps">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="720" rx="10" class="line"/>
+    <rect x="70" y="190" width="250" height="130" rx="6" class="line fill"/>
+    <rect x="70" y="380" width="250" height="130" rx="6" class="line fill"/>
+    <rect x="70" y="570" width="250" height="130" rx="6" class="line fill"/>
+    <rect x="500" y="170" width="500" height="550" rx="8" class="line fill"/>
+    <rect x="525" y="258" width="450" height="92" rx="4" class="thin fill"/>
+    <rect x="525" y="388" width="450" height="92" rx="4" class="thin fill"/>
+    <rect x="525" y="518" width="450" height="92" rx="4" class="thin fill"/>
+    <rect x="1180" y="190" width="250" height="130" rx="6" class="line fill"/>
+    <rect x="1180" y="380" width="250" height="130" rx="6" class="line fill"/>
+    <rect x="1180" y="570" width="250" height="130" rx="6" class="line fill"/>
+    <rect x="1198" y="468" width="60" height="28" rx="4" class="thin fill"/>
+    <rect x="1270" y="468" width="60" height="28" rx="4" class="thin fill"/>
+    <rect x="1342" y="468" width="60" height="28" rx="4" class="thin fill"/>
+
+    <path d="M322,255 C420,255 450,304 521,304" class="line" marker-end="url(#arrow)"/>
+    <path d="M322,445 C420,445 450,434 521,434" class="line" marker-end="url(#arrow)"/>
+    <path d="M322,635 C420,635 450,564 521,564" class="line" marker-end="url(#arrow)"/>
+    <path d="M977,304 C1060,304 1110,255 1178,255" class="line" marker-end="url(#arrow)"/>
+    <path d="M977,434 C1060,434 1110,445 1178,445" class="line" marker-end="url(#arrow)"/>
+    <path d="M977,564 C1060,564 1110,635 1178,635" class="line" marker-end="url(#arrow)"/>
+  </g>
+
+  <circle cx="330" cy="255" r="7" class="dot"/>
+  <circle cx="330" cy="445" r="7" class="dot"/>
+  <circle cx="330" cy="635" r="7" class="dot"/>
+  <circle cx="1170" cy="255" r="7" class="dot"/>
+  <circle cx="1170" cy="445" r="7" class="dot"/>
+  <circle cx="1170" cy="635" r="7" class="dot"/>
+
+  <text x="750" y="46" class="h" text-anchor="middle">Part 2: one VM, three apps, one Ingress</text>
+  <text x="195" y="130" class="col" text-anchor="middle">A REQUEST</text>
+  <text x="195" y="158" class="s" text-anchor="middle">from the host VM</text>
+  <text x="750" y="130" class="col" text-anchor="middle">THE VM</text>
+  <text x="750" y="158" class="s" text-anchor="middle">rpodackS, 192.168.56.110, K3s server</text>
+  <text x="1305" y="130" class="col" text-anchor="middle">THE APPS</text>
+  <text x="1305" y="158" class="s" text-anchor="middle">one Service each, port 80</text>
+  <text x="88" y="228" class="t">curl</text>
+  <text x="88" y="256" class="mono">Host: app1.com</text>
+  <text x="88" y="284" class="s">to 192.168.56.110</text>
+  <text x="88" y="418" class="t">curl</text>
+  <text x="88" y="446" class="mono">Host: app2.com</text>
+  <text x="88" y="474" class="s">to 192.168.56.110</text>
+  <text x="88" y="608" class="t">curl</text>
+  <text x="88" y="636" class="s">any other Host,</text>
+  <text x="88" y="660" class="s">or none at all</text>
+  <text x="88" y="684" class="a">to 192.168.56.110</text>
+  <text x="410" y="214" class="a" text-anchor="middle">asks for</text>
+  <text x="410" y="236" class="s" text-anchor="middle">app1.com</text>
+  <text x="410" y="424" class="a" text-anchor="middle">asks for</text>
+  <text x="410" y="474" class="s" text-anchor="middle">app2.com</text>
+  <text x="410" y="700" class="a" text-anchor="middle">asks for</text>
+  <text x="410" y="722" class="s" text-anchor="middle">something else</text>
+  <text x="525" y="208" class="t">Traefik, the Ingress</text>
+  <text x="525" y="234" class="s">comes with K3s, reads the Host header</text>
+  <text x="545" y="292" class="mono">Host: app1.com</text>
+  <text x="545" y="322" class="s">routes to Service app1</text>
+  <text x="545" y="422" class="mono">Host: app2.com</text>
+  <text x="545" y="452" class="s">routes to Service app2</text>
+  <text x="545" y="552" class="mono">(no host in the rule)</text>
+  <text x="545" y="582" class="s">the default: Service app3</text>
+  <text x="525" y="650" class="s">one Ingress file per app</text>
+  <text x="525" y="676" class="a">app3 has no host: it answers all the rest</text>
+  <text x="1198" y="228" class="t">app1</text>
+  <text x="1198" y="256" class="s">nginx, 1 pod</text>
+  <text x="1198" y="280" class="s">container port 80</text>
+  <text x="1198" y="418" class="t">app2</text>
+  <text x="1198" y="446" class="s">http-echo, 3 replicas</text>
+  <text x="1198" y="608" class="t">app3</text>
+  <text x="1198" y="636" class="s">http-echo, 1 pod</text>
+  <text x="1198" y="660" class="a">the default</text>
+  <text x="1088" y="214" class="a" text-anchor="middle">forwards</text>
+  <text x="1088" y="236" class="s" text-anchor="middle">to the pod</text>
+  <text x="1088" y="410" class="a" text-anchor="middle">spread</text>
+  <text x="1088" y="478" class="s" text-anchor="middle">over the 3</text>
+  <text x="1088" y="690" class="a" text-anchor="middle">forwards</text>
+  <text x="1088" y="712" class="s" text-anchor="middle">the default</text>
+
+  <circle cx="60" cy="832" r="7" class="dot"/>
+  <text x="78" y="838" class="s">who starts the step</text>
+  <text x="60" y="868" class="s">make up builds the VM once: interface names, K3s, then the manifests, after the playbook has waited for the K3s API.</text>
+  <text x="60" y="896" class="a">Status: written and reviewed, not run yet with the 2026-11-22 fixes. Stop the p1 VMs first: both use 192.168.56.110.</text>
+  <text x="1480" y="838" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>

@@ -40,6 +40,9 @@
         regexp: '^preserve_hostname:'
         line: 'preserve_hostname: true'
       when: cloud_cfg.stat.exists
+
+    - name: Classic interface names eth0/eth1, as the subject requires (reboots once on first run)
+      include_tasks: eth-names.yml
     #################################
 
     - name: Ensure Python3 and curl are installed
@@ -66,6 +69,17 @@
         timeout: 300
       become: yes
 
+    # The kubeconfig file appears before the API server answers. On one CPU that
+    # gap is long enough for the first kubectl apply below to fail, so ask the
+    # API server itself until it says it is ready.
+    - name: Wait for the Kubernetes API to answer
+      command: kubectl get --raw /readyz
+      register: readyz
+      until: readyz.rc == 0
+      retries: 60
+      delay: 5
+      changed_when: false
+
 ##########################################
 # APP1
 ##########################################
@@ -76,9 +90,6 @@
         owner: root
         group: root
         mode: '0644'
-
-    - name: Apply ingress
-      shell: kubectl apply -f /tmp/app1-ingress.yaml
 
     - name: Copy app1 Deployment to node
       copy:
@@ -137,9 +148,6 @@
         group: root
         mode: '0644'
 
-    - name: Apply ingress
-      shell: kubectl apply -f /tmp/app3-ingress.yml
-
     - name: Apply app3 Deployment
       ansible.builtin.shell:
         cmd: kubectl apply -f /tmp/app3-deployment.yml
@@ -164,9 +172,6 @@
         owner: root
         group: root
         mode: '0644'
-
-    - name: Apply ingress
-      shell: kubectl apply -f /tmp/app2-ingress.yml
 
     - name: Copy app2 Deployment to node
       copy:

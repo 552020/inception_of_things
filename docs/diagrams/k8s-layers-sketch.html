@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kubernetes in this project: who is outside, who is inside</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 910" role="img" aria-label="The stack from the host VM up to the containers, with who creates each layer and where Kubernetes starts">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="720" rx="10" class="line"/>
+    <rect x="60" y="190" width="300" height="90" rx="6" class="line fill"/>
+    <rect x="430" y="190" width="600" height="90" rx="4" class="thin fill"/>
+    <rect x="60" y="300" width="300" height="90" rx="6" class="line fill"/>
+    <rect x="430" y="300" width="600" height="90" rx="4" class="thin fill"/>
+    <rect x="60" y="410" width="300" height="90" rx="6" class="line fill"/>
+    <rect x="430" y="410" width="600" height="90" rx="4" class="thin fill"/>
+    <rect x="60" y="520" width="300" height="90" rx="6" class="line fill"/>
+    <rect x="430" y="520" width="600" height="90" rx="4" class="thin fill"/>
+    <rect x="60" y="630" width="300" height="90" rx="6" class="line fill"/>
+    <rect x="430" y="630" width="600" height="90" rx="4" class="thin fill"/>
+    <rect x="1090" y="180" width="340" height="330" rx="8" class="line fill"/>
+    <rect x="1090" y="520" width="340" height="200" rx="8" class="line fill plan"/>
+
+    <path d="M362,235 L428,235" class="line" marker-end="url(#arrow)"/>
+    <path d="M362,345 L428,345" class="line" marker-end="url(#arrow)"/>
+    <path d="M362,455 L428,455" class="line" marker-end="url(#arrow)"/>
+    <path d="M362,565 L428,565" class="line" marker-end="url(#arrow)"/>
+    <path d="M362,675 L428,675" class="line" marker-end="url(#arrow)"/>
+  </g>
+
+  <circle cx="370" cy="345" r="7" class="dot"/>
+  <circle cx="370" cy="455" r="7" class="dot"/>
+  <circle cx="370" cy="565" r="7" class="dot"/>
+  <circle cx="370" cy="675" r="7" class="dot"/>
+
+  <text x="750" y="46" class="h" text-anchor="middle">Kubernetes in this project: who is outside, who is inside</text>
+  <text x="210" y="130" class="col" text-anchor="middle">WHO CREATES IT</text>
+  <text x="210" y="158" class="s" text-anchor="middle">tools and files</text>
+  <text x="730" y="130" class="col" text-anchor="middle">THE LAYERS</text>
+  <text x="730" y="158" class="s" text-anchor="middle">the bottom is built first</text>
+  <text x="1265" y="130" class="col" text-anchor="middle">THE BORDER</text>
+  <text x="1265" y="158" class="s" text-anchor="middle">what counts as Kubernetes</text>
+  <text x="78" y="218" class="t">containerd</text>
+  <text x="78" y="244" class="s">the container runtime</text>
+  <text x="78" y="268" class="a">starts them when asked</text>
+  <text x="78" y="328" class="t">A manifest</text>
+  <text x="78" y="354" class="s">YAML file, applied by kubectl</text>
+  <text x="78" y="378" class="a">becomes a Deployment</text>
+  <text x="78" y="438" class="t">Ansible playbook</text>
+  <text x="78" y="464" class="s">on the host VM, over SSH</text>
+  <text x="78" y="488" class="a">installs K3s on each VM</text>
+  <text x="78" y="548" class="t">Vagrant, Vagrantfile</text>
+  <text x="78" y="574" class="s">asks libvirt for two VMs</text>
+  <text x="78" y="598" class="a">creates the VMs</text>
+  <text x="78" y="658" class="t">You, once</text>
+  <text x="78" y="684" class="s">QEMU/KVM, the launch script</text>
+  <text x="78" y="708" class="a">the base</text>
+  <text x="450" y="218" class="t">Containers</text>
+  <text x="450" y="244" class="s">the running app processes</text>
+  <text x="450" y="268" class="a">nginx, http-echo</text>
+  <text x="450" y="328" class="t">Pods</text>
+  <text x="450" y="354" class="s">one or more containers, one IP, run on one node</text>
+  <text x="450" y="378" class="a">replicas are pods, not containers</text>
+  <text x="450" y="438" class="t">Kubernetes (K3s)</text>
+  <text x="450" y="464" class="s">API server, scheduler, kubelet, containerd</text>
+  <text x="450" y="488" class="a">installed on every VM</text>
+  <text x="450" y="548" class="t">VMs: rpodackS, rpodackSW</text>
+  <text x="450" y="574" class="s">Debian 13, eth0 NAT, eth1 private</text>
+  <text x="450" y="598" class="a">they become nodes once K3s runs</text>
+  <text x="450" y="658" class="t">Host VM</text>
+  <text x="450" y="684" class="s">Ubuntu 26.04 under QEMU/KVM</text>
+  <text x="450" y="708" class="a">the machine we work on</text>
+  <text x="1110" y="216" class="t">inside Kubernetes</text>
+  <text x="1110" y="246" class="s">everything the API server knows:</text>
+  <text x="1110" y="270" class="s">nodes, Deployments, ReplicaSets,</text>
+  <text x="1110" y="294" class="s">Services, Ingresses, pods</text>
+  <text x="1110" y="330" class="a">created from manifests,</text>
+  <text x="1110" y="352" class="a">by Deployments, not by hand</text>
+  <text x="1110" y="400" class="s">Part 3: Argo CD is inside too,</text>
+  <text x="1110" y="424" class="s">a set of pods that plays kubectl</text>
+  <text x="1110" y="556" class="t">outside Kubernetes</text>
+  <text x="1110" y="586" class="s">Vagrant, the Vagrantfile,</text>
+  <text x="1110" y="610" class="s">the playbook, the YAML files,</text>
+  <text x="1110" y="634" class="s">kubectl, the VMs' own system</text>
+  <text x="1110" y="672" class="a">none of it is a Kubernetes</text>
+  <text x="1110" y="694" class="a">object; it only builds the cluster</text>
+
+  <circle cx="60" cy="832" r="7" class="dot"/>
+  <text x="78" y="838" class="s">who starts the step</text>
+  <text x="60" y="868" class="s">The playbook is outside: it runs on the host VM and only installs K3s. After that, Kubernetes runs by itself.</text>
+  <text x="60" y="896" class="a">A manifest is a file until kubectl sends it to the API server; from then on it is an object inside the cluster. Concept sketch, Parts 1 and 2.</text>
+  <text x="1480" y="838" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>

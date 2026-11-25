@@ -1,4 +1,4 @@
-.PHONY: help test verify up down status ssh-server ssh-worker clean
+.PHONY: help test verify up provision watch down status ssh-server ssh-worker clean
 
 SHELL := /bin/bash
 
@@ -8,10 +8,15 @@ help: ## Show this help message
 	@echo "Available targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-up: ## Start the VMs
+up: ## Create and provision the VMs (vagrant up runs the playbook itself)
 	@echo "Starting VMs..."
 	vagrant up --provider=libvirt --no-parallel
+
+provision: ## Re-run the playbook on VMs that already exist
 	vagrant provision
+
+watch: ## Record memory, pressure, disk and K3s journal of rpodackS for 5 min (scripts/watch_server.sh)
+	@bash scripts/watch_server.sh
 
 down: ## Stop the VMs
 	@echo "Stopping VMs..."

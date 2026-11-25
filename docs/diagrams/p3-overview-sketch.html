@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 3: k3d, Argo CD and GitHub</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 910" role="img" aria-label="Part 3: Argo CD in a k3d cluster pulls the app from GitHub; a push of the tag from v1 to v2 changes what the app answers">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="720" rx="10" class="line"/>
+    <rect x="70" y="190" width="250" height="160" rx="6" class="line fill"/>
+    <rect x="70" y="420" width="250" height="110" rx="6" class="line fill"/>
+    <rect x="70" y="590" width="250" height="110" rx="6" class="line fill"/>
+    <rect x="500" y="170" width="500" height="550" rx="8" class="line fill"/>
+    <rect x="525" y="255" width="450" height="190" rx="5" class="thin fill"/>
+    <rect x="545" y="318" width="195" height="64" rx="4" class="thin fill"/>
+    <rect x="755" y="318" width="200" height="64" rx="4" class="thin fill"/>
+    <rect x="525" y="490" width="450" height="200" rx="5" class="thin fill"/>
+    <rect x="545" y="545" width="195" height="64" rx="4" class="thin fill"/>
+    <rect x="755" y="545" width="200" height="64" rx="4" class="thin fill"/>
+    <rect x="1180" y="190" width="250" height="130" rx="6" class="line fill"/>
+    <rect x="1180" y="380" width="250" height="130" rx="6" class="line fill"/>
+    <rect x="1180" y="570" width="250" height="130" rx="6" class="line fill"/>
+
+    <path d="M195,418 L195,354" class="line" marker-end="url(#arrow)"/>
+    <path d="M322,270 C420,270 450,330 521,330" class="line" marker-end="url(#arrow)"/>
+    <path d="M322,645 C410,645 450,645 497,645" class="line" marker-end="url(#arrow)"/>
+    <path d="M750,447 L750,488" class="line" marker-end="url(#arrow)"/>
+    <path d="M977,350 C1060,350 1100,255 1178,255" class="line" marker-end="url(#arrow)"/>
+    <path d="M977,600 C1060,600 1100,445 1178,445" class="line" marker-end="url(#arrow)"/>
+  </g>
+
+  <circle cx="195" cy="428" r="7" class="dot"/>
+  <circle cx="513" cy="330" r="7" class="dot"/>
+  <circle cx="330" cy="645" r="7" class="dot"/>
+  <circle cx="1170" cy="255" r="7" class="dot"/>
+  <circle cx="1170" cy="445" r="7" class="dot"/>
+
+  <text x="750" y="46" class="h" text-anchor="middle">Part 3: k3d, Argo CD and GitHub</text>
+  <text x="195" y="130" class="col" text-anchor="middle">GITHUB</text>
+  <text x="195" y="158" class="s" text-anchor="middle">where the app is described</text>
+  <text x="750" y="130" class="col" text-anchor="middle">THE CLUSTER</text>
+  <text x="750" y="158" class="s" text-anchor="middle">k3d on the host VM, in Docker</text>
+  <text x="1305" y="130" class="col" text-anchor="middle">WHAT YOU SEE</text>
+  <text x="1305" y="158" class="s" text-anchor="middle">from the host VM</text>
+  <text x="88" y="228" class="t">GitHub repo</text>
+  <text x="88" y="254" class="mono">Robin-Lenz/rpodackIoT</text>
+  <text x="88" y="282" class="s">public, deployment.yaml</text>
+  <text x="88" y="306" class="s">image wil42/playground</text>
+  <text x="88" y="332" class="a">tag v1, then v2</text>
+  <text x="88" y="458" class="t">You</text>
+  <text x="88" y="486" class="s">change the tag to v2</text>
+  <text x="88" y="512" class="a">this push is the demo</text>
+  <text x="88" y="628" class="t">make setup</text>
+  <text x="88" y="654" class="s">cluster, namespaces,</text>
+  <text x="88" y="678" class="s">Argo CD, Application</text>
+  <text x="218" y="392" class="a">pushes</text>
+  <text x="418" y="226" class="a" text-anchor="middle">Argo CD pulls</text>
+  <text x="418" y="248" class="s" text-anchor="middle">and syncs</text>
+  <text x="410" y="608" class="a" text-anchor="middle">builds it</text>
+  <text x="410" y="690" class="s" text-anchor="middle">(once)</text>
+  <text x="525" y="208" class="t">k3d cluster dockercluster</text>
+  <text x="525" y="234" class="s">K3s nodes as Docker containers</text>
+  <text x="545" y="288" class="t">namespace argocd</text>
+  <text x="560" y="346" class="t">Argo CD</text>
+  <text x="560" y="370" class="s">watches the repo</text>
+  <text x="770" y="346" class="mono">dev-app</text>
+  <text x="770" y="370" class="s">the Application</text>
+  <text x="545" y="416" class="s">auto sync, prune, self-heal</text>
+  <text x="775" y="478" class="a">creates</text>
+  <text x="545" y="524" class="t">namespace dev</text>
+  <text x="556" y="573" class="mono">wil-playground</text>
+  <text x="560" y="597" class="s">Deployment</text>
+  <text x="770" y="573" class="mono">NodePort 30007</text>
+  <text x="770" y="597" class="s">Service</text>
+  <text x="545" y="640" class="s">k3d maps host port 8888 to 30007</text>
+  <text x="545" y="666" class="a">the app answers with its version</text>
+  <text x="1198" y="228" class="t">Argo CD UI</text>
+  <text x="1198" y="256" class="s">https://localhost:8080</text>
+  <text x="1198" y="280" class="s">make port-forward</text>
+  <text x="1198" y="304" class="a">user admin</text>
+  <text x="1198" y="418" class="t">the app</text>
+  <text x="1198" y="446" class="s">curl localhost:8888</text>
+  <text x="1198" y="474" class="mono">"message":"v1"</text>
+  <text x="1198" y="500" class="a">v2 after the push</text>
+  <text x="1198" y="608" class="t">at the defense</text>
+  <text x="1198" y="636" class="s">v1 first, push v2,</text>
+  <text x="1198" y="660" class="s">wait, curl shows v2</text>
+  <text x="1198" y="684" class="a">rpodackIoT: v1 first</text>
+  <text x="1088" y="214" class="a" text-anchor="middle">shows</text>
+  <text x="1088" y="236" class="s" text-anchor="middle">the sync state</text>
+  <text x="1088" y="640" class="a" text-anchor="middle">answers</text>
+  <text x="1088" y="662" class="s" text-anchor="middle">on 8888</text>
+
+  <circle cx="60" cy="832" r="7" class="dot"/>
+  <text x="78" y="838" class="s">who starts the step</text>
+  <text x="60" y="868" class="s">Argo CD keeps the cluster on what the GitHub repo says. That is the whole point of the part.</text>
+  <text x="60" y="896" class="a">Status: written and reviewed, not run yet. The repo rpodackIoT still says v2 and must say v1 before the defense.</text>
+  <text x="1480" y="838" class="s" text-anchor="end">As of: 22 November 2026</text>
+</svg>
+</body>
+</html>
