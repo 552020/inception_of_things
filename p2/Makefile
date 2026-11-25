@@ -1,9 +1,9 @@
-.PHONY: help test verify up down status ssh-server ssh-worker clean
+.PHONY: help up down status ssh-server clean show-nodes show-ip-server
 
 SHELL := /bin/bash
 
 help: ## Show this help message
-	@echo "Part 1 - K3s and Vagrant Management"
+	@echo "Part 2 - K3s and three applications"
 	@echo ""
 	@echo "Available targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -22,12 +22,6 @@ status: ## Show VM status
 
 ssh-server: ## SSH into rpodackS (server)
 	vagrant ssh rpodackS
-
-test: ## Run all verification tests
-	@echo "Running Part 1 verification tests..."
-	@bash scripts/test_part1.sh
-
-verify: test ## Alias for test
 
 clean: ## Destroy VMs and clean up
 	@echo "WARNING: This will destroy all VMs!"
@@ -48,5 +42,3 @@ show-nodes: ## Show Kubernetes cluster nodes
 show-ip-server: ## Show IP address of rpodackS
 	@vagrant ssh rpodackS -c "ip a show eth1 | grep 'inet ' | awk '{print \$$2}'"
 
-show-ip-worker: ## Show IP address of rpodackSW
-	@vagrant ssh rpodackSW -c "ip a show eth1 | grep 'inet ' | awk '{print \$$2}'"

@@ -2,7 +2,7 @@
 
 Terms of the Inception-of-Things project, grouped by area, alphabetical inside each group. Each entry is what the term means and, where it matters, where it appears in the project.
 
-## Kubernetes core
+## Kubernetes
 
 **API server (kube-apiserver)** The entry point of the cluster. Every request, from kubectl or from an internal component, goes through it; it validates the request and stores the result in the datastore.
 
@@ -68,6 +68,8 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **CoreDNS** The cluster DNS server. It resolves Service names such as `app1-service.default.svc.cluster.local`.
 
+**DHCP (Dynamic Host Configuration Protocol)** A machine joining a network asks, and a DHCP server hands it an address, a gateway and a DNS server for a while. The address can differ at every boot. eth0 of a Vagrant VM gets its address this way; eth1 does not: the Vagrantfile fixes it (`libvirt__dhcp_enabled: false`), so the subject's .110 and .111 are always the same.
+
 **Endpoint** The list of Pod IPs behind a Service, kept current by Kubernetes as Pods come and go.
 
 **Flannel** The default CNI in K3s: a simple overlay network (VXLAN) connecting the Pod networks of all nodes.
@@ -81,6 +83,8 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 **kube-proxy** The component on each node implementing Service IPs with iptables or IPVS rules. K3s runs it by default.
 
 **LoadBalancer** A Service type asking for an external IP. In the cloud a provider supplies it; K3s supplies it with ServiceLB, which is how Traefik is reachable on the VM's IP.
+
+**NAT (Network Address Translation)** A router rewriting the addresses of the packets passing through it, so that many machines with private addresses share one public one. The machines inside can call out; nothing outside can call in uninvited. A home router does it, and so does the eth0 network of a Vagrant VM: the VM downloads K3s through NAT, but the VM is not reachable from outside on that address. This is why the cluster talks on eth1.
 
 **NodePort** A Service type opening a fixed port (30000 to 32767) on every node. Used in Part 3 to reach the application on port 8888, or replaced by a port-forward.
 
@@ -114,7 +118,7 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **Ansible** A configuration tool that runs tasks on machines over SSH from a playbook (YAML). Vagrant uses it as the provisioner in Part 1; it works below Kubernetes, installing it.
 
-**Box** A packaged base image for Vagrant, named in the Vagrantfile. Here `generic/alpine318`: Alpine Linux 3.18, package manager apk.
+**Box** A packaged base image for Vagrant, named in the Vagrantfile. Here `cloud-image/debian-13`: Debian 13, package manager apt.
 
 **eth1** The second network interface of each VM, carrying the private IP 192.168.56.110 or .111 required by the subject.
 
@@ -122,19 +126,25 @@ Terms of the Inception-of-Things project, grouped by area, alphabetical inside e
 
 **Hostname** The name of a VM, set to a team member's login followed by `S` for the server and `SW` for the worker.
 
-**Nested virtualization** Running a VM inside a VM. Needed for Part 1 because Vagrant creates VMs inside the host VM.
+**KVM (Kernel-based Virtual Machine)** The hypervisor inside the Linux kernel. It lets the kernel run VMs at the speed of the hardware. It does not create or configure anything by itself; QEMU and libvirt do that.
+
+**libvirt** The management layer for VMs on Linux: one API and one daemon (libvirtd) through which programs create, start, stop and connect VMs on KVM, QEMU and others. Vagrant's libvirt provider talks to it; libvirt then runs the VM with QEMU on KVM. `virsh list` shows the VMs it manages.
+
+**Nested virtualization** Running a VM inside a VM. The processor has hardware support for virtualization (Intel VT-x, AMD-V); normally only the first hypervisor gets it, and a VM sees a processor without it, so a hypervisor inside the VM cannot start anything. Nested virtualization passes the feature into the VM. Here: VirtualBox on the school computer runs the host VM; inside it KVM runs the two Part 1 VMs. The host VM must have it switched on in its VirtualBox settings (`VBoxManage modifyvm IoT --nested-hw-virt on`); check inside with `grep -c vmx /proc/cpuinfo`, which must not print 0. The inner VMs are slower than the outer one, which is why Part 1 is kept at 512 MB and 1 CPU.
 
 **Private network** The Vagrant network type giving a VM an IP reachable from the host but not from outside; it becomes eth1.
 
-**Provider** The hypervisor Vagrant drives: VirtualBox, libvirt (KVM) or others. This project uses libvirt.
+**Provider** The plugin through which Vagrant drives a hypervisor: VirtualBox, libvirt (KVM/QEMU), VMware, Docker. This project uses libvirt; `vagrant up --provider=libvirt`.
 
 **Provisioner** A step Vagrant runs after a VM boots. Here one Ansible playbook, `confs/ansible/playbook.yml`, run from the host after both VMs are up, that installs K3s on both.
+
+**QEMU** The program that emulates a computer: processor, memory, disks, network cards. With KVM it does not emulate the processor but hands the real one through, so the VM runs fast. libvirt starts one QEMU process per VM.
 
 **Vagrant** A tool that creates and configures VMs from a text file. `vagrant up` builds the machines of Part 1 and Part 2.
 
 **Vagrantfile** The Ruby file describing the VMs: box, hostname, network, provider settings, provisioners.
 
-## K3d and Docker
+## Part 3: K3d and Docker
 
 **Docker** The container engine K3d needs on the host VM. Installed by the Part 3 script.
 

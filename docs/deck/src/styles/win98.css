@@ -1,0 +1,272 @@
+/* Windows 98 design system.
+   Two ways to use it: wrap a region in .w98-scope (the style guide does), or set data-skin="win98" on <html> (the site does).
+   Everything is built from integer pixels, flat greys and 1px bevels; no radius, no blur, no gradient except title bars.
+   Colour values are the standard scheme of the time; the typeface is WIN95FA (open licence), see the style guide. */
+
+/* ---------- Tokens ---------- */
+.w98-scope, html[data-skin="win98"] {
+  color-scheme: light;
+  --w98-face: #c0c0c0;        /* ButtonFace, window background */
+  --w98-hilight: #ffffff;     /* ButtonHilight */
+  --w98-light: #dfdfdf;       /* ButtonLight */
+  --w98-shadow: #808080;      /* ButtonShadow */
+  --w98-dkshadow: #0a0a0a;    /* ButtonDkShadow */
+  --w98-window: #ffffff;      /* Window: fields and client areas */
+  --w98-text: #000000;
+  --w98-gray-text: #808080;
+  --w98-select: #000080;      /* Highlight */
+  --w98-select-text: #ffffff;
+  --w98-title-a: #000080;     /* ActiveTitle */
+  --w98-title-b: #1084d0;     /* GradientActiveTitle */
+  --w98-inactive-a: #808080;
+  --w98-inactive-b: #b5b5b5;
+  --w98-desktop: #008080;
+  --w98-tooltip: #ffffe1;
+  --w98-link: #0000ee;
+  --w98-visited: #551a8b;
+  --w98-font: "WIN95FA", "MS Sans Serif", Tahoma, Geneva, sans-serif;           /* controls, title bars, menus, labels */
+  --w98-font-text: Tahoma, "MS Sans Serif", Verdana, Geneva, sans-serif;        /* running text */
+
+  /* the five edges */
+  --w98-raised: inset -1px -1px var(--w98-dkshadow), inset 1px 1px var(--w98-hilight), inset -2px -2px var(--w98-shadow), inset 2px 2px var(--w98-light);
+  --w98-pressed: inset -1px -1px var(--w98-hilight), inset 1px 1px var(--w98-dkshadow), inset -2px -2px var(--w98-light), inset 2px 2px var(--w98-shadow);
+  --w98-window-edge: inset -1px -1px var(--w98-dkshadow), inset 1px 1px var(--w98-light), inset -2px -2px var(--w98-shadow), inset 2px 2px var(--w98-hilight);
+  --w98-field: inset -1px -1px var(--w98-hilight), inset 1px 1px var(--w98-shadow), inset -2px -2px var(--w98-light), inset 2px 2px var(--w98-dkshadow);
+  --w98-status: inset 1px 1px var(--w98-shadow), inset -1px -1px var(--w98-hilight);
+  --w98-default: inset -2px -2px var(--w98-dkshadow), inset 1px 1px var(--w98-dkshadow), inset 2px 2px var(--w98-hilight), inset -3px -3px var(--w98-shadow), inset 3px 3px var(--w98-light);
+}
+
+/* ---------- Base ---------- */
+.w98-scope {
+  font-family: var(--w98-font-text); font-size: 13px; line-height: 1.3; color: var(--w98-text);
+  -webkit-font-smoothing: none; font-smooth: never; cursor: var(--w98-cursor-arrow);
+}
+html[data-skin="win98"] { font-size: 13px; cursor: var(--w98-cursor-arrow); }
+html[data-skin="win98"] body {
+  background: var(--w98-desktop); color: var(--w98-text); font-family: var(--w98-font-text); line-height: 1.3;
+  -webkit-font-smoothing: none; font-smooth: never;
+}
+.w98-scope a, .w98-scope button, .w98-scope summary, .w98-scope label, .w98-scope select,
+html[data-skin="win98"] a, html[data-skin="win98"] button, html[data-skin="win98"] summary, html[data-skin="win98"] select { cursor: var(--w98-cursor-hand); }
+.w98-scope :disabled, html[data-skin="win98"] :disabled { cursor: var(--w98-cursor-arrow); }
+.w98-scope input[type="text"], .w98-scope input[type="password"], .w98-scope textarea, html[data-skin="win98"] input[type="text"], html[data-skin="win98"] input[type="password"], html[data-skin="win98"] textarea { cursor: text; }
+html[data-skin="win98"] [class*="rounded"] { border-radius: 0 !important; }
+
+/* ---------- Window and title bar ---------- */
+.w98-window { position: relative; background: var(--w98-face); box-shadow: var(--w98-window-edge); padding: 3px; display: flex; flex-direction: column; }
+.w98-titlebar { display: flex; align-items: center; gap: 4px; padding: 3px 2px 3px 3px; color: #fff; font-weight: 700; background: linear-gradient(90deg, var(--w98-title-a), var(--w98-title-b)); }
+.w98-titlebar.is-inactive { background: linear-gradient(90deg, var(--w98-inactive-a), var(--w98-inactive-b)); }
+.w98-titlebar-text { flex: 1; display: flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; overflow: hidden; }
+.w98-titlebar-controls { display: flex; }
+.w98-tbtn { display: block; flex: none; width: 16px; height: 14px; padding: 0; border: 0; border-radius: 0; background: var(--w98-face) center / 16px 14px no-repeat; box-shadow: var(--w98-raised); }
+.w98-titlebar { user-select: none; touch-action: none; }
+.w98-tbtn:active { box-shadow: var(--w98-pressed); background-position: 1px 1px; }
+.w98-tbtn-min { background-image: var(--w98-img-min); }
+.w98-tbtn-max { background-image: var(--w98-img-max); }
+.w98-tbtn-restore { background-image: var(--w98-img-restore); }
+.w98-tbtn-close { background-image: var(--w98-img-close); margin-left: 2px; }
+.w98-client { background: var(--w98-window); box-shadow: var(--w98-field); padding: 2px; margin: 2px; flex: 1; min-height: 0; }
+.w98-client-grey { background: var(--w98-face); }
+.w98-window.is-max { position: fixed; inset: var(--w98-max-top, 34px) 0 var(--w98-max-bottom, 0) 0; margin: 0 !important; width: auto; min-height: 0 !important; left: 0 !important; top: var(--w98-max-top, 34px) !important; }
+.w98-window.is-max .w98-client { overflow: auto; }
+.w98-client > .w98-inner { padding: 8px; }
+.w98-client a:link, .w98-client a { color: var(--w98-link); text-decoration: underline; }
+.w98-client a:visited { color: var(--w98-visited); }
+
+/* ---------- Buttons ---------- */
+.w98-btn {
+  display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: 75px; min-height: 23px; padding: 0 12px;
+  background: var(--w98-face); color: var(--w98-text); border: 0; border-radius: 0; box-shadow: var(--w98-raised);
+  font: inherit; text-decoration: none;
+}
+.w98-btn.is-default { box-shadow: var(--w98-default); }
+.w98-btn:not(:disabled):not([aria-disabled="true"]):active, .w98-btn.is-pressed { box-shadow: var(--w98-pressed); padding: 1px 11px 0 13px; }
+.w98-btn.is-default:not(:disabled):active { box-shadow: inset 2px 2px var(--w98-dkshadow), inset -1px -1px var(--w98-dkshadow), inset -2px -2px var(--w98-hilight), inset 3px 3px var(--w98-shadow), inset -3px -3px var(--w98-light); }
+.w98-btn:focus-visible { outline: 1px dotted #000; outline-offset: -4px; }
+.w98-btn:disabled, .w98-btn[aria-disabled="true"] { color: var(--w98-gray-text); text-shadow: 1px 1px 0 var(--w98-hilight); }
+.w98-btn-small { min-width: 0; padding: 0 6px; }
+.w98-toolbtn { display: inline-flex; align-items: center; gap: 4px; min-height: 23px; padding: 0 6px; background: transparent; border: 0; color: inherit; font: inherit; box-shadow: inset 0 0 0 0 transparent; }
+.w98-toolbtn:hover { box-shadow: inset -1px -1px var(--w98-shadow), inset 1px 1px var(--w98-hilight); }
+.w98-toolbtn:active, .w98-toolbtn.is-pressed { box-shadow: inset 1px 1px var(--w98-shadow), inset -1px -1px var(--w98-hilight); }
+
+/* ---------- Fields and options ---------- */
+.w98-field, .w98-scope input[type="text"], .w98-scope input[type="password"], .w98-scope textarea, .w98-scope select {
+  box-sizing: border-box; min-height: 23px; padding: 3px 4px; background: var(--w98-window); color: var(--w98-text);
+  border: 0; border-radius: 0; box-shadow: var(--w98-field); font: inherit; margin: 0;
+}
+.w98-field:focus, .w98-scope input:focus, .w98-scope textarea:focus, .w98-scope select:focus { outline: none; }
+.w98-scope textarea { resize: none; }
+.w98-scope select, select.w98-field { appearance: none; -webkit-appearance: none; padding-right: 22px; background-image: var(--w98-img-select); background-repeat: no-repeat; background-position: right 2px top 2px; }
+.w98-field:disabled, .w98-scope :disabled.w98-field { background: var(--w98-face); color: var(--w98-gray-text); }
+.w98-option { display: inline-flex; align-items: center; gap: 6px; }
+input.w98-check, input.w98-radio { appearance: none; -webkit-appearance: none; margin: 0; flex: none; background-color: var(--w98-window); border: 0; padding: 0; }
+input.w98-check { width: 13px; height: 13px; box-shadow: var(--w98-field); background-repeat: no-repeat; background-position: center; }
+input.w98-check:checked { background-image: var(--w98-img-check); }
+input.w98-radio { width: 13px; height: 13px; background-color: transparent; background-image: var(--w98-img-radio); background-repeat: no-repeat; }
+input.w98-radio:checked { background-image: var(--w98-img-radio-on); }
+input.w98-check:focus-visible, input.w98-radio:focus-visible { outline: 1px dotted #000; outline-offset: 2px; }
+.w98-group { margin: 0; padding: 10px; border: 1px solid var(--w98-shadow); box-shadow: 1px 1px 0 var(--w98-hilight), inset 1px 1px 0 var(--w98-hilight); }
+.w98-group > legend { padding: 0 3px; }
+
+/* ---------- Tabs, tree, list ---------- */
+.w98-tabs { display: flex; margin: 0 0 -2px; padding: 0 0 0 2px; position: relative; z-index: 1; }
+.w98-tab { margin-top: 2px; padding: 3px 12px 3px; background: var(--w98-face); border: 0; color: inherit; font: inherit; box-shadow: inset -1px 0 var(--w98-dkshadow), inset 1px 1px var(--w98-hilight), inset -2px 0 var(--w98-shadow), inset 2px 2px var(--w98-light); }
+.w98-tab[aria-selected="true"] { margin-top: 0; padding-bottom: 5px; margin-left: -2px; margin-right: -2px; position: relative; z-index: 2; }
+.w98-tabpanel { background: var(--w98-face); padding: 12px; box-shadow: var(--w98-raised); position: relative; }
+.w98-tree { margin: 0; padding: 6px; list-style: none; background: var(--w98-window); box-shadow: var(--w98-field); }
+.w98-tree ul { margin: 0 0 0 7px; padding: 0 0 0 12px; list-style: none; border-left: 1px dotted var(--w98-shadow); }
+.w98-tree li { position: relative; padding: 2px 0 2px 0; }
+.w98-tree ul > li::before { content: ""; position: absolute; left: -12px; top: 11px; width: 8px; border-top: 1px dotted var(--w98-shadow); }
+.w98-tree .is-selected { background: var(--w98-select); color: var(--w98-select-text); padding: 0 3px; }
+.w98-list { background: var(--w98-window); box-shadow: var(--w98-field); padding: 2px; overflow: auto; }
+.w98-list table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.w98-list th { position: sticky; top: 0; text-align: left; font-weight: 400; padding: 2px 6px; background: var(--w98-face); box-shadow: var(--w98-raised); }
+.w98-list td { padding: 2px 6px; white-space: nowrap; }
+.w98-list tr[aria-selected="true"] td { background: var(--w98-select); color: var(--w98-select-text); }
+
+/* ---------- Menus, status bar, progress, tooltip ---------- */
+.w98-menubar { display: flex; padding: 1px 0; }
+.w98-menubar > * { padding: 2px 8px; background: transparent; border: 0; color: inherit; font: inherit; }
+.w98-menubar > *:hover { box-shadow: inset -1px -1px var(--w98-shadow), inset 1px 1px var(--w98-hilight); }
+.w98-menubar > [aria-expanded="true"] { box-shadow: inset 1px 1px var(--w98-shadow), inset -1px -1px var(--w98-hilight); }
+.w98-menubar u { text-decoration: underline; }
+.w98-menu { display: inline-flex; flex-direction: column; min-width: 180px; padding: 3px; margin: 0; list-style: none; background: var(--w98-face); box-shadow: var(--w98-window-edge); }
+.w98-menu > li { display: flex; justify-content: space-between; gap: 24px; padding: 3px 12px 3px 20px; }
+.w98-menu > li:hover { background: var(--w98-select); color: var(--w98-select-text); }
+.w98-menu > li.is-disabled { color: var(--w98-gray-text); text-shadow: 1px 1px 0 var(--w98-hilight); }
+.w98-menu > li.is-separator { padding: 0; margin: 3px 1px; height: 2px; border-top: 1px solid var(--w98-shadow); border-bottom: 1px solid var(--w98-hilight); }
+.w98-statusbar { display: flex; gap: 2px; margin: 2px 0 0; }
+.w98-status { padding: 2px 4px; box-shadow: var(--w98-status); flex: none; }
+.w98-status.is-grow { flex: 1; }
+.w98-progress { height: 18px; padding: 2px; box-sizing: border-box; background: var(--w98-window); box-shadow: var(--w98-status); }
+.w98-progress > span { display: block; height: 100%; width: var(--value, 50%); background: repeating-linear-gradient(90deg, var(--w98-select) 0 8px, transparent 8px 10px); }
+.w98-tooltip { display: inline-block; padding: 2px 4px; background: var(--w98-tooltip); border: 1px solid #000; color: #000; }
+
+/* ---------- Message box ---------- */
+.w98-dialog { display: inline-block; max-width: 100%; }
+.w98-dialog-body { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px 6px; }
+.w98-dialog-actions { display: flex; justify-content: center; gap: 6px; padding: 8px 16px 12px; }
+
+/* ---------- Scrollbars: classic, in Chromium and Safari ---------- */
+.w98-scope ::-webkit-scrollbar, html[data-skin="win98"] ::-webkit-scrollbar { width: 16px; height: 16px; }
+.w98-scope ::-webkit-scrollbar-track, html[data-skin="win98"] ::-webkit-scrollbar-track { background: repeating-conic-gradient(var(--w98-face) 0 25%, var(--w98-hilight) 0 50%) 0 0 / 2px 2px; }
+.w98-scope ::-webkit-scrollbar-thumb, html[data-skin="win98"] ::-webkit-scrollbar-thumb { background: var(--w98-face); box-shadow: var(--w98-raised); }
+.w98-scope ::-webkit-scrollbar-corner, html[data-skin="win98"] ::-webkit-scrollbar-corner { background: var(--w98-face); }
+.w98-scope ::-webkit-scrollbar-button:single-button, html[data-skin="win98"] ::-webkit-scrollbar-button:single-button { display: block; width: 16px; height: 16px; background: var(--w98-face) center / 16px 16px no-repeat; box-shadow: var(--w98-raised); }
+.w98-scope ::-webkit-scrollbar-button:single-button:vertical:decrement, html[data-skin="win98"] ::-webkit-scrollbar-button:single-button:vertical:decrement { background-image: var(--w98-img-up); }
+.w98-scope ::-webkit-scrollbar-button:single-button:vertical:increment, html[data-skin="win98"] ::-webkit-scrollbar-button:single-button:vertical:increment { background-image: var(--w98-img-down); }
+.w98-scope ::-webkit-scrollbar-button:single-button:horizontal:decrement, html[data-skin="win98"] ::-webkit-scrollbar-button:single-button:horizontal:decrement { background-image: var(--w98-img-left); }
+.w98-scope ::-webkit-scrollbar-button:single-button:horizontal:increment, html[data-skin="win98"] ::-webkit-scrollbar-button:single-button:horizontal:increment { background-image: var(--w98-img-right); }
+.w98-scope ::-webkit-scrollbar-button:single-button:active, html[data-skin="win98"] ::-webkit-scrollbar-button:single-button:active { box-shadow: var(--w98-pressed); }
+
+/* ---------- Desktop and icons ---------- */
+.w98-desktop { background: var(--w98-desktop); }
+.w98-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 75px; padding: 2px; color: #fff; text-align: center; text-decoration: none; line-height: 1.1; }
+.w98-icon .pixel-icon { image-rendering: pixelated; }
+.w98-icon:hover span, .w98-icon:focus-visible span { background: var(--w98-select); outline: 1px dotted #fff; }
+
+/* ======================================================================
+   The site in this style (html[data-skin="win98"]): layout of the chrome
+   ====================================================================== */
+.w98 { min-height: 100vh; position: relative; }
+.w98-bar { position: fixed; top: 0; left: 0; right: 0; height: 34px; z-index: 9999; display: flex; align-items: center; gap: 4px; padding: 3px; background: var(--w98-face); box-shadow: inset 0 -1px var(--w98-shadow), inset 0 -2px var(--w98-dkshadow), inset 0 1px var(--w98-light), inset 0 2px var(--w98-hilight); overflow-x: auto; white-space: nowrap; }
+.w98-start { display: flex; align-items: center; height: 26px; padding: 0 10px; background: var(--w98-face); color: #000; text-decoration: none; box-shadow: var(--w98-raised); }
+.w98-start:active { box-shadow: var(--w98-pressed); }
+.w98-start .logo { width: 24px; height: 24px; margin-right: 6px; color: #000; }
+.w98-bar-nav { display: flex; gap: 4px; }
+.w98-bar-nav a { display: flex; align-items: center; height: 26px; padding: 0 10px; background: var(--w98-face); color: #000; text-decoration: none; box-shadow: var(--w98-raised); }
+.w98-tray { display: flex; align-items: center; gap: 10px; height: 26px; padding: 0 8px; box-shadow: var(--w98-status); }
+.w98-user { display: flex; align-items: center; gap: 8px; }
+.w98-user button { background: none; border: 0; padding: 0; color: inherit; font: inherit; text-decoration: underline; }
+.w98-tray a { color: inherit; text-decoration: none; }
+.w98-icons { position: fixed; top: 44px; display: none; flex-direction: column; gap: 14px; z-index: 5; }
+.w98-left { left: 8px; }
+.w98-right { right: 8px; }
+.w98-site-window { margin: 40px 6px 6px; min-height: calc(100vh - 48px); }
+.w98-site-window > .w98-client { display: flex; flex-direction: column; }
+.w98-site-window .w98-inner { flex: 1; padding: 12px 14px; }
+.w98-site-window .w98-statusbar { flex: none; }
+@media (min-width: 1000px) {
+  .w98-icons { display: flex; }
+  .w98-bar-nav { display: none; }
+  .w98-site-window { margin: 44px 96px 28px 96px; min-height: calc(100vh - 90px); }
+}
+
+/* the semantic classes of the pages, drawn in this style */
+html[data-skin="win98"] .ui-panel { background: var(--w98-window); border: 0; border-radius: 0; padding: 10px; box-shadow: var(--w98-field); }
+html[data-skin="win98"] .doc { background: var(--w98-window); box-shadow: var(--w98-field); padding: 14px 16px; margin-top: 12px; }
+html[data-skin="win98"] .ui-row { display: block; background: var(--w98-face); color: #000; border: 0; border-radius: 0; padding: 6px 10px; font-weight: 400; text-decoration: none; box-shadow: var(--w98-raised); }
+html[data-skin="win98"] .ui-row:hover { border: 0; }
+html[data-skin="win98"] .ui-btn, html[data-skin="win98"] .ui-btn-primary { min-height: 23px; background: var(--w98-face); color: #000; border: 0; border-radius: 0; font-weight: 400; transform: none; box-shadow: var(--w98-raised); }
+html[data-skin="win98"] .ui-btn-primary { box-shadow: var(--w98-default); }
+html[data-skin="win98"] .ui-btn:active, html[data-skin="win98"] .ui-btn-primary:active { background: var(--w98-face); color: #000; transform: none; border: 0; box-shadow: var(--w98-pressed); }
+html[data-skin="win98"] .ui-chip { background: var(--w98-face); color: #000; border: 0; border-radius: 0; padding: 3px 10px; font-size: 16px; box-shadow: var(--w98-raised); }
+html[data-skin="win98"] .ui-chip-on { box-shadow: var(--w98-pressed); background: repeating-conic-gradient(var(--w98-face) 0 25%, var(--w98-hilight) 0 50%) 0 0 / 2px 2px; font-weight: 400; color: #000; }
+html[data-skin="win98"] .ui-input { background: var(--w98-window); border: 0; border-radius: 0; padding: 3px 4px; box-shadow: var(--w98-field); min-height: 23px; }
+html[data-skin="win98"] .ui-icon-btn { padding: 4px; color: #000; }
+html[data-skin="win98"] .ui-icon-btn:hover { background: transparent; box-shadow: inset -1px -1px var(--w98-shadow), inset 1px 1px var(--w98-hilight); }
+html[data-skin="win98"] .glyph { shape-rendering: crispEdges; }
+
+/* the style switch */
+html[data-skin="win98"] .skin-switch { gap: 2px; }
+html[data-skin="win98"] .skin-switch-btn, html[data-skin="win98"] .skin-switch-btn:first-child, html[data-skin="win98"] .skin-switch-btn:last-child { padding: 2px 10px; background: var(--w98-face); color: #000; border: 0; border-radius: 0; font-weight: 400; box-shadow: var(--w98-raised); }
+html[data-skin="win98"] .skin-switch-btn[aria-pressed="true"] { box-shadow: var(--w98-pressed); background: repeating-conic-gradient(var(--w98-face) 0 25%, var(--w98-hilight) 0 50%) 0 0 / 2px 2px; }
+
+/* text: Tailwind sizes stay, scaled by the 13px root */
+html[data-skin="win98"] .text-muted { color: var(--w98-shadow); }
+html[data-skin="win98"] .font-medium, html[data-skin="win98"] .font-semibold { font-weight: 400; }
+html[data-skin="win98"] h1, html[data-skin="win98"] h2, html[data-skin="win98"] h3 { font-weight: 400; }
+html[data-skin="win98"] .doc h2 { font-size: 22px; line-height: 1.2; margin-top: 22px; }
+html[data-skin="win98"] .doc h3 { font-size: 16px; font-weight: 700; margin-top: 14px; }
+html[data-skin="win98"] .doc code { background: transparent; padding: 0; }
+html[data-skin="win98"] .doc pre { background: var(--w98-face); box-shadow: var(--w98-field); border-radius: 0; padding: 8px; font-family: "Courier New", Courier, monospace; font-size: 13px; }
+html[data-skin="win98"] .doc table { border-collapse: separate; border-spacing: 0; box-shadow: var(--w98-field); padding: 2px; }
+html[data-skin="win98"] .doc th { background: var(--w98-face); box-shadow: var(--w98-raised); border: 0; font-weight: 400; }
+html[data-skin="win98"] .doc td { border: 0; border-bottom: 1px dotted var(--w98-shadow); }
+html[data-skin="win98"] .doc img { border: 0; box-shadow: var(--w98-field); padding: 2px; border-radius: 0; }
+html[data-skin="win98"] .doc blockquote { border-left: 0; box-shadow: var(--w98-field); padding: 8px; color: #000; }
+html[data-skin="win98"] .doc hr { border-top: 1px solid var(--w98-shadow); border-bottom: 1px solid var(--w98-hilight); }
+html[data-skin="win98"] .doc a, html[data-skin="win98"] a.underline { color: var(--w98-link); }
+html[data-skin="win98"] .doc a:visited { color: var(--w98-visited); }
+html[data-skin="win98"] .hero-logo { color: #000080; image-rendering: pixelated; }
+html[data-skin="win98"] .pixel-icon { image-rendering: pixelated; }
+
+/* ---------- Style guide page ---------- */
+.guide { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.guide-grid { display: grid; gap: 16px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 1100px) { .guide-grid { grid-template-columns: 1fr 1fr; } }
+.guide-inner p { margin: 0 0 8px; }
+.guide-list { margin: 0; padding-left: 20px; }
+.guide-list li { margin: 4px 0; }
+.guide .muted { color: var(--w98-shadow); }
+.guide-table { width: 100%; border-collapse: collapse; }
+.guide-table td { padding: 3px 8px 3px 0; vertical-align: top; }
+.swatch { display: inline-block; width: 32px; height: 16px; box-shadow: var(--w98-field); }
+.edges { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 8px 0; }
+.edges > div { padding: 14px 6px; text-align: center; background: var(--w98-face); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
+.form { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.form label { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.form textarea { width: 100%; }
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 12px; margin-bottom: 10px; }
+.icon-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cursor-box { padding: 14px; margin: 6px 0; box-shadow: var(--w98-field); background: #fff; }
+
+/* taskbar buttons for windows */
+.w98-task { flex: 0 1 190px; min-width: 36px; height: 26px; padding: 0 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; background: var(--w98-face); color: #000; border: 0; border-radius: 0; box-shadow: var(--w98-raised); }
+.w98-task.is-active { box-shadow: var(--w98-pressed); font-weight: 700; background: repeating-conic-gradient(var(--w98-face) 0 25%, var(--w98-hilight) 0 50%) 0 0 / 2px 2px; }
+.guide { --w98-max-top: 0px; --w98-max-bottom: 34px; position: relative; padding-bottom: 0; }
+.guide-taskbar { position: sticky; bottom: 0; z-index: 9999; display: flex; align-items: center; gap: 4px; height: 34px; padding: 4px 3px; margin: 8px -16px 0; background: var(--w98-face); box-shadow: inset 0 1px var(--w98-light), inset 0 2px var(--w98-hilight); }
+.guide-taskbar .w98-btn { min-height: 26px; }
+.guide-start-menu { position: absolute; left: 3px; bottom: 33px; }
+.guide-start-menu > li.is-closed { color: var(--w98-gray-text); }
+
+/* the pixel typeface for everything that is a control, a label or a title; running text stays in the text face */
+.w98-titlebar, .w98-menubar, .w98-menu, .w98-statusbar, .w98-btn, .w98-toolbtn, .w98-tab, .w98-list th, .w98-icon, .w98-bar, .w98-bar *, .w98-task, .w98-tooltip, .w98-group > legend,
+.w98-scope input, .w98-scope select, .w98-scope textarea, .w98-option, .w98-field,
+html[data-skin="win98"] .ui-btn, html[data-skin="win98"] .ui-btn-primary, html[data-skin="win98"] .ui-chip, html[data-skin="win98"] .ui-row,
+html[data-skin="win98"] .skin-switch-btn, html[data-skin="win98"] input, html[data-skin="win98"] .w98-statusbar {
+  font-family: var(--w98-font); font-size: 16px; line-height: 1.15; letter-spacing: 1px;
+}
+.w98-icon { font-size: 16px; }

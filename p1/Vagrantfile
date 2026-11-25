@@ -1,12 +1,11 @@
 # Vagrantfile
-# shared libvirt network options for all private networks
-NET_ADDR = "192.168.56.0/24"
-NET_NAME = "vagrant-net"
-
-
 Vagrant.configure("2") do |config|
 
+  # Debian 13 (trixie), the current stable release; box with a libvirt build (Robin's choice)
   config.vm.box = "cloud-image/debian-13"
+
+  # Ansible copies what the VMs need; no shared folder (the box would ask for NFS)
+  config.vm.synced_folder ".", "/vagrant", disabled: true
 
   config.vm.boot_timeout = 600
   config.ssh.username = "vagrant"

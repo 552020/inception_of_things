@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 1 running: two VMs on the host VM, on the computer at 42</title>
+<style>
+  :root { --paper:#fbfaf6; --ink:#1d1d1b; --soft:#6b6a66; --accent:#b4531a; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); }
+  body { padding:16px; font-family:"Patrick Hand","Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive; }
+  svg { display:block; width:100%; height:auto; max-width:1500px; margin:0 auto; }
+  .line  { fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .thin  { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .plan  { stroke-dasharray:9 7; }
+  .svc   { stroke:var(--accent); stroke-width:2.2; }
+  .acc   { stroke:var(--accent); }
+  .fill  { fill:var(--paper); }
+  .dot   { fill:var(--accent); stroke:none; }
+  .door  { fill:var(--accent); stroke:var(--ink); stroke-width:1.6; }
+  .ca { fill:var(--accent); stroke:var(--ink); stroke-width:1; }
+  .cb { fill:var(--ink); stroke:var(--ink); stroke-width:1; }
+  .cc { fill:#c9c6bd; stroke:var(--ink); stroke-width:1; }
+  .cs { fill:url(#hatch); stroke:var(--ink); stroke-width:1; }
+  .ce { fill:none; stroke:#cfcdc6; stroke-width:1; }
+  .pw { fill:#f3d9c6; stroke:var(--accent); stroke-width:2; }
+  .pa { fill:#ffffff; stroke:var(--ink); stroke-width:2.2; }
+  .pk { fill:#dedbd2; stroke:var(--ink); stroke-width:1.4; }
+  .ps { fill:url(#hatch); stroke:var(--ink); stroke-width:1.4; }
+  .cn { fill:#fbfaf6; stroke:var(--ink); stroke-width:1.3; }
+  .cz { fill:none; stroke:var(--accent); stroke-width:3; }
+  .t     { font-size:22px; fill:var(--ink); }
+  .h     { font-size:30px; fill:var(--ink); }
+  .col   { font-size:24px; fill:var(--soft); letter-spacing:1px; }
+  .s     { font-size:18px; fill:var(--soft); }
+  .xs    { font-size:16px; fill:var(--soft); }
+  .a     { font-size:18px; fill:var(--accent); }
+  .mono  { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:17px; fill:var(--ink); }
+  .monoa { font-family:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace; font-size:16px; fill:var(--accent); }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 960" role="img" aria-label="Part 1 when it runs: the computer at 42 holds the host VM, which runs two VMs as qemu processes; in them run the K3s server and the K3s agent, with kubectl as a client inside the server VM">
+  <defs>
+    <filter id="hand" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#1d1d1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    
+  </defs>
+  <g filter="url(#hand)">
+    <rect x="20" y="70" width="1460" height="800" rx="10" class="line fill"/>
+    <rect x="40" y="118" width="1420" height="732" rx="8" class="line fill"/>
+    <rect x="60" y="215" width="190" height="292" rx="6" class="line fill plan"/>
+    <rect x="60" y="525" width="190" height="116" rx="6" class="line fill"/>
+    <rect x="270" y="190" width="540" height="600" rx="6" class="line fill"/>
+    <rect x="290" y="268" width="500" height="88" rx="6" class="thin fill"/>
+    <rect x="290" y="400" width="500" height="170" rx="6" class="line fill"/>
+    <rect x="290" y="590" width="500" height="180" rx="6" class="thin fill"/>
+    <path d="M305,666 L775,666" class="line"/>
+    <path d="M415,358 L415,398" class="line" marker-end="url(#arrow)"/>
+    <rect x="890" y="190" width="540" height="600" rx="6" class="line fill"/>
+    <rect x="910" y="400" width="500" height="170" rx="6" class="line fill"/>
+    <rect x="910" y="590" width="500" height="180" rx="6" class="thin fill plan"/>
+    <path d="M908,480 L792,480" class="line" marker-end="url(#arrow)"/>
+    <path d="M540,792 L540,812 L1160,812 L1160,792" class="line"/>
+  </g>
+  <circle cx="415" cy="363" r="6" class="dot"/>
+  <circle cx="902" cy="480" r="6" class="dot"/>
+  <rect x="782.0" y="465.0" width="16" height="30" rx="3" class="door"/>
+  <circle cx="46" cy="40" r="6" class="dot"/>
+  <text x="750" y="46" class="h" text-anchor="middle">Part 1 running: two VMs on the host VM, on the computer at 42</text>
+  <text x="40" y="102" class="t">The computer at 42</text>
+  <text x="300" y="102" class="s">the physical machine you sit at</text>
+  <text x="60" y="150" class="t">Host VM</text>
+  <text x="60" y="174" class="s">Ubuntu under QEMU/KVM, 6 CPUs, 8 GB</text>
+  <text x="1440" y="150" class="a" text-anchor="end">running here: libvirt and one qemu process per VM</text>
+  <text x="78" y="243" class="t">Clients with access</text>
+  <text x="78" y="269" class="xs">not running now: they</text>
+  <text x="78" y="289" class="xs">act when you call them</text>
+  <text x="78" y="317" class="xs">Vagrant keeps the VMs</text>
+  <text x="78" y="337" class="xs">in .vagrant and libvirt</text>
+  <text x="78" y="357" class="xs">knows them: it reaches</text>
+  <text x="78" y="377" class="xs">them at any time with</text>
+  <text x="78" y="397" class="xs">up, halt, ssh, destroy</text>
+  <text x="78" y="425" class="xs">Ansible reads a list of</text>
+  <text x="78" y="445" class="xs">hosts and connects over</text>
+  <text x="78" y="465" class="xs">SSH; it installed K3s</text>
+  <text x="78" y="485" class="xs">and the apps</text>
+  <text x="78" y="553" class="t">make</text>
+  <text x="78" y="579" class="xs">runs the commands of</text>
+  <text x="78" y="599" class="xs">the Makefile only; no</text>
+  <text x="78" y="619" class="xs">access of its own</text>
+  <text x="290" y="222" class="t">VM rpodackS</text>
+  <text x="290" y="246" class="s">192.168.56.110 on eth1, 1 CPU, 1024 MB</text>
+  <text x="790" y="222" class="a" text-anchor="end">process on the host VM: qemu</text>
+  <text x="304" y="296" class="t">kubectl</text>
+  <text x="470" y="296" class="a">process in the VM: kubectl, a short one</text>
+  <text x="304" y="322" class="xs">a client: it starts when you type it after vagrant ssh and ends with the command;</text>
+  <text x="304" y="342" class="xs">K3s installs it as a link to the k3s program</text>
+  <text x="305" y="430" class="t">K3s server</text>
+  <text x="470" y="430" class="a">process in the VM: k3s server</text>
+  <text x="305" y="458" class="s">API server on port 6443, scheduler, controllers, SQLite</text>
+  <text x="305" y="484" class="s">the control plane; kubelet and containerd run here too</text>
+  <text x="305" y="620" class="t">Pods we started: none</text>
+  <text x="305" y="646" class="a">Part 1 has no apps of ours</text>
+  <text x="305" y="692" class="xs">Pods K3s started by itself, in the namespace kube-system:</text>
+  <text x="305" y="714" class="s">coredns, traefik, metrics-server, local-path-provisioner</text>
+  <text x="305" y="740" class="xs">containerd starts their containers as processes of this VM</text>
+  <text x="430" y="380" class="mono">asks, :6443</text>
+  <text x="910" y="222" class="t">VM rpodackSW</text>
+  <text x="910" y="246" class="s">192.168.56.111 on eth1, 1 CPU, 512 MB</text>
+  <text x="1410" y="222" class="a" text-anchor="end">process on the host VM: qemu</text>
+  <text x="925" y="430" class="t">K3s agent</text>
+  <text x="1090" y="430" class="a">process in the VM: k3s agent</text>
+  <text x="925" y="458" class="s">kubelet, container runtime</text>
+  <text x="925" y="484" class="s">joined the server with the node token</text>
+  <text x="925" y="510" class="a">the client of the API server</text>
+  <text x="925" y="620" class="t">Pods we started: none</text>
+  <text x="925" y="646" class="a">Part 1 has no apps of ours</text>
+  <text x="925" y="692" class="xs">K3s&#x27;s own pods may land here too:</text>
+  <text x="925" y="714" class="s">the scheduler decides which node</text>
+  <text x="850" y="464" class="a" text-anchor="middle">joins</text>
+  <text x="850" y="506" class="mono" text-anchor="middle">:6443</text>
+  <text x="850" y="830" class="s" text-anchor="middle">private network eth1, 192.168.56.0/24: the join and the pod traffic (flannel) use it</text>
+  <text x="60" y="898" class="s">A VM is a qemu process on the host VM, which is itself a VM on the computer at 42. K3s runs in each VM as one process; the pods are processes that containerd starts.</text>
+  <text x="60" y="926" class="s">kubectl is a client: it runs only while you type a command, here inside rpodackS. eth0 of both VMs is NAT and only reaches the internet, for image pulls.</text>
+  <text x="60" y="954" class="a">Status: run on 2026-11-22. The server node was Ready; the worker joining has not been checked yet.</text>
+  <text x="1480" y="954" class="s" text-anchor="end">As of: 22 November 2026</text>
+  <text x="62" y="47" class="s">who opens the connection</text>
+</svg>
+</body>
+</html>

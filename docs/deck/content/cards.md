@@ -73,6 +73,18 @@ tags: kubernetes basics
 It is the only door into the cluster: it receives requests, authenticates them, validates them and stores the result in the datastore. kubectl talks to it, and so do all internal components (scheduler, controllers, kubelets); they never talk to the datastore directly.
 tags: kubernetes architecture
 
+### Where is kubectl in the Part 1 picture, and is it part of the server or the worker?
+Neither. kubectl is a client, like a browser is a client of a web server. The cluster is the server and the worker: the API server on the server node, and the kubelets on both nodes. kubectl is not one of them and the cluster runs the same without it. It only turns your command into an HTTPS request to the API server, on port 6443 of rpodackS. In Part 1 you type it on rpodackS itself, after vagrant ssh, so it sits inside that VM but outside the K3s server process; it finds the API server through the file /etc/rancher/k3s/k3s.yaml. The worker needs no kubectl: it only joins the server with the node token and takes its orders from the API server.
+tags: kubectl architecture part1
+
+### Do I have to install kubectl to reach the cluster, like installing a browser?
+Yes, you need a client wherever you want to talk to a cluster, and a way to find the cluster, like a browser plus a web address and a login. In Part 1 and Part 2 you do not install it: the K3s installer puts a kubectl on every machine it installs K3s on (a link to the k3s program), and you use the one on rpodackS, where the file /etc/rancher/k3s/k3s.yaml holds the address and the credentials. The worker has the program too but no cluster file to read, so it is useless there. In Part 3 there is no K3s installer on the host: you install kubectl on the host VM yourself, and p3/scripts/installationhost.sh does it together with Docker. To use it from another machine you also copy the cluster file and put the server's address into it.
+tags: kubectl part1 part3 installation
+
+### Is Vagrant just a Makefile that builds the VMs?
+No, it also keeps control of them. A Makefile builds something and has no relation to it afterwards. Vagrant is a client of libvirt: vagrant up asks libvirt for the VMs and starts Ansible, and Vagrant keeps in the folder .vagrant which machine belongs to which name. Later it can start, stop, delete and enter them again (vagrant halt, destroy, ssh). It is not a running process: while the VMs run, only libvirt and the QEMU processes are there. So Vagrant is for the VMs what kubectl is for the cluster: a client that controls, not part of what it controls. Ansible is the second client: it goes into the VMs once over SSH and installs K3s.
+tags: vagrant architecture part1
+
 ### What happens when you run kubectl get pods?
 kubectl reads the kubeconfig for the server address and credentials, sends an HTTPS GET to the API server (port 6443), the API server reads the Pod objects from the datastore and returns JSON, kubectl prints it as a table.
 tags: kubernetes architecture kubectl
@@ -249,6 +261,30 @@ tags: kubernetes networking part2
 An Ingress is a resource with HTTP routing rules: this host and path go to that Service. It does nothing by itself. The Ingress controller is a reverse proxy (Traefik in K3s, often nginx elsewhere) that reads Ingress resources and routes real requests accordingly.
 tags: kubernetes networking part2
 
+### Why does Ingress exist: what problem does it solve?
+A Service makes Pods reachable, but only one application per address: a NodePort gives every application its own odd port (30000 to 32767), a LoadBalancer its own IP. Three web applications would mean three ports or three IPs. Ingress puts them behind one IP on port 80 and 443 and tells them apart by what the request says: the host name (app1.com, app2.com) or the path (/shop, /blog). That needs something that reads HTTP, so Ingress works on layer 7, where a Service only knows IPs and ports (layer 4). The same place handles TLS certificates. It is what virtual hosts are in nginx or Apache, written as a Kubernetes object.
+tags: kubernetes networking part2
+
+### What does a request to app2.com pass through in Part 2?
+Client, then 192.168.56.110 port 80 (ServiceLB holds the port on the node), then Traefik, which reads the Host header and finds the matching Ingress rule, then the Service app2 (a stable virtual IP), then one of the three Pods, chosen by kube-proxy. Four objects are involved: Ingress (rule), Service (address), Deployment (how many), Pod (the container). The Ingress never points at Pods, only at a Service.
+tags: networking part2
+
+### Is Ingress used in all three parts?
+No. Part 1 has no application, so no Ingress; Traefik is installed anyway, because K3s brings it, and sits idle. Part 2 is the Ingress part: one IP, three applications, routing by Host header, and the evaluator asks to see the Ingress. Part 3 does not need one: the application is reached through a NodePort or kubectl port-forward on 8888, the Argo CD interface through port-forward; K3d clusters carry Traefik too, unused here. The bonus usually brings it back, to reach GitLab by name.
+tags: networking part1 part2 part3
+
+### One Ingress with several rules, or one Ingress per app?
+Both work. An Ingress is a list of rules, and Traefik reads every Ingress object in the cluster and merges their rules into one routing table. One object holds all the rules, so the whole table is in one file, with the last rule without a host acting as the default. One object per app lets each app be applied, changed and deleted alone, and each app owns its own route. Our p2 has three files, one per app, and only the third has no host. The third branch of the project (yli) had one file with three rules. The subject asks for neither; what it asks is that app1.com shows app1, app2.com shows app2 and anything else shows app3.
+tags: kubernetes networking part2
+
+### How can a web app ship its own page without building an image?
+Put the HTML in a ConfigMap and mount it as a volume into the container, for example into /usr/share/nginx/html of an nginx container. Kubernetes writes each key of the ConfigMap as a file in that directory, so nginx serves the page from the ConfigMap and the image stays the stock nginx. Changing the page means changing the ConfigMap, not rebuilding an image. The yli branch did this for all three apps; ours uses the nginx default page for app1 and http-echo, which prints a text given as an argument, for app2 and app3.
+tags: kubernetes resources part2
+
+### What comes after Ingress?
+The Gateway API. The Ingress API is frozen: it stays and keeps working, but new features go to the Gateway API, which splits the one object into several (GatewayClass, Gateway, HTTPRoute) so that the cluster operator and the application team each own their part, and which also covers TCP and gRPC. Traefik supports both. For the project only Ingress matters.
+tags: kubernetes networking context
+
 ### What is Traefik?
 A reverse proxy, open source, written in Go by Traefik Labs; the name is said like "traffic". A reverse proxy stands in front of web servers, takes every request and passes it to the right one. K3s installs it as its Ingress controller: a Pod in the namespace kube-system, behind a Service of type LoadBalancer that ServiceLB puts on the node's IP, ports 80 and 443. Traefik watches the Ingress objects through the API server and rewrites its own routing table when one changes; nobody edits a Traefik config file. Ingress is the rule, Traefik is the program that obeys it. Show it: kubectl get pods -n kube-system, kubectl get svc -n kube-system traefik.
 tags: k3s networking part2
@@ -257,12 +293,20 @@ tags: k3s networking part2
 All three hosts resolve to 192.168.56.110, where Traefik listens on port 80. The Ingress has a rule host: app1.com to app1's Service, host: app2.com to app2's Service, and a rule without host (or a defaultBackend) to app3. Traefik reads the HTTP Host header and picks the rule. Test: curl -H "Host: app1.com" http://192.168.56.110.
 tags: kubernetes networking part2
 
+### Why was host: app3.com an error in Part 2?
+The file is p2/confs/ingress/app3-ingress.yml. The subject says: app1.com shows app1, app2.com shows app2, anything else shows app3. With host: app3.com the rule matched only requests naming exactly app3.com. A request to the bare IP (curl http://192.168.56.110) or with any other host name matched no rule at all, and Traefik answered 404 page not found. app3 was a third named site, not the default. The fix is to delete the host line: a rule without host matches every host name. app1 and app2 are not swallowed by it, because Traefik takes the more specific rule first, and a rule with a host is more specific than one without. Test: curl http://192.168.56.110 and curl -H "Host: whatever.com" http://192.168.56.110 must both show app3.
+tags: networking part2
+
 ### What is the Host header?
 The HTTP header carrying the hostname the client typed. Several names can point to one IP; the server tells them apart only by this header. Browsers send it automatically; curl needs -H "Host: app1.com" or an /etc/hosts entry.
 tags: networking vocabulary part2
 
-### What is K3d, and how does it differ from K3s?
-K3s is the Kubernetes distribution. K3d is a tool that runs K3s nodes as Docker containers on one machine: k3d cluster create starts a server container, optional agent containers and a load balancer container. No VMs, starts in seconds, needs Docker (the d). Part 3 uses it; the cluster inside is still K3s, the same manifests work. In Part 1 the nodes are VMs made by Vagrant, in Part 3 containers made by K3d. K3d is for development and tests, never production.
+### Why must the user be in the docker group after a fresh Docker install?
+The docker command only talks to the Docker daemon, which runs as root, through the socket /var/run/docker.sock. The socket belongs to root and the group docker, so every other user gets "permission denied" and has to write sudo docker. K3d calls Docker for every node, so it would need sudo too. sudo usermod -aG docker $USER adds the user to the group. The catch: group membership is read at login, so the running shell does not have it yet. Log out and in again, or run newgrp docker; an install script cannot simply continue with docker commands after usermod. Whoever is in the docker group is in effect root on the machine, because a container can mount the host's file system.
+tags: docker k3d part3
+
+### What is the difference between K3d and K3s?
+One letter, two different things. K3s is the Kubernetes itself: a lightweight distribution (one binary) that runs the control plane and the workloads. K3d is only a tool that starts K3s inside Docker (the d): k3d cluster create makes a server container, optional agent containers and a load balancer container, each node a container, not a VM. The cluster inside is still K3s, so the same manifests work. Part 1 and 2: K3s on VMs made by Vagrant. Part 3: K3s in containers made by K3d, in seconds, on one machine, needs Docker. K3d is for development and tests, never production. The memory hook: K3d is not a Kubernetes, it is a launcher for one.
 tags: k3d part3
 
 ### What is Argo CD?
@@ -298,7 +342,7 @@ The package manager for Kubernetes. A chart is a set of manifest templates plus 
 tags: helm bonus
 
 ### What is Vagrant, and what is a Vagrantfile?
-Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image, here generic/alpine318), hostname, network, provider settings (libvirt, 512 MB, 1 CPU) and provisioners (here one Ansible playbook run after boot). vagrant up builds everything; vagrant destroy removes it.
+Vagrant creates and configures virtual machines from a text file. The Vagrantfile (Ruby) names the box (base image, here cloud-image/debian-13), hostname, network, provider settings (libvirt, 512 MB, 1 CPU) and provisioners (here one Ansible playbook run after boot). vagrant up builds everything; vagrant destroy removes it.
 tags: vagrant part1
 
 ### What is a Vagrant provider, and which one does this project use?
@@ -324,6 +368,18 @@ tags: vagrant part1
 ### How does Vagrant give you SSH without a password?
 On first boot Vagrant replaces the box's insecure public key with a freshly generated key pair, stores the private key under .vagrant/, and vagrant ssh uses it. For SSH from the host between the VMs or by name, the private key path is shown by vagrant ssh-config.
 tags: vagrant part1
+
+### What is libvirt, and how do libvirt, QEMU and KVM relate?
+Three layers under one word in the Vagrantfile. KVM is the hypervisor: a module in the Linux kernel that runs VMs on the real processor. QEMU is the program that builds the machine around it: memory, disks, network cards, one QEMU process per VM; on KVM it hands the processor through instead of emulating it. libvirt is the management layer on top: a daemon (libvirtd) and an API through which programs create, start, stop and connect VMs, whatever runs them underneath. Vagrant's libvirt provider only talks to libvirt; libvirt starts QEMU; QEMU uses KVM. So vagrant up --provider=libvirt ends in a QEMU process on KVM inside the host VM, which is why the host VM needs nested virtualization. See it: virsh list on the host VM shows the two machines; ps aux | grep qemu shows their processes. VirtualBox, the usual Vagrant provider, is all three layers in one product.
+tags: vagrant vocabulary part1
+
+### Why did the host VM move from VirtualBox to QEMU/KVM?
+Because of nested virtualization. The whole project runs inside one host VM on the 42 computer, and inside it libvirt/KVM has to run the two Part 1 VMs. Under VirtualBox that second layer froze twice during a full run of Part 1: the guest clock stopped, every vCPU sat parked at the same instruction, VBox.log said "Guest seems to be unresponsive". VirtualBox is a type-2 hypervisor and passes VT-x down to the guest in software, slowly and not reliably. KVM is in the Linux kernel of the 42 computer: qemu-system-x86_64 -enable-kvm -cpu host gives the host VM the real processor, including its virtualization feature, so KVM inside the VM runs the Part 1 machines at nearly native speed; the host VM boots in about ten seconds. Second reason: we have no root on the 42 computer and may not create or change a libvirt network there; QEMU needs neither, one command with user-mode networking and hostfwd for SSH, no daemon, no GUI, disk as qcow2 in sgoinfre (docs/host-vm/iot-kvm.sh). Other students at 42 Berlin run their project VMs the same way for the same reasons. The two cannot run at the same time on one computer.
+tags: vagrant host-vm part1
+
+### Does a KVM guest share the kernel of the school machine?
+No. Under KVM and under VirtualBox alike the host VM boots its own Ubuntu kernel. What differs is the hypervisor. With KVM the school machine's own Linux kernel is the hypervisor: KVM is a module in that kernel, so the processor's virtualization feature (VT-x) is handled by the kernel that already owns the hardware, and handing it on into the guest (nested virtualization) is a feature of the same module. VirtualBox is a separate program with its own kernel driver (vboxdrv) loaded next to the Linux kernel; it has to share VT-x with the kernel and re-implements nested VT-x itself, which is slow and, in our runs, froze. Sharing a kernel is what containers do: Docker and K3d run on the host VM's kernel and need no VT-x at all.
+tags: vagrant host-vm vocabulary
 
 ### Is Vagrant a hypervisor? What is a hypervisor?
 No. A hypervisor is the software that actually runs virtual machines: VirtualBox, KVM (driven through libvirt on Linux), VMware, Hyper-V. Type 1 runs on the hardware (KVM, ESXi, Hyper-V), type 2 as a program inside an operating system (VirtualBox). Vagrant only drives one, called the provider: it reads the Vagrantfile and tells the hypervisor to create the VM from a box, attach the network, then runs the provisioners. This project drives libvirt/KVM inside the host VM, hence nested virtualization.
@@ -374,23 +430,23 @@ Outside, one layer below. Vagrant runs it from the host over SSH after both VMs 
 tags: ansible vagrant part1
 
 ### What does the Part 1 playbook do, step by step?
-Play 1 on slombardS: install python3 and curl with apk (Alpine), run the K3s installer, wait for /etc/rancher/k3s/k3s.yaml and the node token. Play 2 on slombardSW: wait for port 6443 on 192.168.56.110, read the token from the server with delegate_to, install the agent with K3S_URL and K3S_TOKEN. Play 3 on the server: k3s kubectl get nodes and print it. The token never touches the repo; Ansible carries it over SSH.
+Play 1 on rpodackS: make sure Python is there, set the hostname, install curl with apt (Debian), run the K3s installer in server mode, wait for /etc/rancher/k3s/k3s.yaml and the node token. Play 2 on rpodackSW: the same preparation, then wait for port 6443 on 192.168.56.110, read the token from the server with delegate_to, install the agent with K3S_URL and K3S_TOKEN. Play 3 on the server: k3s kubectl get nodes and print it. The token never touches the repo; Ansible carries it over SSH.
 tags: ansible part1
 
 ### Draw Part 1 as nested circles: where are the Vagrantfile, the playbook, K3s and the Pods?
-Outer circle: the host VM. Inside: Vagrant with libvirt, and in that ring the Vagrantfile and the playbook as files. Inside Vagrant: the two Alpine VMs. Inside each VM: K3s. The Kubernetes circle with the Pods spans both VMs, one cluster across two machines. The playbook never enters the VMs: Ansible runs on the host and reaches in over SSH to install K3s; afterwards the cluster runs without it.
+Outer circle: the host VM. Inside: Vagrant with libvirt, and in that ring the Vagrantfile and the playbook as files. Inside Vagrant: the two Debian VMs. Inside each VM: K3s. The Kubernetes circle with the Pods spans both VMs, one cluster across two machines. The playbook never enters the VMs: Ansible runs on the host and reaches in over SSH to install K3s; afterwards the cluster runs without it.
 tags: part1 architecture
 
 ### Are the two Part 1 VMs on different physical servers? What does "server" mean in this project?
-No: both run on the same host VM on one physical computer; libvirt gives each its own kernel, disk and IP, so K3s sees two machines. The exercise simulates a two-machine cluster on one laptop. In production nodes are separate physical servers or VMs on separate hosts, otherwise one hardware failure takes the cluster down. "Server" has three meanings here: the physical machine, the K3s server role (slombardS with the control plane, versus the agent slombardSW), and the API server component inside it. Say "server VM" or "server node" for slombardS.
+No: both run on the same host VM on one physical computer; libvirt gives each its own kernel, disk and IP, so K3s sees two machines. The exercise simulates a two-machine cluster on one laptop. In production nodes are separate physical servers or VMs on separate hosts, otherwise one hardware failure takes the cluster down. "Server" has three meanings here: the physical machine, the K3s server role (rpodackS with the control plane, versus the agent rpodackSW), and the API server component inside it. Say "server VM" or "server node" for rpodackS.
 tags: part1 vocabulary
 
 ### How do Vagrant and Ansible relate in Part 1?
 Siblings on the host, neither contains the other. During vagrant up, Vagrant writes an inventory with the two VMs and their SSH details, runs ansible-playbook with it and the playbook, and waits. Ansible is agentless: no daemon, no instance, a run and nothing more. The same playbook works without Vagrant against any machines reachable by SSH. Vagrant owns the VMs, Ansible owns what happens inside them, once.
 tags: ansible vagrant part1
 
-### Where are the two Alpine VMs declared?
-In p1/Vagrantfile, one config.vm.define block each: slombardS and slombardSW. Each block sets hostname, the box generic/alpine318, a private_network with the fixed IP (.110 or .111) on the libvirt network vagrant56 without DHCP, and the libvirt provider settings: 512 MB, 1 CPU, cpu_mode host-passthrough. The Ansible provisioner block at the end applies to both. Alpine is only the word in the box name: no ISO, no installation, Vagrant downloads the ready image from Vagrant Cloud.
+### Where are the two VMs of Part 1 declared?
+In p1/Vagrantfile. The box is named once at the top for both: cloud-image/debian-13, Debian 13. Then one config.vm.define block each, rpodackS and rpodackSW, setting the hostname, a private_network with the fixed IP (.110 or .111) without DHCP, and the libvirt provider settings: 512 MB, 1 CPU. The Ansible provisioner block at the end applies to both. The box is a ready image: no ISO, no installation, Vagrant downloads it from Vagrant Cloud.
 tags: vagrant part1
 
 ### Does the Part 1 setup have a real-world equivalent?
@@ -398,11 +454,11 @@ Vagrant on a laptop is a lab, but take Vagrant away and the rest is a real patte
 tags: part1 context
 
 ### Do you always need at least two servers on two machines? What does real high availability take?
-For availability, two is not enough. Part 1 has workload redundancy (the agent can fail, Pods keep running on the server) but one control plane: slombardS is a single point of failure. Real HA needs three servers, not two, because etcd decides by majority and two minus one has none; three servers plus any number of agents, on separate machines, in the cloud across separate data centres. Availability is not the only point, though: at the edge K3s often runs on one box on purpose, because the gain is uniformity, the same manifests, kubectl and Argo CD for a thousand shops and the data centre. HA is what you get on top when you have enough machines.
+For availability, two is not enough. Part 1 has workload redundancy (the agent can fail, Pods keep running on the server) but one control plane: rpodackS is a single point of failure. Real HA needs three servers, not two, because etcd decides by majority and two minus one has none; three servers plus any number of agents, on separate machines, in the cloud across separate data centres. Availability is not the only point, though: at the edge K3s often runs on one box on purpose, because the gain is uniformity, the same manifests, kubectl and Argo CD for a thousand shops and the data centre. HA is what you get on top when you have enough machines.
 tags: kubernetes architecture context
 
 ### What is Part 1 about?
-Two VMs from one Vagrantfile, Alpine, 512 MB, fixed IPs on eth1: slombardS at 192.168.56.110, slombardSW at .111. Ansible installs K3s on the first as server and on the second as agent, which joins with the server's URL and token. Result: a two-node cluster, kubectl get nodes shows both Ready. Theme: how a cluster comes into being, control plane and worker, a node joining.
+Two VMs from one Vagrantfile, Debian 13, 512 MB, fixed IPs on eth1: rpodackS at 192.168.56.110, rpodackSW at .111. Ansible installs K3s on the first as server and on the second as agent, which joins with the server's URL and token. Result: a two-node cluster, kubectl get nodes shows both Ready. Theme: how a cluster comes into being, control plane and worker, a node joining.
 tags: part1 overview
 
 ### What is Part 2 about?
@@ -426,11 +482,11 @@ Two things. Rancher Labs is the company (California, 2014, part of SUSE since 20
 tags: k3s vocabulary context
 
 ### Are server and agent roles we define, or part of K3s?
-Part of K3s: the two ways the one binary can start. k3s server runs the control plane plus the worker part; k3s agent runs only the worker part and registers with a server. We only choose which machine gets which role. In the install script one thing decides: if K3S_URL is set, an agent is installed, otherwise a server; our playbook calls the installer without variables on slombardS and with K3S_URL and K3S_TOKEN on slombardSW. Standard Kubernetes calls the same roles control-plane node (formerly master) and worker node; the subject says controller mode and agent mode. kubectl get nodes shows it in the ROLES column: control-plane,master for slombardS, none for slombardSW.
+Part of K3s: the two ways the one binary can start. k3s server runs the control plane plus the worker part; k3s agent runs only the worker part and registers with a server. We only choose which machine gets which role. In the install script one thing decides: if K3S_URL is set, an agent is installed, otherwise a server; our playbook calls the installer with INSTALL_K3S_EXEC="server ..." on rpodackS and with K3S_URL and K3S_TOKEN on rpodackSW. Standard Kubernetes calls the same roles control-plane node (formerly master) and worker node; the subject says controller mode and agent mode. kubectl get nodes shows it in the ROLES column: control-plane,master for rpodackS, none for rpodackSW.
 tags: k3s part1
 
 ### Is the agent part of the server, since the server controls it?
-No: it belongs to the cluster, not to the server; two processes on two machines. And the control runs the other way round: the server never logs into the agent or sends it commands. The agent's kubelet keeps a connection to the API server on port 6443 and watches for Pods assigned to its node, starts them itself, reports status, keeps watching. The server only writes "this Pod belongs on slombardSW" into its datastore. Control by asking, not by ordering, which is why the agent keeps running when the server dies. The agent also opens a tunnel to the server through which the server reaches the kubelet for kubectl logs and exec; even that connection is opened by the agent.
+No: it belongs to the cluster, not to the server; two processes on two machines. And the control runs the other way round: the server never logs into the agent or sends it commands. The agent's kubelet keeps a connection to the API server on port 6443 and watches for Pods assigned to its node, starts them itself, reports status, keeps watching. The server only writes "this Pod belongs on rpodackSW" into its datastore. Control by asking, not by ordering, which is why the agent keeps running when the server dies. The agent also opens a tunnel to the server through which the server reaches the kubelet for kubectl logs and exec; even that connection is opened by the agent.
 tags: k3s architecture part1
 
 ### Why does the server node mix control plane and workloads? Is that against the Unix philosophy?
@@ -466,7 +522,7 @@ Creating a Pod object is writing a record into the API server, a document saying
 tags: kubernetes architecture resources
 
 ### What does "scheduling" or "placing" a Pod mean?
-Deciding which node a Pod runs on and writing that decision into the Pod object: one field, spec.nodeName, created empty and filled by the scheduler with, say, slombardSW. The scheduler moves and starts nothing; it writes a name into a field. The word scheduling has nothing to do with time here, only with place. Two stages: filter the nodes that qualify (enough free requests, no taint without toleration, matching labels), then score the rest and pick the best, usually the least loaded. Part 1 has two candidates, Part 2 one. The kubelet seeing its name in the field makes the containers.
+Deciding which node a Pod runs on and writing that decision into the Pod object: one field, spec.nodeName, created empty and filled by the scheduler with, say, rpodackSW. The scheduler moves and starts nothing; it writes a name into a field. The word scheduling has nothing to do with time here, only with place. Two stages: filter the nodes that qualify (enough free requests, no taint without toleration, matching labels), then score the rest and pick the best, usually the least loaded. Part 1 has two candidates, Part 2 one. The kubelet seeing its name in the field makes the containers.
 tags: kubernetes scheduling
 
 ### Does a worker node know about replicas?
@@ -480,6 +536,10 @@ tags: kubernetes resources vocabulary
 ### Is a Pod a configuration, like a class, or a process?
 Both, in sequence, and the class is one step up: the Deployment's template is the class, a description without a name; the Pod object is an instance, a record with its own name, IP and status in the datastore, pure data with identity. A replica is such an instance seen as one of N siblings from the same template: an instance of the template, not of a Pod, since a Pod has no instances, it is one. Then the kubelet makes it run: one process per container, plus a tiny pause container that only sleeps and holds the shared namespaces (above all the network with the IP) so the containers share them and can restart one by one. A running Pod is a group of processes in shared namespaces, not one process; ps on the node shows the processes, the Pod is the bracket around them. The object's status (Running, Ready, Restarts) is the kubelet watching the processes and writing back. A Pod is not a running container: a Pending Pod exists as an object with no container running yet; in CrashLoopBackOff the object stays while its container dies and restarts. The object outlives its containers, never the reverse.
 tags: kubernetes resources
+
+### What is eth0, and why does the subject ask for eth1?
+eth0 and eth1 are the names Linux gives the network interfaces of a machine: eth for Ethernet, numbered in the order found (lo is the loopback, the machine talking to itself). Every Vagrant VM gets eth0 without being asked: with libvirt it sits on a management network (192.168.121.0/24 by default), gets its address by DHCP and goes out to the internet through NAT. Vagrant uses it for vagrant ssh and for Ansible; the VM uses it to download K3s. Its address is not fixed and differs on every machine. eth1 exists only because the Vagrantfile declares a private_network: a second card with the fixed address 192.168.56.110 or .111, on a network the two VMs share. The cluster is supposed to talk there, which is why the subject names eth1. Show both: ip a.
+tags: networking vagrant part1
 
 ### Which networks exist in Part 1, and who made each?
 Three, stacked. The VM network from Vagrant: eth1 with 192.168.56.110 and .111 (plus eth0 NAT); machines talk here, the API listens on 6443, requests from outside arrive here; Kubernetes uses it, did not make it. The Pod network from Flannel: 10.42.0.0/16, a /24 per node (server Pods 10.42.0.x, agent Pods 10.42.1.x); every Pod reaches every Pod, between nodes through a tunnel over the VM network; exists only inside the cluster. The Service network: 10.43.0.0/16, the ClusterIPs, no interface at all, only forwarding rules written by kube-proxy on each node; an address without a machine. Traefik bridges bottom and top: it listens on the VM IP, port 80, and forwards into the Service network. Three commands, three layers: ip a, kubectl get pods -o wide, kubectl get svc.

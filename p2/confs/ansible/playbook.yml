@@ -1,8 +1,15 @@
 - name: Install K3s Server
   hosts: rpodackS
-  gather_facts: yes
+  gather_facts: no    # gathered below, once Python is there
   become: yes
   tasks:
+    - name: Make sure Python is on the VM (Ansible needs it before any module can run)
+      raw: test -x /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+    - name: Gather facts
+      setup:
+
     #############make sure hostnae is set
     - name: Set hostname in /etc/hostname
       copy:
@@ -47,7 +54,7 @@
     - name: Install K3s server
       shell: |
         curl -sfL https://get.k3s.io | \
-          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644" \
+          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1" \
           sh -
       args:
         creates: /usr/local/bin/k3s
@@ -57,10 +64,6 @@
       wait_for:
         path: /etc/rancher/k3s/k3s.yaml
         timeout: 300
-      become: yes
-
-    - name: Install flannel (CNI for creating pod network)
-      shell: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
       become: yes
 
 ##########################################

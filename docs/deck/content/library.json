@@ -1,0 +1,93 @@
+{
+  "desk": [
+    {
+      "group": "Study",
+      "slug": "oral-evaluation",
+      "title": "Study document for the oral"
+    },
+    {
+      "group": "Subject",
+      "slug": "inception-of-things",
+      "title": "The subject"
+    },
+    {
+      "group": "Host VM",
+      "slug": "vm-setup",
+      "title": "VM Setup and Maintenance"
+    },
+    {
+      "group": "Host VM",
+      "slug": "vagrant",
+      "title": "Vagrant Primer (for our Kubernetes / Inception-of-Things Project)"
+    },
+    {
+      "group": "Host VM",
+      "slug": "qemu",
+      "title": "Core QEMU Stack"
+    },
+    {
+      "group": "Host VM",
+      "slug": "qemu_essential",
+      "title": "qemu essential"
+    },
+    {
+      "group": "Host VM",
+      "slug": "hostname",
+      "title": "Hostname — Linux, macOS, Windows"
+    },
+    {
+      "group": "Issues",
+      "slug": "part1-todo",
+      "title": "Part 1: K3s and Vagrant - TODO"
+    },
+    {
+      "group": "Issues",
+      "slug": "implement-ansible",
+      "title": "Issue: Implement Ansible Provisioning for Part 1"
+    },
+    {
+      "group": "Issues",
+      "slug": "yli-branch-ideas",
+      "title": "Ideas from the yli branch"
+    },
+    {
+      "group": "Working notes",
+      "slug": "slombard-start-here",
+      "title": "slombard: start here"
+    }
+  ],
+  "lab": [
+    {
+      "slug": "ansible",
+      "title": "Ansible on the host"
+    },
+    {
+      "slug": "docker-rpodack",
+      "title": "Docker provider setup"
+    },
+    {
+      "slug": "first",
+      "title": "first"
+    },
+    {
+      "slug": "graphics-study",
+      "title": "Graphics study: the DevOps page"
+    },
+    {
+      "slug": "logo-study",
+      "title": "Logo study"
+    },
+    {
+      "slug": "minimal",
+      "title": "minimal"
+    },
+    {
+      "slug": "minimal_qemu",
+      "title": "minimal qemu"
+    },
+    {
+      "slug": "sketches",
+      "title": "Sketches"
+    }
+  ]
+}

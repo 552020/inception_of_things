@@ -4,9 +4,16 @@
 
 - name: Install K3s Server
   hosts: rpodackS
-  gather_facts: yes
+  gather_facts: no    # gathered below, once Python is there
   become: yes
   tasks:
+    - name: Make sure Python is on the VM (Ansible needs it before any module can run)
+      raw: test -x /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+    - name: Gather facts
+      setup:
+
     #############make sure hostnae is set
     - name: Set hostname in /etc/hostname
       copy:
@@ -51,7 +58,7 @@
     - name: Install K3s server
       shell: |
         curl -sfL https://get.k3s.io | \
-          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644" \
+          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1" \
           sh -
       args:
         creates: /usr/local/bin/k3s
@@ -79,9 +86,16 @@
 
 - name: Install K3s Worker
   hosts: rpodackSW
-  gather_facts: yes   # we need facts for apt module
+  gather_facts: no    # gathered below, once Python is there
   become: yes
   tasks:
+    - name: Make sure Python is on the VM (Ansible needs it before any module can run)
+      raw: test -x /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+    - name: Gather facts
+      setup:
+
    #############make sure hostname is set
     - name: Set hostname in /etc/hostname
       copy:
@@ -150,7 +164,7 @@
         k3s_token: "{{ token_file.content | b64decode | trim }}"
 
     - name: Install K3s agent
-      shell: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN={{ k3s_token }} sh -
+      shell: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN={{ k3s_token }} INSTALL_K3S_EXEC="agent --node-ip 192.168.56.111 --flannel-iface eth1" sh -
       become: yes
       async: 300   # run asynchronously, 5 min max
       poll: 0
