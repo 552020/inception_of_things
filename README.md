@@ -1,39 +1,47 @@
 # Inception-of-Things
 
-A minimal introduction to Kubernetes, in three parts and a bonus: K3s on virtual machines
-made with Vagrant, then K3d with Argo CD. The whole project runs inside one virtual machine.
+## The project
 
-**Part 1: K3s and Vagrant.** Two virtual machines made with Vagrant: `rpodackS` (Server,
-192.168.56.110) and `rpodackSW` (ServerWorker, 192.168.56.111), each with its IP on eth1
-and SSH without a password. K3s runs on the first in controller mode and on the second in
-agent mode; kubectl is installed.
+Three small Kubernetes setups, each running on its own inside one Linux virtual machine,
+the host VM.
 
-**Part 2: K3s and three simple applications.** One virtual machine, `rpodackS` at
-192.168.56.110, with K3s in server mode and three web applications. Which one answers
-depends on the HOST of the request: app1.com gets app1, app2.com gets app2, anything else
-gets app3. app2 runs as three replicas. An Ingress does the routing.
+- **Part 1: K3s and Vagrant, a cluster of two machines.** Vagrant creates two virtual
+  machines and Ansible installs K3s, a lightweight Kubernetes, on both. One is the server
+  and runs the control plane; the other is a worker that joins it over a private network
+  (192.168.56.110 and 192.168.56.111).
+- **Part 2: K3s and Traefik, three web applications behind one address.** One virtual
+  machine runs K3s with three applications. Traefik, the Ingress controller that comes with
+  K3s, picks the application by the host name in the request: app1.com, app2.com, and
+  anything else goes to app3. The second application runs as three replicas.
+- **Part 3: K3d and Argo CD, continuous deployment from GitHub.** K3d runs a K3s cluster as
+  Docker containers. Argo CD, inside the cluster, watches a public GitHub repository and
+  keeps the running application equal to what the repository says: change the version
+  there and push, and the cluster follows.
+- **Bonus: GitLab.** Part 3 with a GitLab running inside the cluster in place of GitHub.
 
-**Part 3: K3d and Argo CD.** No Vagrant: K3d runs K3s in Docker on the virtual machine, and
-a script installs every tool it needs. Two namespaces: `argocd` for Argo CD, and `dev` with
-an application that Argo CD deploys automatically from a public GitHub repository,
-Robin-Lenz/rpodackIoT. The application is Wil's `wil42/playground` on port 8888, in two
-versions, v1 and v2: changing the version in the GitHub repository updates the running
-application.
+## Folder structure
 
-**Bonus.** Part 3 with GitLab, in its latest version, running locally in the cluster in a
-namespace named `gitlab`, in place of GitHub. Everything from Part 3 works with it.
+| Folder | What |
+|--------|------|
+| `p1` | Part 1: Vagrantfile, Ansible playbook, test script |
+| `p2` | Part 2: Vagrantfile, Ansible playbook, the manifests of the three applications |
+| `p3` | Part 3: install script, k3d and Argo CD setup, the Argo CD Application |
+| `bonus` | Bonus: GitLab and Argo CD setup |
+
+### Extra folders, to be removed before submission
 
 | Folder | What |
 |--------|------|
 | `docs/subject` | the subject and the evaluation sheet |
-| `docs/evaluation` | the study document for the oral, the glossary and the flashcards; the cards are served as a web deck at https://iot-deck-pi.vercel.app |
-| `docs/host-vm` | how the host VM was built and is kept |
-| `docs/lab` | experiments that are not turned in: early Vagrantfiles, a Docker-provider setup, an Ansible helper |
+| `docs/journal.md` | decisions and their reasons, dated |
+| `docs/diagrams` | hand-drawn sketches of each part, coming up and running |
+| `docs/evaluation` | study notes for the oral, glossary, flashcards (web deck: https://iot-deck-pi.vercel.app) |
 | `docs/deck` | the web deck's code |
-
-Hand-drawn overview of each part: [docs/diagrams](docs/diagrams/README.md).
-
-Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folders at the root. Each has a `Makefile`; `make help` in `p1` and `p2` lists the targets, `make setup` in `p3` builds everything.
+| `docs/host-vm` | how the host VM is built, started and backed up |
+| `docs/lab` | experiments that are not handed in |
+| `docs/issues` | open questions and ideas |
+| `docs/sessions` | working notes per session |
+| `docs/slombard-start-here.md` | Stefano's checklist for the next session |
 
 ## Where we are
 
