@@ -43,13 +43,17 @@ the host VM.
 | `docs/sessions` | working notes per session |
 | `docs/slombard-start-here.md` | Stefano's checklist for the next session |
 
-## Where we are
+## Where we depart from the subject
 
-The work of 21 and 22 November is merged (PRs #6 and #7, 25 November); work on `main`. Part 1 passes (`make up` 103 s, `make test` 14 of 14, 2026-11-28, on branch `fix-p1-k3s-memory`); Parts 2, 3 and the bonus are being run next.
+The subject strongly advises 1 CPU and 512 MB of RAM (or 1024) per virtual machine. We follow
+that for the worker of Part 1, `rpodackSW`: 1 CPU, 512 MB. The K3s server of Parts 1 and 2,
+`rpodackS`, gets 2 CPUs and 2048 MB:
 
-- **We depart from the subject on one point:** the K3s server VMs of `p1` and `p2` get 2 CPUs and 2048 MB, where the subject advises 1 CPU and 512 or 1024 MB. K3s itself documents 2 cores and 2 GB as the minimum for a server, and at 1024 MB our server ran out of memory. The worker keeps the subject's 1 CPU and 512 MB. Why, with the measurements: [journal, 2026-11-28](docs/journal.md#2026-11-28-the-k3s-servers-get-2-cpus-and-2-gb-more-than-the-subject-advises).
-- Session notes, readable from any computer: [docs/sessions](docs/sessions/README.md). Delete that folder before submission.
-- Personal checklist for the next session: [docs/slombard-start-here.md](docs/slombard-start-here.md).
+- K3s documents 2 cores and 2 GB as the minimum for a server node, and 1 core and 512 MB for
+  an agent ([K3s requirements](https://docs.k3s.io/installation/requirements)).
+- At 1024 MB our server ran out of memory about a minute after K3s started: 11 MB available,
+  K3s alone using 689 MB, and it stopped answering. At 2048 MB it stays responsive, with more
+  than 700 MB free.
 
 ## Host VM
 
