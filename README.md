@@ -60,7 +60,7 @@ The options on the 42 machines, where we have no root:
 | libvirt, session mode (`qemu:///session`) | runs without root, but cannot create networks | possible, with QEMU's user networking |
 | QEMU/KVM directly | `qemu-system-x86_64` installed, `/dev/kvm` usable while logged in at the seat | our choice: one command, no daemon |
 
-## Running each part
+## Usage
 
 Before you start, inside the host VM:
 
