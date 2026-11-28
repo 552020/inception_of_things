@@ -65,6 +65,20 @@ Measured in the host VM under QEMU/KVM (6 vCPUs, 8 GB), boxes and images already
 
 Known problem, now explained: on 2026-11-22 the server stalled a few minutes after K3s came up, and we blamed the second provisioning pass. On 2026-11-28 it happened again after a single `make up`: the server was out of memory at 1024 MB. The fix and the reasons are in the journal entry of 2026-11-28; the times above were taken before it.
 
+Measured 2026-11-28, with the Vagrant box and the images already downloaded (moved out of the README):
+
+| Part | Command | Time |
+|------|---------|------|
+| 1 | `make up` | about 2 min |
+| 2 | `make up` | about 1 min |
+| 3 | `make setup` | about 20 s |
+| bonus | `make setup` | about 4 min |
+| 1 | `make test` | 13 s |
+| 2 | `make test` | 44 s |
+| 3 | `make test` | passed 3 min 34 s after `make setup` was started, most of it waiting for Argo CD's first sync |
+| Bonus | `make test` | 3 s |
+| bonus | `make test-switch` | v2 in 2 s, v1 in 6 s |
+
 ## Three repositories
 
 | Repository | Holds | Read by |

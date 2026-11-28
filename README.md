@@ -55,14 +55,13 @@ The options on the 42 machines, where we have no root:
 ## Usage
 
 Run one part at a time: Parts 1 and 2 share the IP 192.168.56.110, Part 3 and the bonus share
-the ports 8080 and 8888. Times assume the Vagrant box and the container images are already
-downloaded.
+the ports 8080 and 8888.
 
 ### Part 1: K3s and Vagrant
 
 ```bash
 cd p1
-make up           # creates both VMs and installs K3s (about 2 min)
+make up           # creates both VMs and installs K3s
 make test         # hostnames, eth1, K3s on both machines, both nodes Ready
 ```
 
@@ -80,7 +79,7 @@ make down         # stops both VMs
 ```bash
 make -C p1 down   # Part 1's VMs must be off: same IP
 cd p2
-make up           # the VM, K3s and the three applications (about 1 min)
+make up           # the VM, K3s and the three applications
 make test         # VM, K3s, the three applications, the Ingress and their answers
 ```
 
@@ -98,7 +97,7 @@ make ssh-server   # then: kubectl get all, ingress   (app2 has 3 replicas)
 ```bash
 bash p3/scripts/installationhost.sh   # once: Docker, kubectl, k3d, argocd; then log out and in
 cd p3
-make setup        # k3d cluster, namespaces argocd and dev, Argo CD, the Application (about 20 s)
+make setup        # k3d cluster, namespaces argocd and dev, Argo CD, the Application
 make test         # waits for Argo CD's first sync, then checks the application
 ```
 
@@ -136,7 +135,7 @@ make echo-password        # the admin password
 ```bash
 make -C p3 delete   # Part 3's cluster must be gone: same ports
 cd bonus
-make setup          # k3d cluster, Argo CD, GitLab in namespace gitlab, the repository (about 4 min)
+make setup          # k3d cluster, Argo CD, GitLab in namespace gitlab, the repository
 make test           # namespaces, GitLab, the repository, Argo CD, the application
 make test-switch    # v2, then back to v1, with the time each change took
 ```
@@ -160,15 +159,15 @@ too. The tests only read: they change nothing and push nothing to GitHub. Where 
 still starting (images downloading, Argo CD's first sync), a check waits, for up to 5 or 6
 minutes, before it counts as failed.
 
-| Part | Checks | Time on 28 November, images downloaded |
-|------|--------|-----------------------------------------|
-| 1 | SSH, hostnames, eth1 addresses, K3s on both machines, both nodes Ready (14) | 13 s |
-| 2 | VM, K3s, three Deployments, app2 with 3 replicas, all pods Running, three Ingresses, the five answers of 192.168.56.110 (15) | 44 s |
-| 3 | nodes, namespaces, Argo CD pods, the Application Synced and Healthy, the pod in dev, localhost:8888, and that the version served is the image tag (11) | passed 3 min 34 s after `make setup` was started, most of it waiting for Argo CD's first sync |
-| Bonus | the same for the local GitLab, plus GitLab's page, the repository on GitLab and the Application pointing at it (14) | 3 s |
+| Part | Checks |
+|------|--------|
+| 1 | SSH, hostnames, eth1 addresses, K3s on both machines, both nodes Ready (14) |
+| 2 | VM, K3s, three Deployments, app2 with 3 replicas, all pods Running, three Ingresses, the five answers of 192.168.56.110 (15) |
+| 3 | nodes, namespaces, Argo CD pods, the Application Synced and Healthy, the pod in dev, localhost:8888, and that the version served is the image tag (11) |
+| Bonus | the same for the local GitLab, plus GitLab's page, the repository on GitLab and the Application pointing at it (14) |
 
 The bonus also has `make test-switch`: it runs `make v2`, waits until port 8888 serves v2,
-does the same back to v1, and prints how long each change took (2 and 6 s on 28 November).
+does the same back to v1, and prints how long each change took.
 It writes only to the local GitLab, so it can run at any time. Part 3 has no such test,
 because it would have to push to the public GitHub repository.
 
