@@ -1,7 +1,7 @@
 # Vagrantfile
 Vagrant.configure("2") do |config|
 
-  # Debian 13 (trixie), the current stable release; box with a libvirt build (Robin's choice)
+  # Debian 13 (trixie), the current stable release; box with a libvirt build
   config.vm.box = "cloud-image/debian-13"
 
   # Ansible copies what the VMs need; no shared folder (the box would ask for NFS)
