@@ -262,3 +262,36 @@ Hello from app2
 slombard@slombard-VirtualBox:~/42/inception_of_things/p2$ curl  192.168.56.110
 Hello from App3
 slombard@slombard-VirtualBox:~/42/inception_of_things/p2$
+make ssh-server
+vagrant ssh rpodackS
+[fog][WARNING] Unrecognized arguments: libvirt_ip_command
+Linux rpodackS 6.12.107+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.107-1 (2026-08-29) x86_64
+$ kubectl get all
+NAME                        READY   STATUS    RESTARTS   AGE
+pod/app1-7f8ccb55c4-9lxb2   1/1     Running   0          5m25s
+pod/app2-fb5878677-8lm76    1/1     Running   0          5m25s
+pod/app2-fb5878677-cr59m    1/1     Running   0          5m25s
+pod/app2-fb5878677-fbr45    1/1     Running   0          5m25s
+pod/app3-66c45f8448-5p9px   1/1     Running   0          5m25s
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/app1         ClusterIP   10.43.170.97    <none>        80/TCP    5m30s
+service/app2         ClusterIP   10.43.109.173   <none>        80/TCP    5m24s
+service/app3         ClusterIP   10.43.1.198     <none>        80/TCP    5m28s
+service/kubernetes   ClusterIP   10.43.0.1       <none>        443/TCP   5m34s
+
+NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/app1   1/1     1            1           5m30s
+deployment.apps/app2   3/3     3            3           5m25s
+deployment.apps/app3   1/1     1            1           5m28s
+
+NAME                              DESIRED   CURRENT   READY   AGE
+replicaset.apps/app1-7f8ccb55c4   1         1         1       5m26s
+replicaset.apps/app2-fb5878677    3         3         3       5m25s
+replicaset.apps/app3-66c45f8448   1         1         1       5m26s
+$ kubectl get ingress
+NAME           CLASS    HOSTS      ADDRESS          PORTS   AGE
+app1-ingress   <none>   app1.com   192.168.56.110   80      5m39s
+app2-ingress   <none>   app2.com   192.168.56.110   80      5m33s
+app3-ingress   <none>   *          192.168.56.110   80      5m36s
+$
