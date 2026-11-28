@@ -19,7 +19,7 @@ Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folde
 
 ## Where we are
 
-The work of 21 and 22 November is merged (PRs #6 and #7, 25 November); work on `main`. Only Part 1's `make up` has run so far; Parts 2, 3 and the bonus are written and reviewed but not run.
+The work of 21 and 22 November is merged (PRs #6 and #7, 25 November); work on `main`. Part 1 passes (`make up` 103 s, `make test` 14 of 14, 2026-11-28, on branch `fix-p1-k3s-memory`); Parts 2, 3 and the bonus are being run next.
 
 - **We depart from the subject on one point:** the K3s server VMs of `p1` and `p2` get 2 CPUs and 2048 MB, where the subject advises 1 CPU and 512 or 1024 MB. K3s itself documents 2 cores and 2 GB as the minimum for a server, and at 1024 MB our server ran out of memory. The worker keeps the subject's 1 CPU and 512 MB. Why, with the measurements: [journal, 2026-11-28](#2026-11-28-the-k3s-servers-get-2-cpus-and-2-gb-more-than-the-subject-advises).
 - Session notes, readable from any computer: [docs/sessions](docs/sessions/README.md). Delete that folder before submission.
@@ -61,11 +61,11 @@ The full rebuild procedure, disk resizing, backup and recovery steps are in [doc
 
 ## Setup times
 
-Measured on 2026-11-22 in the host VM under QEMU/KVM (6 vCPUs, 8 GB), boxes and images already cached, one run each. A first run adds the downloads (the Debian box, the K3s binary per node, the k3d and Argo CD images).
+Measured in the host VM under QEMU/KVM (6 vCPUs, 8 GB), boxes and images already cached, one run each. A first run adds the downloads (the Debian box, the K3s binary per node, the k3d and Argo CD images).
 
 | Part | Command | Time | Notes |
 |------|---------|------|-------|
-| 1 | `make up` | 102 s | both VMs created, provisioned, one reboot each for the interface names, node Ready; measured while a k3d cluster was also running in the guest, so a quiet guest should be a little faster |
+| 1 | `make up` | 103 s | measured 2026-11-28 with the server at 2 CPUs and 2048 MB, nothing else running; then `make watch` 5 min without a stall and `make test` 14 of 14 passed. Earlier: 102 s on 2026-11-22 at 1024 MB, but that server later ran out of memory |
 | 2 | `make up` | not measured yet | |
 | 3 | `make setup` | not measured yet | |
 | bonus | `make setup` | about 10 min to all pods Running | GitLab CE plus Argo CD, 2.5 to 3 GB in the guest; unconfirmed, see `bonus/` |
@@ -264,6 +264,14 @@ Many reads and few writes with no free memory is thrashing: the kernel keeps evi
 | `rpodackSW` in `p1` | K3s agent | 1 | 512 MB | subject and K3s agent minimum |
 | `rpodackS` in `p2` | K3s server, three apps | 2 | 2048 MB | K3s server minimum |
 
-Considered and dropped: starting K3s without Traefik, metrics-server and ServiceLB to save memory. `p2` needs Traefik, and it would turn `p1` into a non-standard K3s to fit a number the subject only advises. Swap was not tried: Kubernetes is designed to run without it.
+**The result, same day.** Three runs of `p1`, each from scratch with the box cached and nothing else running in the guest:
+
+| Server | `make up` | Server after the install (`make watch`, 5 min) | `make test` |
+|--------|-----------|-----------------------------------------------|-------------|
+| 1 CPU, 1024 MB, as the subject advises | 113 s | out of memory, unreachable to the end of the window and 3 minutes after | not reachable |
+| 1 CPU, 1024 MB, without Traefik, metrics-server, ServiceLB | 109 s | unreachable for about 3.5 minutes with 62 MB free, then recovered | 14 of 14 |
+| 2 CPUs, 2048 MB, K3s as shipped | 103 s | never unreachable; at least 715 MB available; memory pressure 0.15 %, I/O pressure 8 % | 14 of 14 |
+
+With 2048 MB the disk reads in the first sample dropped from 462 048 to 5 882: no more thrashing. Turning off the add-ons helped only partly and would make `p1` a non-standard K3s, while `p2` needs Traefik anyway; memory is what fixes it. Swap was not tried: Kubernetes is designed to run without it.
 
 At the defense, if asked: show this entry, the K3s requirements page and the measured sample above.
