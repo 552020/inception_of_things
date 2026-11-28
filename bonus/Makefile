@@ -7,7 +7,8 @@ CLUSTER_NAME := bonus
 ARGO_NAMESPACE := argocd
 DEV_NAMESPACE := dev
 GITLAB_NAMESPACE := gitlab
-ARGO_VERSION := v2.7.12
+# Same Argo CD as Part 3
+ARGO_VERSION := v3.6.2
 ARGO_PORT := 8080
 GITLAB_URL := http://localhost:8929
 REPO := rpodackIoT
@@ -52,8 +53,10 @@ create-namespaces:
 		$(KUBECTL) create namespace $$ns --dry-run=client -o yaml | $(KUBECTL) apply -f -; \
 	done
 
+# Server-side apply: the Argo CD 3 CRDs are too large for the annotation
+# that a client-side apply writes.
 install-argo:
-	$(KUBECTL) apply -n $(ARGO_NAMESPACE) -f \
+	$(KUBECTL) apply -n $(ARGO_NAMESPACE) --server-side --force-conflicts -f \
 		https://raw.githubusercontent.com/argoproj/argo-cd/$(ARGO_VERSION)/manifests/install.yaml
 
 # The root password is generated here, once, and kept in a Secret: no password in the repository.
@@ -74,6 +77,7 @@ repo:
 # Tells Argo CD to follow the GitLab repository. The project is private, so Argo CD
 # first gets a login for it: a Secret with the label Argo CD looks for.
 deploy-app:
+	$(KUBECTL) wait --for condition=established crd/applications.argoproj.io --timeout=120s
 	@$(KUBECTL) -n $(ARGO_NAMESPACE) create secret generic gitlab-repo \
 		--from-literal=type=git \
 		--from-literal=url=$(REPO_URL_IN_CLUSTER) \
