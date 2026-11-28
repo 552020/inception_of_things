@@ -18,40 +18,6 @@ Working notes taken out of the README, which is handed in. This file is not; it 
 | `docs/sessions` | working notes per session |
 | `docs/slombard-start-here.md` | Stefano's checklist for the next session |
 
-## Host VM
-
-The subject requires the whole project to run inside a virtual machine. On the 42 cluster that means one Ubuntu VM (the host VM) in which Vagrant, libvirt, K3s, Docker and K3d all run. Since 2026-11-22 it runs under QEMU/KVM, started by one script, with nested virtualization passed through. The VirtualBox setup it replaced, and why it had to go, are in the journal.
-
-| Item | Value |
-|------|-------|
-| Name | `IoT` |
-| OS | Ubuntu 26.04.1 LTS desktop (upgraded from 24.04 on 2026-11-22) |
-| Runs under | QEMU/KVM on the 42 host, no root, no libvirt: [docs/host-vm/iot-kvm.sh](docs/host-vm/iot-kvm.sh) |
-| Disk | `~/goinfre/VMs/IoT.qcow2`, 60 GB virtual, grows as used; compressed backup in `~/sgoinfre/IoT/` |
-| Resources | 6 CPUs, 8 GB RAM, `-cpu host` so that KVM works inside |
-| Network | user-mode NAT; host ports 2222 (SSH), 8080, 8888 and 30007 forwarded to the guest |
-| Login | `slombard` |
-| Inside | git, Ansible, QEMU/KVM, libvirt, Vagrant 2.4.9 with vagrant-libvirt, Docker, kubectl, k3d, argocd, Chrome, Claude Code |
-
-Why two locations: goinfre is the machine's own disk, fast, but wiped when another user logs in. Sgoinfre follows you across the cluster and keeps up to 30 GB (purged after 6 months unused), but it is a network share, too slow to run a VM from. So the VM runs from goinfre, and a compressed copy in sgoinfre is what survives a seat change. Refresh that copy after real work; the commands are in [docs/host-vm/vm-setup.md](docs/host-vm/vm-setup.md). Check sgoinfre's size now and then:
-
-```bash
-du -sh ~/sgoinfre
-```
-
-Start, reach and stop from the host:
-
-```bash
-docs/host-vm/iot-kvm.sh            # window on the desktop
-docs/host-vm/iot-kvm.sh headless   # no window, SSH only
-ssh -p 2222 slombard@localhost
-ssh -p 2222 slombard@localhost sudo poweroff
-```
-
-Inside the QEMU window, `Ctrl+Alt+G` releases the mouse and keyboard back to the host. VirtualBox and KVM cannot both hold VT-x, so no VirtualBox VM may run while the host VM is up.
-
-The full rebuild procedure, disk resizing, backup and recovery steps are in [docs/host-vm/vm-setup.md](docs/host-vm/vm-setup.md).
-
 ## Setup times
 
 Measured in the host VM under QEMU/KVM (6 vCPUs, 8 GB), boxes and images already cached, one run each. A first run adds the downloads (the Debian box, the K3s binary per node, the k3d and Argo CD images).
