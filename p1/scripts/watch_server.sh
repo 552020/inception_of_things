@@ -1,5 +1,5 @@
 #!/bin/bash
-# Watch the K3s server VM after `make up`, to catch why it goes unresponsive.
+# Watch the health of the K3s server VM after `make up`.
 # Every 15 s it records memory, CPU and I/O pressure, disk activity, the busiest
 # processes and the last K3s journal lines of rpodackS into watch_rpodackS.log,
 # next to the Vagrantfile. A sample that times out is logged as UNREACHABLE with

@@ -1,6 +1,5 @@
 ---
-# NOTE: Worker reads token from server via Ansible SSH delegation.
-# This works in Vagrant (via Ansible's SSH) and in production environments.
+# The worker reads the join token from the server over Ansible's SSH connection.
 
 - name: Install K3s Server
   hosts: rpodackS
@@ -13,8 +12,6 @@
 
     - name: Gather facts
       setup:
-
-    #############make sure hostnae is set
     - name: Set hostname in /etc/hostname
       copy:
         content: "rpodackS\n"
@@ -47,7 +44,6 @@
 
     - name: Classic interface names eth0/eth1, as the subject requires (reboots once on first run)
       include_tasks: eth-names.yml
-#################################
 
     - name: Ensure Python3 and curl are installed
       apt:
@@ -120,7 +116,6 @@
 
     - name: Classic interface names eth0/eth1, as the subject requires (reboots once on first run)
       include_tasks: eth-names.yml
-###################################
 
     - name: Ensure Python3 and curl are installed
       apt:
@@ -162,7 +157,6 @@
       become: yes
       async: 300   # run asynchronously, 5 min max
       poll: 0
-      # Note: Token read via Ansible SSH delegation (works in Vagrant and production)
 
 - name: Verify Cluster
   hosts: rpodackS

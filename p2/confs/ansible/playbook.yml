@@ -9,8 +9,6 @@
 
     - name: Gather facts
       setup:
-
-    #############make sure hostnae is set
     - name: Set hostname in /etc/hostname
       copy:
         content: "rpodackS\n"
@@ -43,7 +41,6 @@
 
     - name: Classic interface names eth0/eth1, as the subject requires (reboots once on first run)
       include_tasks: eth-names.yml
-    #################################
 
     - name: Ensure Python3 and curl are installed
       apt:
@@ -80,12 +77,10 @@
       delay: 5
       changed_when: false
 
-##########################################
-# APP1
-##########################################
+# app1
     - name: Copy app1-ingress.yaml to node
       copy:
-        src: ./../ingress/app1-ingress.yaml       # relative to your Ansible project root
+        src: ./../ingress/app1-ingress.yaml
         dest: /tmp/app1-ingress.yaml
         owner: root
         group: root
@@ -120,12 +115,10 @@
         cmd: kubectl apply -f /tmp/app1-ingress.yaml
 
 
-    ##########################################
-    # APP3
-    ##########################################
+    # app3
     - name: Copy app3-ingress.yml to node
       copy:
-        src: ./../ingress/app3-ingress.yml       # relative to your Ansible project root
+        src: ./../ingress/app3-ingress.yml
         dest: /tmp/app3-ingress.yml
         owner: root
         group: root
@@ -162,12 +155,10 @@
 
 
 
-    ##########################################
     # app2
-    ##########################################
     - name: Copy app2-ingress.yml to node
       copy:
-        src: ./../ingress/app2-ingress.yml       # relative to your Ansible project root
+        src: ./../ingress/app2-ingress.yml
         dest: /tmp/app2-ingress.yml
         owner: root
         group: root

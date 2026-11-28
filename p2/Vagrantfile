@@ -1,4 +1,3 @@
-# Vagrantfile
 Vagrant.configure("2") do |config|
 
   # Debian 13 (trixie), the current stable release; box with a libvirt build

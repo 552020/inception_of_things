@@ -2,7 +2,7 @@
 # Part 1 Verification Script
 # Tests all requirements for Part 1: K3s and Vagrant
 
-set -uo pipefail  # Removed -e to allow script to continue through arithmetic operations
+set -uo pipefail  # no -e: every check runs and reports, even after a failure
 
 # Colors for output
 RED='\033[0;31m'
