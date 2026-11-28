@@ -1,4 +1,4 @@
-.PHONY: help up provision down status ssh-server clean show-nodes show-ip-server
+.PHONY: help up provision test down status ssh-server clean show-nodes show-ip-server
 
 SHELL := /bin/bash
 
@@ -19,6 +19,10 @@ up: ## Create and provision the VMs (vagrant up runs the playbook itself)
 
 provision: ## Re-run the playbook on VMs that already exist
 	vagrant provision
+
+test: ## Run all verification tests (VM, K3s, the three apps, Ingress)
+	@echo "Running Part 2 verification tests..."
+	@bash scripts/test_part2.sh
 
 down: ## Stop the VMs
 	@echo "Stopping VMs..."
