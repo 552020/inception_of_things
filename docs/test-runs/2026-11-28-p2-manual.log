@@ -1,0 +1,186 @@
+Part 2, manual run as at the evaluation, 2026-11-28, host VM on seat c1b3c2 (QEMU/KVM).
+Output as pasted from the terminal. Part 1's VMs were stopped first (make down in p1).
+make up: passed, rpodackS ok=38 failed=0; no Ansible deprecation warning (p2/ansible.cfg).
+
+slombard@slombard-VirtualBox:~/42/inception_of_things/p2$ make up
+Starting VMs...
+vagrant up --provider=libvirt --no-parallel
+Bringing machine 'rpodackS' up with 'libvirt' provider...
+==> rpodackS: Checking if box 'cloud-image/debian-13' version '20260914.2601.0' is up to date...
+[fog][WARNING] Unrecognized arguments: libvirt_ip_command
+==> rpodackS: Creating image (snapshot of base box volume).
+==> rpodackS: Creating domain with the following settings...
+==> rpodackS:  -- Name:              p2_rpodackS
+==> rpodackS:  -- Description:       Source: /home/slombard/42/inception_of_things/p2/Vagrantfile
+==> rpodackS:  -- Domain type:       kvm
+==> rpodackS:  -- Cpus:              2
+==> rpodackS:  -- Feature:           acpi
+==> rpodackS:  -- Feature:           apic
+==> rpodackS:  -- Feature:           pae
+==> rpodackS:  -- Clock offset:      utc
+==> rpodackS:  -- Memory:            2048M
+==> rpodackS:  -- Base box:          cloud-image/debian-13
+==> rpodackS:  -- Storage pool:      default
+==> rpodackS:  -- Image(vda):        /var/lib/libvirt/images/p2_rpodackS.img, virtio, 10G
+==> rpodackS:  -- Disk driver opts:  cache='default'
+==> rpodackS:  -- Graphics Type:     vnc
+==> rpodackS:  -- Video Type:        cirrus
+==> rpodackS:  -- Video VRAM:        16384
+==> rpodackS:  -- Video 3D accel:    false
+==> rpodackS:  -- Keymap:            en-us
+==> rpodackS:  -- TPM Backend:       passthrough
+==> rpodackS:  -- INPUT:             type=mouse, bus=ps2
+==> rpodackS: Creating shared folders metadata...
+==> rpodackS: Starting domain.
+==> rpodackS: Domain launching with graphics connection settings...
+==> rpodackS:  -- Graphics Port:      5900
+==> rpodackS:  -- Graphics IP:        127.0.0.1
+==> rpodackS:  -- Graphics Password:  Not defined
+==> rpodackS:  -- Graphics Websocket: 5700
+==> rpodackS: Waiting for domain to get an IP address...
+==> rpodackS: Waiting for machine to boot. This may take a few minutes...
+    rpodackS: SSH address: 192.168.121.55:22
+    rpodackS: SSH username: vagrant
+    rpodackS: SSH auth method: private key
+    rpodackS: Warning: Connection refused. Retrying...
+    rpodackS: Warning: Connection reset. Retrying...
+    rpodackS:
+    rpodackS: Vagrant insecure key detected. Vagrant will automatically replace
+    rpodackS: this with a newly generated keypair for better security.
+    rpodackS:
+    rpodackS: Inserting generated public key within guest...
+    rpodackS: Removing insecure key from the guest if it's present...
+    rpodackS: Key inserted! Disconnecting and reconnecting using new SSH key...
+==> rpodackS: Machine booted and ready!
+==> rpodackS: Setting hostname...
+==> rpodackS: Configuring and enabling network interfaces...
+==> rpodackS: Running provisioner: ansible...
+    rpodackS: Running ansible-playbook...
+
+PLAY [Install K3s Server] ******************************************************
+
+TASK [Make sure Python is on the VM (Ansible needs it before any module can run)] ***
+ok: [rpodackS]
+
+TASK [Gather facts] ************************************************************
+ok: [rpodackS]
+
+TASK [Set hostname in /etc/hostname] *******************************************
+ok: [rpodackS]
+
+TASK [Set hostname in /etc/hosts] **********************************************
+changed: [rpodackS]
+
+TASK [Apply hostname immediately] **********************************************
+changed: [rpodackS]
+
+TASK [Ensure cloud-init doesn't manage hostname (if cloud.cfg exists)] *********
+ok: [rpodackS]
+
+TASK [Modify cloud-init config to preserve hostname if file exists] ************
+changed: [rpodackS]
+
+TASK [Classic interface names eth0/eth1, as the subject requires (reboots once on first run)] ***
+included: /home/slombard/42/inception_of_things/p2/confs/ansible/eth-names.yml for rpodackS
+
+TASK [Boot with classic interface names (net.ifnames=0)] ***********************
+changed: [rpodackS]
+
+TASK [Regenerate the GRUB config] **********************************************
+changed: [rpodackS]
+
+TASK [Netplan (cloud-init, DHCP on the first interface) follows the new name eth0] ***
+changed: [rpodackS]
+
+TASK [systemd-networkd (Vagrant, the private IP on the second interface) follows the new name eth1] ***
+changed: [rpodackS]
+
+TASK [Reboot into the new interface names] *************************************
+changed: [rpodackS]
+
+TASK [Ensure Python3 and curl are installed] ***********************************
+ok: [rpodackS]
+
+TASK [Install K3s server] ******************************************************
+changed: [rpodackS]
+
+TASK [Wait for K3s server to be ready] *****************************************
+ok: [rpodackS]
+
+TASK [Wait for the Kubernetes API to answer] ***********************************
+ok: [rpodackS]
+
+TASK [Copy app1-ingress.yaml to node] ******************************************
+changed: [rpodackS]
+
+TASK [Copy app1 Deployment to node] ********************************************
+changed: [rpodackS]
+
+TASK [Copy app1 Service to node] ***********************************************
+changed: [rpodackS]
+
+TASK [Apply app1 Deployment] ***************************************************
+changed: [rpodackS]
+
+TASK [Apply app1 Service] ******************************************************
+changed: [rpodackS]
+
+TASK [Apply app1 Ingress] ******************************************************
+changed: [rpodackS]
+
+TASK [Copy app3-ingress.yml to node] *******************************************
+changed: [rpodackS]
+
+TASK [Copy app3 Deployment to node] ********************************************
+changed: [rpodackS]
+
+TASK [Copy app3 Service to node] ***********************************************
+changed: [rpodackS]
+
+TASK [Apply app3 Deployment] ***************************************************
+changed: [rpodackS]
+
+TASK [Apply app3 Service] ******************************************************
+changed: [rpodackS]
+
+TASK [Apply app3 Ingress] ******************************************************
+changed: [rpodackS]
+
+TASK [Copy app2-ingress.yml to node] *******************************************
+changed: [rpodackS]
+
+TASK [Copy app2 Deployment to node] ********************************************
+changed: [rpodackS]
+
+TASK [Copy app2 Service to node] ***********************************************
+changed: [rpodackS]
+
+TASK [Apply app2 Deployment] ***************************************************
+changed: [rpodackS]
+
+TASK [Apply app2 Service] ******************************************************
+changed: [rpodackS]
+
+TASK [Apply app2 Ingress] ******************************************************
+changed: [rpodackS]
+
+PLAY [Verify Cluster] **********************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [rpodackS]
+
+TASK [Check cluster nodes] *****************************************************
+changed: [rpodackS]
+
+TASK [Show cluster nodes] ******************************************************
+ok: [rpodackS] => {
+    "msg": [
+        "NAME       STATUS   ROLES           AGE   VERSION",
+        "rpodacks   Ready    control-plane   9s    v1.37.2+k3s1"
+    ]
+}
+
+PLAY RECAP *********************************************************************
+rpodackS                   : ok=38   changed=28   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+slombard@slombard-VirtualBox:~/42/inception_of_things/p2$
