@@ -153,23 +153,24 @@ make gitlab-password    # GitLab at http://localhost:8929, user root
 
 ## Tests
 
-Every part has `make test`, run from its folder once the part is up. It prints one ✓ or ✗
-per check and a total, and exits with status 1 when any check failed, so a script can use it
-too. The tests only read: they change nothing and push nothing to GitHub. Where something is
-still starting (images downloading, Argo CD's first sync), a check waits, for up to 5 or 6
-minutes, before it counts as failed.
+Each part has a verification script, run with `make test` from the part's folder once the
+part is up.
 
-| Part | Checks |
-|------|--------|
-| 1 | SSH, hostnames, eth1 addresses, K3s on both machines, both nodes Ready (14) |
-| 2 | VM, K3s, three Deployments, app2 with 3 replicas, all pods Running, three Ingresses, the five answers of 192.168.56.110 (15) |
-| 3 | nodes, namespaces, Argo CD pods, the Application Synced and Healthy, the pod in dev, localhost:8888, and that the version served is the image tag (11) |
-| Bonus | the same for the local GitLab, plus GitLab's page, the repository on GitLab and the Application pointing at it (14) |
+| Part | Script | Checks |
+|------|--------|--------|
+| 1 | `p1/scripts/test_part1.sh` | SSH access, hostnames, eth1 addresses, K3s server and agent, both nodes Ready |
+| 2 | `p2/scripts/test_part2.sh` | VM and K3s, the three Deployments, the three replicas of app2, the Ingresses, the responses for app1.com, app2.com and any other host |
+| 3 | `p3/scripts/test_part3.sh` | cluster nodes, namespaces `argocd` and `dev`, Argo CD, the Application synced and healthy, the application on port 8888 serving the deployed image tag |
+| Bonus | `bonus/scripts/test_bonus.sh` | as Part 3, plus GitLab, its repository and the Application pointing at it |
 
-The bonus also has `make test-switch`: it runs `make v2`, waits until port 8888 serves v2,
-does the same back to v1, and prints how long each change took.
-It writes only to the local GitLab, so it can run at any time. Part 3 has no such test,
-because it would have to push to the public GitHub repository.
+The scripts are read-only. They report one result per check and exit with a non-zero status
+if any check fails. Checks that depend on components still starting, such as image downloads
+or Argo CD's first synchronization, are retried before they fail.
+
+In `bonus`, `make test-switch` exercises the version change end to end: it switches the
+application to v2 through the local GitLab, waits until port 8888 serves it, and switches
+back to v1. Part 3 has no equivalent, since it would have to push to the public GitHub
+repository.
 
 ## Messages that look like errors but are not
 
