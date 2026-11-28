@@ -81,6 +81,7 @@ make down         # stops both VMs
 make -C p1 down   # Part 1's VMs must be off: same IP
 cd p2
 make up           # the VM, K3s and the three applications (about 1 min)
+make test         # VM, K3s, the three applications, the Ingress and their answers
 ```
 
 Check:
@@ -98,10 +99,11 @@ make ssh-server   # then: kubectl get all, ingress   (app2 has 3 replicas)
 bash p3/scripts/installationhost.sh   # once: Docker, kubectl, k3d, argocd; then log out and in
 cd p3
 make setup        # k3d cluster, namespaces argocd and dev, Argo CD, the Application (about 20 s)
+make test         # waits for Argo CD's first sync, then checks the application
 ```
 
 Argo CD deploys the application 3 to 4 minutes after `make setup` returns, while its images
-download; until then `curl` gets no answer.
+download; until then `curl` gets no answer. `make test` waits for that.
 
 Check:
 
@@ -135,6 +137,8 @@ make echo-password        # the admin password
 make -C p3 delete   # Part 3's cluster must be gone: same ports
 cd bonus
 make setup          # k3d cluster, Argo CD, GitLab in namespace gitlab, the repository (about 4 min)
+make test           # namespaces, GitLab, the repository, Argo CD, the application
+make test-switch    # v2, then back to v1, with the time each change took
 ```
 
 Check:
@@ -148,11 +152,40 @@ make gitlab-password    # GitLab at http://localhost:8929, user root
 
 `make delete` removes the cluster. More in `bonus/README.md`.
 
+## Tests
+
+Every part has `make test`, run from its folder once the part is up. It prints one ✓ or ✗
+per check and a total, and exits with status 1 when any check failed, so a script can use it
+too. The tests only read: they change nothing and push nothing to GitHub. Where something is
+still starting (images downloading, Argo CD's first sync), a check waits, for up to 5 or 6
+minutes, before it counts as failed.
+
+| Part | Checks | Time on 28 November, images downloaded |
+|------|--------|-----------------------------------------|
+| 1 | SSH, hostnames, eth1 addresses, K3s on both machines, both nodes Ready (14) | 13 s |
+| 2 | VM, K3s, three Deployments, app2 with 3 replicas, all pods Running, three Ingresses, the five answers of 192.168.56.110 (15) | 44 s |
+| 3 | nodes, namespaces, Argo CD pods, the Application Synced and Healthy, the pod in dev, localhost:8888, and that the version served is the image tag (11) | passed 3 min 34 s after `make setup` was started, most of it waiting for Argo CD's first sync |
+| Bonus | the same for the local GitLab, plus GitLab's page, the repository on GitLab and the Application pointing at it (14) | 3 s |
+
+The bonus also has `make test-switch`: it runs `make v2`, waits until port 8888 serves v2,
+does the same back to v1, and prints how long each change took (2 and 6 s on 28 November).
+It writes only to the local GitLab, so it can run at any time. Part 3 has no such test,
+because it would have to push to the public GitHub repository.
+
+## Messages that look like errors but are not
+
+| Message | Where | What it means |
+|---------|-------|---------------|
+| `[fog][WARNING] Unrecognized arguments: libvirt_ip_command` | every Vagrant command in p1 and p2: `make up`, `make test`, `vagrant status`, `destroy` | The vagrant-libvirt plugin (0.12.2) hands a setting to its connection library, fog, that this version of fog does not know. fog warns and ignores it. Nothing is wrong, and it cannot be fixed from our files. |
+| `Warning: Connection refused. Retrying...` and `Connection reset. Retrying...` | `make up` in p1 and p2 | Vagrant tries SSH while the VM is still starting. On its first run each server VM also reboots once, to get the interface names eth0 and eth1 that the subject requires; Vagrant reconnects by itself. |
+| `Vagrant insecure key detected. Vagrant will automatically replace this with a newly generated keypair` | first `make up` | Normal: Vagrant swaps the public key that ships in the box for a new one made for this VM. |
+| `curl localhost:8888` answers nothing right after `make setup` | Part 3 | Argo CD is still downloading its images and has not made its first sync (3 to 4 minutes). `make test` waits for it. |
+
 ## Folder structure
 
 | Folder | What |
 |--------|------|
 | `p1` | Part 1: Vagrantfile, Ansible playbook, test script |
-| `p2` | Part 2: Vagrantfile, Ansible playbook, the manifests of the three applications |
-| `p3` | Part 3: install script, k3d and Argo CD setup, the Argo CD Application |
-| `bonus` | Bonus: GitLab and Argo CD setup |
+| `p2` | Part 2: Vagrantfile, Ansible playbook, the manifests of the three applications, test script |
+| `p3` | Part 3: install script, k3d and Argo CD setup, the Argo CD Application, test script |
+| `bonus` | Bonus: GitLab and Argo CD setup, test scripts |
