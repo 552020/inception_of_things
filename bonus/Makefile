@@ -21,7 +21,7 @@ GITLAB_PASS = $$($(KUBECTL) -n $(GITLAB_NAMESPACE) get secret gitlab-root -o jso
 REPO_URL_IN_CLUSTER := http://gitlab.gitlab.svc.cluster.local:8929/root/$(REPO).git
 
 .PHONY: all setup check create create-namespaces install-argo install-gitlab wait-gitlab \
-	repo deploy-app sync v1 v2 info port-forward argo-password gitlab-password delete
+	repo deploy-app sync v1 v2 info test test-switch port-forward argo-password gitlab-password delete
 
 all: setup
 
@@ -105,6 +105,14 @@ info:
 	$(KUBECTL) -n $(ARGO_NAMESPACE) get application dev-app
 	$(KUBECTL) -n $(DEV_NAMESPACE) get deployment wil-playground \
 		-o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+
+# Checks namespaces, pods, GitLab, the repository, Argo CD and the application (nothing is changed)
+test:
+	@bash scripts/test_bonus.sh
+
+# The change of version end to end (v2, then back to v1), with timings; writes to the local GitLab only
+test-switch:
+	@bash scripts/test_switch.sh
 
 port-forward:
 	$(KUBECTL) -n $(ARGO_NAMESPACE) port-forward svc/argocd-server $(ARGO_PORT):443
