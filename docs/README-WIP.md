@@ -9,6 +9,7 @@ Working notes taken out of the README, which is handed in. This file is not; it 
 | `docs/subject` | the subject and the evaluation sheet |
 | `docs/journal.md` | decisions and their reasons, dated |
 | `docs/README-WIP.md` | working notes taken out of this README: host VM details, setup times, the three repositories, technologies to read, shortcuts |
+| `docs/test-runs` | terminal output of test runs, one file per run, for the team |
 | `docs/diagrams` | hand-drawn sketches of each part, coming up and running |
 | `docs/evaluation` | study notes for the oral, glossary, flashcards (web deck: https://iot-deck-pi.vercel.app) |
 | `docs/deck` | the web deck's code |
