@@ -96,3 +96,12 @@ slombard@slombard-VirtualBox:~/42/inception_of_things/p3$ kubectl -n argocd anno
 application.argoproj.io/dev-app annotated
 slombard@slombard-VirtualBox:~/42/inception_of_things/p3$ curl localhost:8888
 {"status":"ok", "message": "v1"}
+
+Fork switched to v2 (commit 55a8c21 in 552020/rpodackIoT), then:
+
+slombard@slombard-VirtualBox:~/42/inception_of_things/p3$ kubectl -n argocd annotate application dev-app argocd.argoproj.io/refresh=normal --overwrite
+application.argoproj.io/dev-app annotated
+slombard@slombard-VirtualBox:~/42/inception_of_things/p3$ curl localhost:8888
+{"status":"ok", "message": "v2"}
+
+The fork was then set back to v1, its resting state.
