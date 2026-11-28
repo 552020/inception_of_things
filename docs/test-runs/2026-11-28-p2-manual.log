@@ -184,3 +184,48 @@ PLAY RECAP *********************************************************************
 rpodackS                   : ok=38   changed=28   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
 slombard@slombard-VirtualBox:~/42/inception_of_things/p2$
+make test
+Running Part 2 verification tests...
+==========================================
+Part 2 Verification Tests
+==========================================
+
+ℹ Checking if the VM is running...
+[fog][WARNING] Unrecognized arguments: libvirt_ip_command
+✓ VM rpodackS is running
+
+ℹ Testing the machine...
+
+✓ SSH connection to rpodackS works
+✓ Hostname on rpodackS is correct: rpodackS
+✓ eth1 interface on rpodackS has correct IP: 192.168.56.110
+
+ℹ Testing K3s...
+
+✓ K3s server is running on rpodackS
+✓ The node is Ready
+
+ℹ Testing the applications (up to 300 s while images are still downloading)...
+
+✓ Three Deployments exist: app1 app2 app3 
+✓ app2 has 3 ready replicas
+✓ All pods are Running (5 pods)
+✓ Three Ingresses exist: app1-ingress app2-ingress app3-ingress 
+
+ℹ Testing the answers of 192.168.56.110...
+
+✓ Host app1.com shows 'Welcome to nginx'
+✓ Host app2.com shows 'Hello from app2'
+✓ Host app3.com shows 'Hello from App3'
+✓ Another host (other.example) shows 'Hello from App3'
+✓ No Host header (the bare IP) shows 'Hello from App3'
+
+==========================================
+Test Summary
+==========================================
+Total tests: 15
+Passed: 15
+Failed: 0
+
+All tests passed! ✓
+slombard@slombard-VirtualBox:~/42/inception_of_things/p2$
