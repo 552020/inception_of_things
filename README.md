@@ -46,6 +46,11 @@ Everything runs inside one virtual machine, as the subject asks: Ubuntu 26.04.1 
 QEMU/KVM, 6 CPUs, 8 GB of RAM, with nested virtualization passed through so that the VMs of
 Parts 1 and 2 can run inside it.
 
+Why QEMU/KVM and not VirtualBox: the subject leaves the tool free. VirtualBox froze twice under
+nested virtualization while Part 1's VMs were booting. QEMU/KVM hands the host's KVM to the VM
+directly (`-cpu host`), the nested VMs run without a freeze, and it needs no root on the
+42 machines.
+
 - Parts 1 and 2 need Vagrant with the libvirt provider (vagrant-libvirt), QEMU/KVM and Ansible.
 - Part 3 and the bonus need Docker, kubectl and k3d; `p3/scripts/installationhost.sh` installs them.
 
