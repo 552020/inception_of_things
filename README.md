@@ -21,6 +21,7 @@ Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folde
 
 The work of 21 and 22 November is merged (PRs #6 and #7, 25 November); work on `main`. Only Part 1's `make up` has run so far; Parts 2, 3 and the bonus are written and reviewed but not run.
 
+- **We depart from the subject on one point:** the K3s server VMs of `p1` and `p2` get 2 CPUs and 2048 MB, where the subject advises 1 CPU and 512 or 1024 MB. K3s itself documents 2 cores and 2 GB as the minimum for a server, and at 1024 MB our server ran out of memory. The worker keeps the subject's 1 CPU and 512 MB. Why, with the measurements: [journal, 2026-11-28](#2026-11-28-the-k3s-servers-get-2-cpus-and-2-gb-more-than-the-subject-advises).
 - Session notes, readable from any computer: [docs/sessions](docs/sessions/README.md). Delete that folder before submission.
 - Personal checklist for the next session: [docs/slombard-start-here.md](docs/slombard-start-here.md).
 
@@ -69,7 +70,7 @@ Measured on 2026-11-22 in the host VM under QEMU/KVM (6 vCPUs, 8 GB), boxes and 
 | 3 | `make setup` | not measured yet | |
 | bonus | `make setup` | about 10 min to all pods Running | GitLab CE plus Argo CD, 2.5 to 3 GB in the guest; unconfirmed, see `bonus/` |
 
-Known problem, not solved: running the playbook a second time on the existing `p1` VMs (`make provision`) stalls on the server a few minutes after K3s came up, with the server VM hammering its disk and unreachable over SSH. It happened with 512 MB and with 1024 MB. `make up` itself is not affected since it no longer provisions twice. First thing to check: log into `rpodackS` right after `make up` and watch `free -m`, `iostat` and `journalctl -u k3s` for a few minutes.
+Known problem, now explained: on 2026-11-22 the server stalled a few minutes after K3s came up, and we blamed the second provisioning pass. On 2026-11-28 it happened again after a single `make up`: the server was out of memory at 1024 MB. The fix and the reasons are in the journal entry of 2026-11-28; the times above were taken before it.
 
 ## Three repositories
 
@@ -236,3 +237,33 @@ The first `make up` in `p1` built both VMs and ran the playbook through, but K3s
 Two ways out. Make the playbook interface-agnostic (look the interface up by its IP) and let the name be whatever the box gives: simpler, but then `ip a show eth1` fails at the defense and the subject's own wording is not met. Or give the guests classic names: a GRUB drop-in with `net.ifnames=0 biosdevname=0`, the netplan file (cloud-init, DHCP) and the systemd-networkd file (Vagrant, the private IP) rewritten to `eth0` and `eth1`, one reboot. The second was chosen and lives in `confs/ansible/eth-names.yml`, included once per play in `p1` and `p2`; after the first run the drop-in exists, so re-provisioning neither changes anything nor reboots. Cost: one reboot per VM on first provisioning, about 40 seconds each.
 
 Open for discussion: a box that already uses `eth0`/`eth1` would remove the step entirely.
+
+### 2026-11-28: The K3s servers get 2 CPUs and 2 GB, more than the subject advises
+
+The subject says, for Part 1: "It is STRONGLY advised to allow only the bare minimum in terms of resources: 1 CPU, 512 MB of RAM (or 1024)." It is advice, not a rule, and the evaluation sheet has no check on CPU or memory. We follow it for the worker and depart from it for the K3s servers, for three reasons.
+
+**1. At 1024 MB the server ran out of memory.** On 2026-11-28, `make up` in `p1` passed in 113 s and the server reported Ready. Less than a minute later it stopped answering, over SSH and to kubectl. The last health sample before that, taken by `make watch`:
+
+| Measure | Value |
+|---------|-------|
+| Memory, total / available | 967 MB / 11 MB, no swap |
+| `k3s-server` resident memory | 689 MB |
+| Memory pressure (avg10) | 48 % |
+| I/O pressure (avg10) | 71 % |
+| Disk reads / writes since boot | 462 048 / 12 679 |
+
+Many reads and few writes with no free memory is thrashing: the kernel keeps evicting program pages and reading them back from disk. It happens while K3s pulls and starts its bundled add-ons (CoreDNS, Traefik, metrics-server, ServiceLB, local-path). The stall seen on 2026-11-22 at 512 MB and at 1024 MB was the same thing; it only looked tied to the second provisioning pass because it began at that moment.
+
+**2. K3s documents more for a server.** The [K3s requirements](https://docs.k3s.io/installation/requirements) give 2 cores and 2 GB as the minimum for a server node, and 1 core and 512 MB for an agent. The [K3s resource profiling](https://docs.k3s.io/reference/resource-profiling) measured a server with a simple workload at about 1.6 GB. The subject's numbers fit the agent; for the server they are below what K3s itself asks for. The subject was written for an older K3s that advertised itself as running in about 512 MB.
+
+**3. It keeps the subject's own principle.** The subject asks for the bare minimum. For a current K3s server the bare minimum is 2 cores and 2 GB, so that is what the servers get, and no more.
+
+| VM | Role | CPUs | Memory | Against |
+|----|------|------|--------|---------|
+| `rpodackS` in `p1` | K3s server | 2 | 2048 MB | K3s server minimum |
+| `rpodackSW` in `p1` | K3s agent | 1 | 512 MB | subject and K3s agent minimum |
+| `rpodackS` in `p2` | K3s server, three apps | 2 | 2048 MB | K3s server minimum |
+
+Considered and dropped: starting K3s without Traefik, metrics-server and ServiceLB to save memory. `p2` needs Traefik, and it would turn `p1` into a non-standard K3s to fit a number the subject only advises. Swap was not tried: Kubernetes is designed to run without it.
+
+At the defense, if asked: show this entry, the K3s requirements page and the measured sample above.
