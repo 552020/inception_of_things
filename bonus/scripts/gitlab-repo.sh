@@ -44,7 +44,14 @@ seed)
     # No project yet: GitLab creates it on this first push (push to create).
     # It is created private, so Argo CD reads it with a login (make deploy-app).
     # A wrong root password shows here as "Authentication failed".
-    git_root push -q "$REMOTE" main
+    # Right after its first start GitLab restarts its Git services once and answers
+    # 502 for some seconds, although the sign-in page is already up: try for two minutes.
+    for try in $(seq 1 12); do
+        git_root push -q "$REMOTE" main && break
+        [ "$try" -lt 12 ] || { echo "The push to $REMOTE keeps failing"; exit 1; }
+        echo "GitLab is not ready for a push yet, next try in 10 seconds ($try/12)"
+        sleep 10
+    done
     echo "Pushed $ARG to $REMOTE"
     ;;
 tag)
