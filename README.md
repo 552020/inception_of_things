@@ -51,6 +51,15 @@ froze twice under nested virtualization while Part 1's VMs were booting. QEMU/KV
 directly (`-cpu host`), the nested VMs run without a freeze, and it needs no root on the
 42 machines.
 
+The options on the 42 machines, where we have no root:
+
+| Option | On the 42 machines | Verdict |
+|--------|--------------------|---------|
+| VirtualBox | installed, runs without root | froze under nested virtualization |
+| libvirt, system mode (`qemu:///system`) | its socket needs root or the libvirt group | not available |
+| libvirt, session mode (`qemu:///session`) | runs without root, but cannot create networks | possible, with QEMU's user networking |
+| QEMU/KVM directly | `qemu-system-x86_64` installed, `/dev/kvm` usable while logged in at the seat | our choice: one command, no daemon |
+
 - Parts 1 and 2 need Vagrant with the libvirt provider (vagrant-libvirt), QEMU/KVM and Ansible.
 - Part 3 and the bonus need Docker, kubectl and k3d; `p3/scripts/installationhost.sh` installs them.
 
