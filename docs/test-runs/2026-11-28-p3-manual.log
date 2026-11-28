@@ -1,0 +1,51 @@
+Part 3, manual run as at the evaluation, 2026-11-28, host VM on seat c1b3c2 (QEMU/KVM).
+Output as pasted from the terminal. make setup: passed, Argo CD 3.6.2 installed server-side,
+Application dev-app created.
+
+slombard@slombard-VirtualBox:~/42/inception_of_things/p3$ make setup
+✅ k3d already installed
+✅ argocd CLI already installed
+🚀 Creating K3s cluster: dockercluster
+INFO[0000] Prep: Network                                
+INFO[0000] Created network 'k3d-dockercluster'          
+INFO[0000] Created image volume k3d-dockercluster-images 
+INFO[0000] Starting new tools node...                   
+INFO[0000] Starting node 'k3d-dockercluster-tools'      
+INFO[0001] Creating node 'k3d-dockercluster-server-0'   
+INFO[0001] Creating node 'k3d-dockercluster-agent-0'    
+INFO[0001] Creating LoadBalancer 'k3d-dockercluster-serverlb' 
+INFO[0001] Using the k3d-tools node to gather environment information 
+INFO[0001] HostIP: using network gateway 172.18.0.1 address 
+INFO[0001] Starting cluster 'dockercluster'             
+INFO[0001] Starting servers...                          
+INFO[0001] Starting node 'k3d-dockercluster-server-0'   
+INFO[0006] Starting agents...                           
+INFO[0006] Starting node 'k3d-dockercluster-agent-0'    
+INFO[0018] Starting helpers...                          
+INFO[0018] Starting node 'k3d-dockercluster-serverlb'   
+INFO[0025] Injecting records for hostAliases (incl. host.k3d.internal) and for 3 network members into CoreDNS configmap... 
+INFO[0027] Cluster 'dockercluster' created successfully! 
+INFO[0027] You can now use it like this:                
+kubectl cluster-info
+📂 Creating namespaces...
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+namespace/argocd created
+kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
+namespace/dev created
+🌟 Installing Argo CD in namespace argocd
+kubectl apply -n argocd --server-side --force-conflicts -f \
+https://raw.githubusercontent.com/argoproj/argo-cd/v3.6.2/manifests/install.yaml
+customresourcedefinition.apiextensions.k8s.io/applications.argoproj.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/applicationsets.argoproj.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/appprojects.argoproj.io serverside-applied
+(... 55 more Argo CD objects, every one "serverside-applied" ...)
+statefulset.apps/argocd-application-controller serverside-applied
+🚀 Creating the Argo CD Application (Argo CD deploys the app into dev)
+kubectl wait --for condition=established crd/applications.argoproj.io --timeout=120s
+customresourcedefinition.apiextensions.k8s.io/applications.argoproj.io condition met
+kubectl apply -f confs/application.yaml
+application.argoproj.io/dev-app created
+🌟 Setup complete!
+👉 Argo UI: make port-forward, then https://localhost:8080 (password: make echo-password)
+👉 App, once Argo CD has synced it: curl http://localhost:8888/
+slombard@slombard-VirtualBox:~/42/inception_of_things/p3$
