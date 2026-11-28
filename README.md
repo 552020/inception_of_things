@@ -47,8 +47,3 @@ Everything runs inside one virtual machine, as the subject asks. Ours: Ubuntu 26
 
 - Parts 1 and 2: Vagrant with the libvirt provider (vagrant-libvirt), QEMU/KVM, Ansible.
 - Part 3 and bonus: Docker, kubectl, k3d; `p3/scripts/installationhost.sh` installs them.
-
----
-
-Inception-of-Things is a project of the 42 curriculum, by Robin (rpodack) and
-Stefano (slombard).
