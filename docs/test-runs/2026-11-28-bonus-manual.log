@@ -1,0 +1,65 @@
+Bonus, manual run as at the evaluation, 2026-11-28, host VM on seat c1b3c2 (QEMU/KVM).
+Output as pasted from the terminal. Part 3's cluster was deleted first (make delete in p3).
+make setup: passed; GitLab up, private project root/rpodackIoT created by push, Application created.
+
+slombard@slombard-VirtualBox:~/42/inception_of_things/bonus$ make setup
+INFO[0000] Prep: Network                                
+INFO[0000] Created network 'k3d-bonus'                  
+INFO[0000] Created image volume k3d-bonus-images        
+INFO[0000] Starting new tools node...                   
+INFO[0000] Starting node 'k3d-bonus-tools'              
+INFO[0001] Creating node 'k3d-bonus-server-0'           
+INFO[0001] Creating LoadBalancer 'k3d-bonus-serverlb'   
+INFO[0001] Using the k3d-tools node to gather environment information 
+INFO[0001] HostIP: using network gateway 172.18.0.1 address 
+INFO[0001] Starting cluster 'bonus'                     
+INFO[0001] Starting servers...                          
+INFO[0001] Starting node 'k3d-bonus-server-0'           
+INFO[0006] All agents already running.                  
+INFO[0006] Starting helpers...                          
+INFO[0006] Starting node 'k3d-bonus-serverlb'           
+INFO[0012] Injecting records for hostAliases (incl. host.k3d.internal) and for 2 network members into CoreDNS configmap... 
+INFO[0014] Cluster 'bonus' created successfully!        
+INFO[0014] You can now use it like this:                
+kubectl cluster-info
+namespace/argocd created
+namespace/dev created
+namespace/gitlab created
+kubectl --context k3d-bonus apply -n argocd --server-side --force-conflicts -f \
+        https://raw.githubusercontent.com/argoproj/argo-cd/v3.6.2/manifests/install.yaml
+customresourcedefinition.apiextensions.k8s.io/applications.argoproj.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/applicationsets.argoproj.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/appprojects.argoproj.io serverside-applied
+(... 55 more Argo CD objects, every one "serverside-applied" ...)
+networkpolicy.networking.k8s.io/argocd-server-network-policy serverside-applied
+secret/gitlab-root created
+kubectl --context k3d-bonus apply -f confs/gitlab.yaml
+persistentvolumeclaim/gitlab-data created
+deployment.apps/gitlab created
+service/gitlab created
+Waiting for GitLab: image download, then a first start of several minutes...
+kubectl --context k3d-bonus -n gitlab rollout status deployment/gitlab --timeout=30m
+Waiting for deployment "gitlab" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "gitlab" rollout to finish: 0 of 1 updated replicas are available...
+deployment "gitlab" successfully rolled out
+remote: 
+remote: The private project root/rpodackIoT was successfully created.
+remote: 
+remote: To configure the remote, run:
+remote:   git remote add origin http://localhost:8929/root/rpodackIoT.git
+remote: 
+remote: To view the project, visit:
+remote:   http://localhost:8929/root/rpodackIoT
+remote: 
+Pushed confs/app to http://localhost:8929/root/rpodackIoT.git
+kubectl --context k3d-bonus wait --for condition=established crd/applications.argoproj.io --timeout=120s
+customresourcedefinition.apiextensions.k8s.io/applications.argoproj.io condition met
+secret/gitlab-repo created
+kubectl --context k3d-bonus apply -f confs/argocd-app.yaml
+application.argoproj.io/dev-app created
+
+Setup complete.
+GitLab:  http://localhost:8929   user root, password: make gitlab-password
+Argo CD: make port-forward, then https://localhost:8080   user admin, password: make argo-password
+App:     curl http://localhost:8888
+slombard@slombard-VirtualBox:~/42/inception_of_things/bonus$
