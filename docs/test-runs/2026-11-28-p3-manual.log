@@ -49,3 +49,40 @@ application.argoproj.io/dev-app created
 👉 Argo UI: make port-forward, then https://localhost:8080 (password: make echo-password)
 👉 App, once Argo CD has synced it: curl http://localhost:8888/
 slombard@slombard-VirtualBox:~/42/inception_of_things/p3$
+make test
+==========================================
+Part 3 Verification Tests
+==========================================
+
+ℹ Checking the cluster dockercluster...
+✓ Cluster k3d-dockercluster answers
+ℹ Testing that the nodes are Ready...
+✓ Both nodes (server and agent) are Ready (found 2)
+
+ℹ Testing namespaces...
+
+✓ Namespace argocd exists
+✓ Namespace dev exists
+
+ℹ Testing Argo CD (up to 360 s while it downloads its images and makes its first sync)...
+
+✓ All pods in argocd are Ready (7 pods)
+✓ Application dev-app exists, repository: https://github.com/Robin-Lenz/rpodackIoT.git
+✓ dev-app is Synced and Healthy
+
+ℹ Testing the application in dev...
+
+✓ The pod wil-playground in namespace dev is Running and Ready
+✓ The Deployment is managed by Argo CD (tracking id dev-app:apps/Deployment:dev/wil-playground)
+✓ curl http://localhost:8888 answers: {"status":"ok", "message": "v2"}
+✓ The application serves v2, the same as the image tag of the Deployment
+
+==========================================
+Test Summary
+==========================================
+Total tests: 11
+Passed: 11
+Failed: 0
+
+All tests passed! ✓
+slombard@slombard-VirtualBox:~/42/inception_of_things/p3$
