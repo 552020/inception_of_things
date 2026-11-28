@@ -19,6 +19,12 @@ the host VM.
   there and push, and the cluster follows.
 - **Bonus: GitLab.** Part 3 with a GitLab running inside the cluster in place of GitHub.
 
+> **Note:** the K3s server of Parts 1 and 2, `rpodackS`, gets 2 CPUs and 2048 MB, more than the
+> subject's advised 1 CPU and 512 MB (or 1024). K3s documents 2 cores and 2 GB as the minimum
+> for a server node ([K3s requirements](https://docs.k3s.io/installation/requirements)), and at
+> 1024 MB our server ran out of memory about a minute after K3s started. The worker,
+> `rpodackSW`, keeps 1 CPU and 512 MB, the K3s minimum for an agent.
+
 ## Prerequisites
 
 Inside the host VM:
@@ -150,15 +156,3 @@ make gitlab-password    # GitLab at http://localhost:8929, user root
 | `p2` | Part 2: Vagrantfile, Ansible playbook, the manifests of the three applications |
 | `p3` | Part 3: install script, k3d and Argo CD setup, the Argo CD Application |
 | `bonus` | Bonus: GitLab and Argo CD setup |
-
-## Deviations from the subject
-
-The subject strongly advises 1 CPU and 512 MB of RAM (or 1024) per virtual machine. We follow
-that for the worker of Part 1, `rpodackSW`: 1 CPU, 512 MB. The K3s server of Parts 1 and 2,
-`rpodackS`, gets 2 CPUs and 2048 MB:
-
-- K3s documents 2 cores and 2 GB as the minimum for a server node, and 1 core and 512 MB for
-  an agent ([K3s requirements](https://docs.k3s.io/installation/requirements)).
-- At 1024 MB our server ran out of memory about a minute after K3s started: 11 MB available,
-  K3s alone using 689 MB, and it stopped answering. At 2048 MB it stays responsive, with more
-  than 700 MB free.
