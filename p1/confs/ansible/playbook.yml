@@ -58,10 +58,14 @@
         update_cache: yes
       become: yes
 
+    # K3s starts Traefik, the metrics server and a service load balancer by default.
+    # Part 1 needs none of them (the Ingress comes in Part 2), and in 1024 MB they
+    # push the server into memory thrashing right after the install, so they are off.
+    # CoreDNS and the local-path storage stay.
     - name: Install K3s server
       shell: |
         curl -sfL https://get.k3s.io | \
-          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1" \
+          INSTALL_K3S_EXEC="server --node-name rpodackS --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --flannel-iface eth1 --disable traefik --disable metrics-server --disable servicelb" \
           sh -
       args:
         creates: /usr/local/bin/k3s
