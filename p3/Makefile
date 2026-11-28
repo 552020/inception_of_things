@@ -20,7 +20,7 @@ ARGO_APPLICATION := confs/application.yaml
 # Phony targets
 # -------------------------------
 .PHONY: all setup create check-k3d create-namespaces install-argo deploy-app delete shell info \
-	port-forward echo-password argocd-setup init-sync
+	port-forward echo-password argocd-setup init-sync test
 
 all: setup
 
@@ -119,6 +119,14 @@ info:
 	$(KUBECTL) get nodes -o wide
 	$(KUBECTL) get pods -n $(ARGO_NAMESPACE)
 	$(KUBECTL) get pods -n $(DEV_NAMESPACE)
+
+# -------------------------------
+# Verification tests
+# -------------------------------
+# Checks the cluster, namespaces, Argo CD, the Application and the app on localhost:8888.
+# Waits for Argo CD's first sync, which comes minutes after `make setup`. Changes nothing.
+test:
+	@bash scripts/test_part3.sh
 
 # -------------------------------
 # Port forwarding
