@@ -86,3 +86,13 @@ Failed: 0
 
 All tests passed! ✓
 slombard@slombard-VirtualBox:~/42/inception_of_things/p3$
+
+Version switch through the fork 552020/rpodackIoT (at v1); the Application is pointed at it inside
+this test cluster only, p3/confs/application.yaml is unchanged.
+
+slombard@slombard-VirtualBox:~/42/inception_of_things/p3$ kubectl -n argocd patch application dev-app --type merge -p '{"spec":{"source":{"repoURL":"https://github.com/552020/rpodackIoT.git"}}}'
+application.argoproj.io/dev-app patched
+slombard@slombard-VirtualBox:~/42/inception_of_things/p3$ kubectl -n argocd annotate application dev-app argocd.argoproj.io/refresh=normal --overwrite
+application.argoproj.io/dev-app annotated
+slombard@slombard-VirtualBox:~/42/inception_of_things/p3$ curl localhost:8888
+{"status":"ok", "message": "v1"}
