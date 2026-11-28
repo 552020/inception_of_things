@@ -4,21 +4,19 @@ The lab of Part 3, with one change: the repository Argo CD follows is no longer 
 
 ## Status
 
-Not proven end to end yet. Last run: 2026-11-22, in the host VM.
+Passed end to end on 2026-11-28 in the host VM (6 CPUs, 7 GB), twice, each time from an empty cluster.
 
-| Step | State |
-|------|-------|
-| Cluster, namespaces, Argo CD, GitLab up (`make setup` until GitLab is ready) | ran once: about 10 minutes, host VM at 2.5 to 3 GB used |
-| First push to GitLab (`make repo`) | rewritten after that run, never run |
-| Argo CD follows the GitLab repository (`make deploy-app`) | never run |
-| Change from v1 to v2 (`make v2` or by hand) | never run |
+| Step | Measured |
+|------|----------|
+| `make setup`, from nothing to "Setup complete" | 244 s and 269 s, image download included. GitLab's start is 250 s of it |
+| Argo CD deploys v1 from the GitLab repository | 12 to 16 s after `make setup` returned |
+| `make v2`, until `curl http://localhost:8888` answers `v2` | 8 s |
+| `make v1`, back | 8 s |
+| Memory | host VM at 4.7 GB used of 7.4; the GitLab pod alone 2.6 GB |
 
-What the next run has to show, in this order:
+Not tried yet: the steps of the defense done by hand in the browser (log in to GitLab, create a project, edit a file there, the Argo CD page), and a restart of the cluster with `k3d cluster stop` and `start`.
 
-1. `make repo` pushes. If git says `Authentication failed`, GitLab did not take the root password from the Secret: `make delete`, then `make setup` again, which starts GitLab with the password line added to `confs/gitlab.yaml` after the first run.
-2. GitLab creates the project on that push and keeps the name `rpodackIoT` as typed.
-3. `make info` shows the application `dev-app` as `Synced` and `Healthy`.
-4. `make v2`, then `curl http://localhost:8888` answers with `v2`.
+In the first run the push of `make repo` got an HTTP 502: GitLab restarts its Git services once, just after its sign-in page first answers. The script now retries for two minutes. In the second run the push passed at the first try, so the retry itself has not been seen at work.
 
 ## What is in the folder
 
@@ -41,7 +39,7 @@ make -C ../p3 delete
 make setup
 ```
 
-`make setup` takes about 10 minutes. Most of it is GitLab: the image download, then a first start of several minutes.
+`make setup` takes 4 to 5 minutes. Most of it is GitLab: the image download, then its first start.
 
 | What | Where | Login |
 |------|-------|-------|
