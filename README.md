@@ -60,10 +60,12 @@ The options on the 42 machines, where we have no root:
 | libvirt, session mode (`qemu:///session`) | runs without root, but cannot create networks | possible, with QEMU's user networking |
 | QEMU/KVM directly | `qemu-system-x86_64` installed, `/dev/kvm` usable while logged in at the seat | our choice: one command, no daemon |
 
+## Running each part
+
+Before you start, inside the host VM:
+
 - Parts 1 and 2 need Vagrant with the libvirt provider (vagrant-libvirt), QEMU/KVM and Ansible.
 - Part 3 and the bonus need Docker, kubectl and k3d; `p3/scripts/installationhost.sh` installs them.
-
-## Running each part
 
 Run the parts one at a time: Parts 1 and 2 both use 192.168.56.110, and Part 3 and the
 bonus use the same ports. Times are from runs with the Vagrant box and the images already
