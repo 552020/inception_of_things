@@ -1,20 +1,15 @@
 # slombard: start here
 
-Last updated 2026-11-22, end of the night session.
+Last updated 2026-11-28.
 
 ## Branch
 
-Two pull requests, both to discuss with Robin before merging:
-
-- [PR #7](https://github.com/552020/inception_of_things/pull/7), branch `fix-p1-p2-p3`: the code fixes for `p1`, `p2`, `p3` only. Merge this first.
-- [PR #6](https://github.com/552020/inception_of_things/pull/6), branch `host-vm-kvm`: the same fixes plus the host VM on QEMU/KVM, the docs, the oral notes and the bonus in progress. Rebase it after #7.
-
-Work on **`host-vm-kvm`**; it contains everything.
+Work on **`main`**: PRs #6 and #7 were merged on 25 November. What happened and what is open: [docs/sessions](sessions/README.md).
 
 Before the defense, outside this repo: `Robin-Lenz/rpodackIoT` says `v2` and must say `v1`, otherwise the v1 to v2 demo of Part 3 has nothing to show.
 
 ```bash
-git fetch origin && git checkout host-vm-kvm && git pull
+git fetch origin && git checkout main && git pull
 ```
 
 ## Picking a seat

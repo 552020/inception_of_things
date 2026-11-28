@@ -17,21 +17,12 @@ Hand-drawn overview of each part: [docs/diagrams](docs/diagrams/README.md).
 
 Only `p1`, `p2` and `p3` are turned in; the subject asks for exactly those folders at the root. Each has a `Makefile`; `make help` in `p1` and `p2` lists the targets, `make setup` in `p3` builds everything.
 
-## Active branches
+## Where we are
 
-Work from 2026-11-22, in two pull requests, to be discussed before merging:
+The work of 21 and 22 November is merged (PRs #6 and #7, 25 November); work on `main`. Only Part 1's `make up` has run so far; Parts 2, 3 and the bonus are written and reviewed but not run.
 
-- [PR #7](https://github.com/552020/inception_of_things/pull/7), branch `fix-p1-p2-p3`: code only, can go first. The eth0/eth1 fix for the Debian 13 box, 1024 MB for the p1 server, `make up` without the second provisioning, p2 waiting for the API, p3 creating the Argo CD Application itself with the app on `localhost:8888`, the p1 test fixed, `make watch`.
-- [PR #6](https://github.com/552020/inception_of_things/pull/6), branch `host-vm-kvm`: the same plus everything else:
-
-- the host VM moved from VirtualBox to QEMU/KVM after two nested-virtualization freezes (README host-VM section, `docs/host-vm/`, launch script);
-- fix for `p1` and `p2`: the Debian 13 box names its interfaces `ens5`/`ens6`, the subject wants `eth1` (`confs/ansible/eth-names.yml`);
-- `make up` no longer provisions twice; the server VM of `p1` needs 1024 MB, not 512;
-- the bonus (GitLab CE and Argo CD on k3d) in progress under `bonus/`.
-
-Start from `host-vm-kvm` for anything touching the host VM, `p1`, `p2` or `p3`. The host-VM section below still describes the VirtualBox setup until PR #6 is merged.
-
-Personal checklist for the next session: [docs/slombard-start-here.md](docs/slombard-start-here.md).
+- Session notes, readable from any computer: [docs/sessions](docs/sessions/README.md). Delete that folder before submission.
+- Personal checklist for the next session: [docs/slombard-start-here.md](docs/slombard-start-here.md).
 
 ## Host VM
 
