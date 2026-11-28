@@ -2,6 +2,22 @@
 
 Working notes taken out of the README, which is handed in. This file is not; it goes with `docs/` before submission.
 
+## Extra folders, to be removed before submission
+
+| Folder | What |
+|--------|------|
+| `docs/subject` | the subject and the evaluation sheet |
+| `docs/journal.md` | decisions and their reasons, dated |
+| `docs/README-WIP.md` | working notes taken out of this README: host VM details, setup times, the three repositories, technologies to read, shortcuts |
+| `docs/diagrams` | hand-drawn sketches of each part, coming up and running |
+| `docs/evaluation` | study notes for the oral, glossary, flashcards (web deck: https://iot-deck-pi.vercel.app) |
+| `docs/deck` | the web deck's code |
+| `docs/host-vm` | how the host VM is built, started and backed up |
+| `docs/lab` | experiments that are not handed in |
+| `docs/issues` | open questions and ideas |
+| `docs/sessions` | working notes per session |
+| `docs/slombard-start-here.md` | Stefano's checklist for the next session |
+
 ## Host VM
 
 The subject requires the whole project to run inside a virtual machine. On the 42 cluster that means one Ubuntu VM (the host VM) in which Vagrant, libvirt, K3s, Docker and K3d all run. Since 2026-11-22 it runs under QEMU/KVM, started by one script, with nested virtualization passed through. The VirtualBox setup it replaced, and why it had to go, are in the journal.
