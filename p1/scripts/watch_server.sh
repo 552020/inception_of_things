@@ -1,8 +1,8 @@
 #!/bin/bash
 # Watch the health of the K3s server VM after `make up`.
 # Every 15 s it records memory, CPU and I/O pressure, disk activity, the busiest
-# processes and the last K3s journal lines of rpodackS into watch_rpodackS.log,
-# next to the Vagrantfile. A sample that times out is logged as UNREACHABLE with
+# processes and the last K3s journal lines of rpodackS into logs/watch_rpodackS.log
+# (git-ignored). A sample that times out is logged as UNREACHABLE with
 # the time, which is the moment we want to know.
 #
 #   scripts/watch_server.sh            # 5 minutes
@@ -12,7 +12,8 @@
 # Run it from p1 on the host VM, right after make up. Ctrl-C stops it early.
 set -u
 DURATION="${1:-300}"
-LOG="watch_rpodackS.log"
+mkdir -p logs
+LOG="logs/watch_rpodackS.log"
 NODE="rpodackS"
 END=$(( $(date +%s) + DURATION ))
 
